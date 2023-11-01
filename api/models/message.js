@@ -1,0 +1,28 @@
+const mongoose = require("mongoose");
+
+const messageSchema = new mongoose.Schema({
+  senderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  recipientId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  messageType: {
+    type: String,
+    enum: ["text", "image"],
+  },
+  message: String,
+  imageUrl: String,
+  timeStamp: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+//there should be a collection of messages called "Message", and it goes by the
+//schema "messageSchema".
+const Message = mongoose.model("Message", messageSchema);
+
+module.exports = Message;
