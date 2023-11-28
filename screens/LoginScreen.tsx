@@ -1,4 +1,5 @@
 import {
+  Alert,
   KeyboardAvoidingView,
   Pressable,
   StyleSheet,
@@ -6,13 +7,64 @@ import {
   TextInput,
   View,
 } from "react-native";
-import React, { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
+import { ParamListBase, useNavigation } from "@react-navigation/native";
+import axios from "axios";
+import storeData from "../config/asyncStorage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+
+  useEffect(() => {
+    //auto login
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem("authToken");
+        //! shouldn't we also check the expiration date of the token?
+        if (token) {
+          //! we need to add a check with the server the the userId is in fact still valid
+          //! or even a valid token at all.
+
+          //if there is a token, go to Home Screen.
+          navigation.replace("Home");
+        } else {
+          //token not found. it will automatically go to the first screen which is "Login"
+        }
+      } catch (error) {
+        console.log(
+          "error trying to retrieve the value of the token. It's probably because there is no token, meaning, this is the user's first time on the app"
+        );
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
+  const handleLogin = () => {
+    const userDetails = {
+      email: email,
+      password: password,
+    };
+    axios
+      .post("http://192.168.1.116:8000/login", userDetails)
+      .then((response) => {
+        console.log("success!. response:", response);
+        Alert.alert("you have been logged in", "Login was successful");
+        const token = response.data.token;
+
+        //store token in asyncStorage
+        storeData("authToken", token);
+
+        navigation.replace("Home");
+      })
+      .catch((error) => {
+        Alert.alert("could not login", "please try again");
+        console.log("error:", error);
+      });
+  };
   return (
     <View style={styles.container}>
       <KeyboardAvoidingView>
@@ -74,6 +126,7 @@ const LoginScreen = () => {
               marginLeft: "auto",
               borderRadius: 6,
             }}
+            onPress={handleLogin}
           >
             <Text
               style={{

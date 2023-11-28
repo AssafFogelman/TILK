@@ -21,7 +21,7 @@ const messageSchema = new mongoose.Schema({
   },
 });
 
-//there should be a collection of messages called "Message", and it goes by the
+//there should be a collection of messages called "messages", and it goes by the
 //schema "messageSchema".
 const Message = mongoose.model("Message", messageSchema);
 

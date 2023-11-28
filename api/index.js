@@ -12,16 +12,6 @@ const app = express();
 app.use(cors());
 const PORT = 8000;
 
-// middleware for adding CORS
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
@@ -69,4 +59,74 @@ app.post("/register", async (req, res) => {
         userDetails: newUser,
       });
     });
+});
+
+//create a token
+const createToken = (userId) => {
+  // set the token payload
+  const payload = {
+    userId: userId,
+  };
+
+  //generate the token with a secret key and an expiration time
+  const token = jwt.sign(payload, "secretKey", { expiresIn: "1d" });
+
+  return token;
+};
+
+//endpoint for logging in  the user:
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  console.log("email:", email, "password:", password);
+  //check if there is a user and password
+  if (!email || !password) {
+    return res
+      .status(404)
+      .json({ message: "email and password are required", email, password });
+  }
+
+  //look up for the user in the database
+  User.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        //user not found
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.password !== password) {
+        //user was found but the password does not match
+        return res.status(404).json({ message: "Invalid password!" });
+      }
+
+      //login is successful
+      const token = createToken(user._id); //createToken returns a token object.
+      res.status(200).json({ token });
+    })
+    .catch((error) => {
+      console.log("error in searching the user in the database", error);
+      res
+        .status(500)
+        .json({ message: "error in searching the user in the database" });
+    });
+});
+
+//endpoint to access all the users except the user who is currently logged in
+
+const getAllUsers = (loggedInUserId) => {
+  return User.find({ _id: { $ne: loggedInUserId } });
+  //$ne - not equal
+};
+
+app.get("/users/:userId", async (req, res) => {
+  try {
+    const loggedInUserId = req.params.userId;
+    const allUsersExceptYou = await getAllUsers(loggedInUserId);
+    res.status(200).json(allUsersExceptYou);
+  } catch (error) {
+    console.log("an error trying to retrieve all users", error);
+    res
+      .status(500)
+      .json({ message: "an error trying to retrieve all users", error: error });
+  }
 });

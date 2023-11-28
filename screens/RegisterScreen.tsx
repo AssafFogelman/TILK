@@ -25,11 +25,11 @@ const RegisterScreen = () => {
       password: password,
       image: image,
     };
-    console.log("user:", user);
     // send a post request to the backend API to register the user
 
+    /* 192.168.1.116 is the IP of Assaf's router at home */
     axios
-      .post("https://localhost:8000/register", user)
+      .post("http://192.168.1.116:8000/register", user)
       .then((response) => {
         console.log("the response from the backend is:", response);
         Alert.alert(
