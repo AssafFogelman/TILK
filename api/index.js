@@ -130,3 +130,49 @@ app.get("/users/:userId", async (req, res) => {
       .json({ message: "an error trying to retrieve all users", error: error });
   }
 });
+
+//router to sent a request to a user
+
+app.post("/request-friendship", async (req, res) => {
+  const { sender_userId, recipient_userId } = req.body;
+  try {
+    //update the recipient's friend-request-array
+    await User.findByIdAndUpdate(recipient_userId, {
+      $push: { receivedFriendRequests: sender_userId },
+    });
+
+    //update the sender's friend-request-array
+    await User.findByIdAndUpdate(sender_userId, {
+      $push: { sentFriendRequests: recipient_userId },
+    });
+
+    res.sendStatus(200);
+  } catch (err) {
+    res.sendStatus(500).json({
+      message: "an error occurred while trying to process the friend request:",
+      error: err,
+    });
+  }
+});
+
+// route to show all the friend requests the user received
+
+app.get("/friend-requests/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    //fetch the user document based on the userId
+    const user = await User.findById(userId)
+      .populate("receivedFriendRequests", "name email image")
+      .lean();
+    const friendRequests = user.receivedFriendRequests;
+    //just pay attention that this is not deep copy and so, 
+    //if you change "user", you might change "friendRequests" as well.
+    res.status(200).json(friendRequests);
+  } catch (error) {
+    res.status(500).json({
+      msg: "there was an error trying to retrieve the received friend requests",
+      error: error,
+    });
+  }
+});

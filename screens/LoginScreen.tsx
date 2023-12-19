@@ -19,29 +19,29 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
-  useEffect(() => {
-    //auto login
-    const checkLoginStatus = async () => {
-      try {
-        const token = await AsyncStorage.getItem("authToken");
-        //! shouldn't we also check the expiration date of the token?
-        if (token) {
-          //! we need to add a check with the server the the userId is in fact still valid
-          //! or even a valid token at all.
+  // useEffect(() => {
+  //   //auto login
+  //   const checkLoginStatus = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem("authToken");
+  //       //! shouldn't we also check the expiration date of the token?
+  //       if (token) {
+  //         //! we need to add a check with the server the the userId is in fact still valid
+  //         //! or even a valid token at all.
 
-          //if there is a token, go to Home Screen.
-          navigation.replace("Home");
-        } else {
-          //token not found. it will automatically go to the first screen which is "Login"
-        }
-      } catch (error) {
-        console.log(
-          "error trying to retrieve the value of the token. It's probably because there is no token, meaning, this is the user's first time on the app"
-        );
-      }
-    };
-    checkLoginStatus();
-  }, []);
+  //         //if there is a token, go to Home Screen.
+  //         navigation.replace("Home");
+  //       } else {
+  //         //token not found. it will automatically go to the first screen which is "Login"
+  //       }
+  //     } catch (error) {
+  //       console.log(
+  //         "error trying to retrieve the value of the token. It's probably because there is no token, meaning, this is the user's first time on the app"
+  //       );
+  //     }
+  //   };
+  //   checkLoginStatus();
+  // }, []);
 
   const handleLogin = () => {
     const userDetails = {

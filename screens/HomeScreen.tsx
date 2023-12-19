@@ -7,7 +7,7 @@ import "@ethersproject/shims";
 // Import the ethers library
 import { ethers } from "ethers";
 
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -37,7 +37,15 @@ const HomeScreen = () => {
       headerRight: () => (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
-          <MaterialIcons name="people-outline" size={24} color="black" />
+
+          <MaterialIcons
+            onPress={() => {
+              navigation.navigate("Friends");
+            }}
+            name="people-outline"
+            size={24}
+            color="black"
+          />
         </View>
       ),
     });
@@ -80,7 +88,7 @@ const HomeScreen = () => {
   return (
     <View>
       {/* mapping the users downloaded from the server */}
-      <View>
+      <View style={{ padding: 10 }}>
         {users.map((userData, index) => (
           <UserSmallDetails key={index} userData={userData} />
         ))}

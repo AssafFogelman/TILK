@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View, Pressable, Image } from "react-native";
-import React from "react";
+import React, { useContext, useState } from "react";
 import User from "../api/models/user";
+import { UserType } from "../UserContext";
+import axios from "axios";
 
 type UserDataType = {
   __v: number;
@@ -15,8 +17,45 @@ type UserDataType = {
 };
 
 const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
+  const { userId, setUserId } = useContext(UserType);
+  const [requestSent, setRequestSent] = useState(false);
+
+  const sendFriendRequest = async (
+    sender_userId: number,
+    recipient_userId: string
+  ) => {
+    try {
+      const response = await fetch(
+        "http://192.168.1.116:8000/request-friendship",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sender_userId: sender_userId,
+            recipient_userId: recipient_userId,
+          }),
+        }
+      );
+      console.log("response:", response);
+      if (response.ok) {
+        setRequestSent(true);
+      }
+    } catch (error) {
+      console.log("error trying to send a friend request:", error);
+    }
+  };
+
   return (
-    <Pressable style={{ flexDirection: "row", alignItems: "center" }}>
+    <Pressable
+      style={{
+        flexDirection: "row-reverse",
+        alignItems: "center",
+        marginVertical: 10,
+        gap: 12,
+      }}
+    >
       <View>
         <Image
           style={{
@@ -29,10 +68,25 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
         />
       </View>
 
-      <View>
-        <Text>{userData.name}</Text>
-        <Text>{userData.email}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontWeight: "bold" }}>{userData.name}</Text>
+        <Text style={{ fontSize: 10, color: "grey" }}>{userData.email}</Text>
       </View>
+
+      <Pressable
+        onPress={() => {
+          sendFriendRequest(userId, userData._id);
+        }}
+        style={{
+          backgroundColor: requestSent ? "gold" : "#567189",
+          padding: 8,
+          borderRadius: 9,
+        }}
+      >
+        <Text style={{ textAlign: "center", color: "white", fontSize: 13 }}>
+          {requestSent ? "request sent" : "Add Friend"}
+        </Text>
+      </Pressable>
     </Pressable>
   );
 };
