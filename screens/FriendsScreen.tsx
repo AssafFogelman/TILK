@@ -4,26 +4,30 @@ import axios from "axios";
 import { UserType } from "../UserContext";
 import FriendRequest from "../components/FriendRequest";
 
+type FriendRequestType = {
+  _id: string;
+  name: string;
+  image: string;
+  email: string;
+};
+
 const FriendsScreen = () => {
-  const [friendRequestsData, setFriendRequestsData] = useState([]);
+  const [friendRequestsData, setFriendRequestsData] = useState<
+    FriendRequestType[]
+  >([]);
+
   useEffect(() => {
     fetchFriendRequests();
   }, []);
 
   const { userId, setUserId } = useContext(UserType);
 
-  type FriendRequestType = {
-    _id: string;
-    name: string;
-    image: string;
-    email: string;
-  };
-
   const fetchFriendRequests = async () => {
     try {
       const response = await axios.get(
         `http://192.168.1.116:8000/friend-requests/${userId}`
       );
+      console.log("response.data of the friend requests", response.data);
       if (response.status === 200) {
         //copy the received friend requests with their attributes to the state
         setFriendRequestsData(JSON.parse(JSON.stringify(response.data)));

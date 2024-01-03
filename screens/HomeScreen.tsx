@@ -63,8 +63,6 @@ const HomeScreen = () => {
         setUserId(decodedToken.userId);
 
         //get the list of all the users except this user.
-        console.log("we are in HomeScreen. userId is:", decodedToken.userId);
-
         axios
           .get("http://192.168.1.116:8000/users/" + decodedToken.userId)
           .then((response) => {

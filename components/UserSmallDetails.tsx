@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Pressable, Image } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import User from "../api/models/user";
 import { UserType } from "../UserContext";
 import axios from "axios";
@@ -19,6 +19,27 @@ type UserDataType = {
 const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
   const { userId, setUserId } = useContext(UserType);
   const [requestSent, setRequestSent] = useState(false);
+  const [alreadyFriends, setAlreadyFriends] = useState(true);
+
+  useEffect(() => {
+    /*
+    once the component loads, check whether "userData" (the user that is not us and is being shown)
+    is friends with us.
+    by default the "alreadyFriends" state is set to "true" so the buttons won't show. 
+    A variable called "WeAreNowFriends" checks if that is truly the case.
+    If the "for" loop finds that we are friends, nothing happens. 
+    If it does not, then we are not friends, and the state changes to "false".
+    */
+    let WeAreNowFriends = false;
+    for (let friendship_Id of userData.friends) {
+      if (friendship_Id.toString() === userId.toString()) {
+        WeAreNowFriends = true;
+      }
+    }
+    if (WeAreNowFriends) return;
+
+    setAlreadyFriends(false);
+  }, []);
 
   const sendFriendRequest = async (
     sender_userId: number,
@@ -38,7 +59,6 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
           }),
         }
       );
-      console.log("response:", response);
       if (response.ok) {
         setRequestSent(true);
       }
@@ -72,21 +92,22 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
         <Text style={{ fontWeight: "bold" }}>{userData.name}</Text>
         <Text style={{ fontSize: 10, color: "grey" }}>{userData.email}</Text>
       </View>
-
-      <Pressable
-        onPress={() => {
-          sendFriendRequest(userId, userData._id);
-        }}
-        style={{
-          backgroundColor: requestSent ? "gold" : "#567189",
-          padding: 8,
-          borderRadius: 9,
-        }}
-      >
-        <Text style={{ textAlign: "center", color: "white", fontSize: 13 }}>
-          {requestSent ? "request sent" : "Add Friend"}
-        </Text>
-      </Pressable>
+      {!alreadyFriends && (
+        <Pressable
+          onPress={() => {
+            sendFriendRequest(userId, userData._id);
+          }}
+          style={{
+            backgroundColor: requestSent ? "gold" : "#567189",
+            padding: 8,
+            borderRadius: 9,
+          }}
+        >
+          <Text style={{ textAlign: "center", color: "white", fontSize: 13 }}>
+            {requestSent ? "request sent" : "Add Friend"}
+          </Text>
+        </Pressable>
+      )}
     </Pressable>
   );
 };

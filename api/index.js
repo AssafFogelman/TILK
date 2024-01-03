@@ -165,13 +165,94 @@ app.get("/friend-requests/:userId", async (req, res) => {
     const user = await User.findById(userId)
       .populate("receivedFriendRequests", "name email image")
       .lean();
-    const friendRequests = user.receivedFriendRequests;
-    //just pay attention that this is not deep copy and so, 
+    const friendRequests = JSON.parse(
+      JSON.stringify(user.receivedFriendRequests)
+    );
+    console.log("friendRequests", friendRequests);
+
+    //without the JSON parse+stringify:
+    // just pay attention that this is not deep copy and so,
     //if you change "user", you might change "friendRequests" as well.
     res.status(200).json(friendRequests);
   } catch (error) {
     res.status(500).json({
       msg: "there was an error trying to retrieve the received friend requests",
+      error: error,
+    });
+  }
+});
+
+//route to accept a friend request
+
+app.post("/friend-requests/accept", async (req, res) => {
+  try {
+    const { sender_userId, recipient_userId } = req.body;
+
+    console.log(
+      "sender_userId: (the one who sent the friend request and now should be friends:",
+      sender_userId
+    );
+
+    //retrieve the documents of sender and recipient
+
+    const sender = await User.findById(sender_userId);
+    const recipient = await User.findById(recipient_userId);
+
+    //adding a record of friendship to both users
+    sender.friends.push(recipient_userId);
+    recipient.friends.push(sender_userId);
+
+    //removing the friend requests from both users
+    recipient.receivedFriendRequests = recipient.receivedFriendRequests.filter(
+      (friendRequest) => friendRequest.toString() !== sender_userId.toString()
+    );
+    sender.sentFriendRequests = sender.sentFriendRequests.filter(
+      (friendRequest) =>
+        friendRequest.toString() !== recipient_userId.toString()
+    );
+
+    //this erasure is done just in case while user1 sent a friend request to user2,
+    //user2 sent a friend request to user1
+    //if we would not do this, a trace would stay.
+    recipient.sentFriendRequests = recipient.sentFriendRequests.filter(
+      (friendRequest) => friendRequest.toString() !== sender_userId.toString()
+    );
+    sender.receivedFriendRequests = sender.receivedFriendRequests.filter(
+      (friendRequest) =>
+        friendRequest.toString() !== recipient_userId.toString()
+    );
+
+    await sender.save();
+    await recipient.save();
+
+    res.status(200).json({ message: "friend request accepted" });
+  } catch (error) {
+    console.log("the server could not accept the friend request");
+    res
+      .status(500)
+      .json({ message: "the server could not accept the friend request" });
+  }
+});
+
+app.delete("/resetValues", async (req, res) => {
+  try {
+    //get all users
+    const allUsers = await User.find({});
+    //reset user records
+    for (let someUser of allUsers) {
+      someUser.receivedFriendRequests = [];
+      someUser.sentFriendRequests = [];
+      someUser.friends = [];
+      someUser.__v = 0;
+    }
+    //save all users
+    await User.bulkSave(allUsers);
+
+    res.status(200).json({ message: "all values were reset" });
+  } catch (error) {
+    res.status(500).json({
+      message:
+        "something went wrong on the server-database side while trying to reset all values",
       error: error,
     });
   }

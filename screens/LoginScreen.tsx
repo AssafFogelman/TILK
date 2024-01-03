@@ -16,7 +16,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("Aa123456!"); //! change this, right?
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   // useEffect(() => {
@@ -65,6 +65,20 @@ const LoginScreen = () => {
         console.log("error:", error);
       });
   };
+
+  const resetAllUsersValues = async () => {
+    try {
+      const response = await fetch("http://192.168.1.116:8000/resetValues", {
+        method: "DELETE",
+      });
+      if (response.ok) console.log("all the users' Values were deleted");
+    } catch (error) {
+      console.log(
+        "there was an error trying to reach the server in order to reset the users' values"
+      );
+    }
+  };
+
   return (
     <View style={styles.container}>
       <KeyboardAvoidingView>
@@ -146,6 +160,29 @@ const LoginScreen = () => {
           >
             <Text style={{ textAlign: "center", color: "grey", fontSize: 16 }}>
               Don't have an account? Sign Up
+            </Text>
+          </Pressable>
+        </View>
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 60,
+          }}
+        >
+          <Pressable
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+
+              width: 150,
+              height: 50,
+              backgroundColor: "red",
+            }}
+            onPress={resetAllUsersValues}
+          >
+            <Text style={{ color: "white", textAlign: "center" }}>
+              Reset all user values
             </Text>
           </Pressable>
         </View>
