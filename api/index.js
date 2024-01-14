@@ -257,3 +257,96 @@ app.delete("/resetValues", async (req, res) => {
     });
   }
 });
+
+//route to get all the friends of the user
+
+app.get("/chat/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).populate(
+      "friends",
+      "name email image"
+    );
+    const friendsList = user.friends;
+    res.status(200).json(friendsList);
+  } catch (error) {
+    res.status(500).json({
+      message: "the server couldn't retrieve the user's friends list",
+    });
+  }
+});
+
+//route to post messages and save them in the DB
+
+app.post("/messages", async (req, res) => {
+  try {
+    const { senderId, recipientId, messageType, messageText } = req.body;
+
+    const newMessage = new Message({
+      senderId,
+      recipientId,
+      messageType,
+      messageText,
+      timeStamp: new Date(),
+      //if the messageType is "text", imageUrl is defined as "null".
+      imageUrl: messageType === "image",
+    });
+    await newMessage.save();
+
+    res.status(200).json({ message: "The message was stored successfully" });
+  } catch (error) {
+    console.log("there was a problem saving the messages to the database");
+    res.status(500).json({
+      message: "there was a problem saving the messages to the database",
+      error: error,
+    });
+  }
+});
+
+//route to get the user details to design the chat room header.
+
+//! I don't understand why we need this. cant we just get the information from other screens? I mean, can we actually get to a chat without going through other screens? maybe we could, if the user was to get a push notification...
+app.get("/messages/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const recipientData = await User.findById(userId);
+
+    //recipientData = the data of the user that our user is chatting with.
+    res.status(200).json(recipientData);
+
+    //fetch user data
+  } catch (error) {
+    console.log("couldn't retrieve the user details from the database");
+    res.status(500).json({
+      message: "couldn't retrieve the user details from the database",
+      error,
+    });
+  }
+});
+
+//route to fetch all the messages between two users in the chatroom
+
+app.get("/messages/getMessages/:senderId/:recipientId", async (req, res) => {
+  try {
+    const { senderId, recipientId } = req.params;
+
+    //!shouldn't this be just "find" instead of "findOne"?
+    const messages = await Message.findOne({
+      $or: [
+        { sendrId: senderId, recipientId: recipientId },
+        { senderId: recipientId, recipientId: senderId },
+      ],
+    })
+      .populate("senderId", "_id name")
+      .lean();
+
+    res.json(messages);
+  } catch (error) {
+    console.log("there was a problem retrieving the chat room messages");
+    res.status(500).json({
+      message: "there was a problem retrieving the chat room messages",
+      error,
+    });
+  }
+});

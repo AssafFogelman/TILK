@@ -91,6 +91,7 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
       <View style={{ flex: 1 }}>
         <Text style={{ fontWeight: "bold" }}>{userData.name}</Text>
         <Text style={{ fontSize: 10, color: "grey" }}>{userData.email}</Text>
+        <Text style={{ fontSize: 10, color: "grey" }}>Distance:</Text>
       </View>
       {!alreadyFriends && (
         <Pressable

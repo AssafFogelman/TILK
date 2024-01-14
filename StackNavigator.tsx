@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -6,14 +6,16 @@ import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import HomeScreen from "./screens/HomeScreen";
 import FriendsScreen from "./screens/FriendsScreen";
-import ChatScreen from "./screens/chatScreen";
+import ChatScreen from "./screens/ChatScreen";
+import ChatMessageScreen from "./screens/ChatMessageScreen";
+import { StackParamList } from "./types/types";
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<StackParamList>();
 
 const StackNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
           name="Login"
           component={LoginScreen}
@@ -37,6 +39,11 @@ const StackNavigator = () => {
         <Stack.Screen
           name="Chats"
           component={ChatScreen}
+          // options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Messages"
+          component={ChatMessageScreen}
           // options={{ headerShown: false }}
         />
       </Stack.Navigator>

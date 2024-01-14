@@ -20,7 +20,7 @@ import { jwtDecode } from "jwt-decode";
 import UserSmallDetails from "../components/UserSmallDetails";
 
 interface JwtPayload {
-  userId: number;
+  userId: string;
 }
 
 const HomeScreen = () => {
@@ -28,15 +28,23 @@ const HomeScreen = () => {
   const { userId, setUserId } = useContext(UserType);
   const [users, setUsers] = useState([]);
 
-  useLayoutEffect(() => {
+  //setting the header
+  useEffect(() => {
     navigation.setOptions({
       headerTitle: "",
       headerLeft: () => (
-        <Text style={{ fontSize: 16, fontWeight: "bold" }}>Swift Chat</Text>
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>Tilk</Text>
       ),
       headerRight: () => (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Ionicons name="chatbox-ellipses-outline" size={24} color="black" />
+          <Ionicons
+            onPress={() => {
+              navigation.navigate("Chats");
+            }}
+            name="chatbox-ellipses-outline"
+            size={24}
+            color="black"
+          />
 
           <MaterialIcons
             onPress={() => {

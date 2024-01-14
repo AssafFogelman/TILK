@@ -24,8 +24,8 @@ explanation:
 */
 
 const contextDefaultValue = {
-  userId: null as unknown as number,
-  setUserId: (userId: number) => {}, // noop default callback
+  userId: null as unknown as string,
+  setUserId: (userId: string) => {}, // noop default callback
 };
 
 const UserType = createContext(contextDefaultValue);
