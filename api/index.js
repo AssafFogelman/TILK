@@ -7,6 +7,22 @@ const mongoose = require("mongoose");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+
+//Configure multer for handling file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    //Specify the desired destination folder
+    cb(null, "files/");
+  },
+  fileName: function (req, file, cb) {
+    //Generate a unique filename for the uploaded file
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalName);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 const app = express();
 app.use(cors());
@@ -276,9 +292,9 @@ app.get("/chat/:userId", async (req, res) => {
   }
 });
 
-//route to post messages and save them in the DB
+//route to post messages and save them in the DB and in the "files" folder.
 
-app.post("/messages", async (req, res) => {
+app.post("/messages", upload.single("imageFile"), async (req, res) => {
   try {
     const { senderId, recipientId, messageType, messageText } = req.body;
 
@@ -286,7 +302,7 @@ app.post("/messages", async (req, res) => {
       senderId,
       recipientId,
       messageType,
-      messageText,
+      message: messageText,
       timeStamp: new Date(),
       //if the messageType is "text", imageUrl is defined as "null".
       imageUrl: messageType === "image",
@@ -332,9 +348,9 @@ app.get("/messages/getMessages/:senderId/:recipientId", async (req, res) => {
     const { senderId, recipientId } = req.params;
 
     //!shouldn't this be just "find" instead of "findOne"?
-    const messages = await Message.findOne({
+    const messages = await Message.find({
       $or: [
-        { sendrId: senderId, recipientId: recipientId },
+        { senderId: senderId, recipientId: recipientId },
         { senderId: recipientId, recipientId: senderId },
       ],
     })

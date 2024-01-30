@@ -1,4 +1,5 @@
 import {
+  Image,
   KeyboardAvoidingView,
   Pressable,
   ScrollView,
@@ -7,28 +8,141 @@ import {
   TextInput,
   View,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { Entypo } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import EmojiSelector from "react-native-emoji-selector";
 import { UserType } from "../UserContext";
-import { useNavigation } from "../types/react-navigation";
-import { RouteProp, useRoute } from "@react-navigation/native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   MessagesScreenNavigationProp,
   MessagesScreenRouteProp,
 } from "../types/types";
 
+type RecipientDataType = null | { image: string; name: string };
+type ChatMessagesType =
+  | []
+  | [
+      {
+        __v: string;
+        _id: string;
+        imageUrl: string;
+        messageType: string;
+        recipientId: string;
+        senderId: { _id: string; name: string };
+        timeStamp: string;
+        message: string;
+      }
+    ];
+
 const ChatMessageScreen = () => {
   const [textInput, setTextInput] = useState("");
   const [selectedImage, setSelectedImage] = useState("");
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
+  const [recipientData, setRecipientData] = useState<RecipientDataType>();
+  const [chatMessages, setChatMessages] = useState<ChatMessagesType>([]);
   const { userId, setUserId } = useContext(UserType);
 
   const route = useRoute<MessagesScreenRouteProp>();
+  const navigation = useNavigation<MessagesScreenNavigationProp>();
   const { friendId } = route.params;
+
+  //fetch recipient data
+  useEffect(() => {
+    const fetchRecipientData = async () => {
+      try {
+        const response = await fetch(
+          `http://192.168.1.116:8000/messages/${friendId}`
+        );
+
+        //fetch returns a promise. a Response object with information. to resolve the promise we need to await. To extrapolate the data we need to use the json() method.
+        const data = await response.json();
+        setRecipientData(data);
+      } catch (error) {
+        console.log(
+          "could not fetch the recipient's data.. the error was: ",
+          error
+        );
+      }
+    };
+    fetchRecipientData();
+  }, []);
+
+  //fetch chat messages
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch(
+          `http://192.168.1.116:8000/messages/getMessages/${userId}/${friendId}`
+        );
+
+        const data = await response.json();
+        setChatMessages(data);
+      } catch (error) {
+        console.log(
+          "there was an error trying to fetch the chat's messages:",
+          error
+        );
+      }
+    };
+    fetchMessages();
+  }, []);
+
+  //setting the header
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: "",
+      headerLeft: () => (
+        <View
+          style={{
+            flexDirection: "row-reverse",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <Ionicons
+            onPress={() => navigation.goBack()}
+            name="arrow-back"
+            size={24}
+            color="black"
+          />
+
+          <View
+            style={{
+              flexDirection: "row-reverse",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            {recipientData ? (
+              recipientData.image ? (
+                <Image
+                  style={{
+                    height: 30,
+                    width: 30,
+                    borderRadius: 15,
+                    resizeMode: "cover",
+                  }}
+                  source={{
+                    uri: recipientData.image,
+                  }}
+                />
+              ) : null
+            ) : null}
+
+            <Text style={{ fontSize: 15, fontWeight: "500" }}>
+              {recipientData?.name}
+            </Text>
+          </View>
+        </View>
+      ),
+    });
+  }, [recipientData]);
+
+  /* we have a problem that if we don't put "recipientData" as a dependency of the "useEffect", 
+  it will not load besides the first time we enter the chat screen. however, this makes it much slower. 
+  there might be a faster way. try to solve this in the future. */
 
   const handleEmojiPress = () => {
     setShowEmojiSelector((currentState) => !currentState);
@@ -78,9 +192,52 @@ const ChatMessageScreen = () => {
       console.log("there was a problem sending the message:", error);
     }
   };
+
+  const formatTime = (time: string) => {
+    return new Date(time).toLocaleString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#F0F0F0" }}>
-      <ScrollView>{/* chat messages go here */}</ScrollView>
+      <ScrollView>
+        {/* chat messages go here */}
+        {chatMessages.map((chatMessage, index) => {
+          if (chatMessage.messageType === "text") {
+            return (
+              <Pressable
+                key={index}
+                /* if the message comes from the user, append certain styles */
+                style={[
+                  chatMessage.senderId._id === userId
+                    ? {
+                        alignSelf: "flex-end",
+                        backgroundColor: "#9ab5e3",
+                        padding: 8,
+                        maxWidth: "60%",
+                        borderRadius: 10,
+                        margin: 10,
+                      }
+                    : {
+                        alignSelf: "flex-start",
+                        backgroundColor: "#ccdaf1",
+                        padding: 8,
+                        maxWidth: "60%",
+                        borderRadius: 10,
+                        margin: 10,
+                      },
+                ]}
+              >
+                <Text style={{ fontSize: 13 }}>{chatMessage.message}</Text>
+                <Text>{formatTime(chatMessage.timeStamp)}</Text>
+              </Pressable>
+            );
+          }
+        })}
+      </ScrollView>
 
       {/* chat input line */}
       <View

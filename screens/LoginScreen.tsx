@@ -51,7 +51,6 @@ const LoginScreen = () => {
     axios
       .post("http://192.168.1.116:8000/login", userDetails)
       .then((response) => {
-        console.log("success!. response:", response);
         Alert.alert("you have been logged in", "Login was successful");
         const token = response.data.token;
 

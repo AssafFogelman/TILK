@@ -76,7 +76,6 @@ const HomeScreen = () => {
           .then((response) => {
             //save the users data to a state.
             setUsers(response.data);
-            console.log("the list of users (except you) is:", response.data);
           })
           .catch((error) => {
             console.log(
