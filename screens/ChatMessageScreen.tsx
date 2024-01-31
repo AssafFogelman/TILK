@@ -19,6 +19,7 @@ import {
   MessagesScreenNavigationProp,
   MessagesScreenRouteProp,
 } from "../types/types";
+import * as ImagePicker from "expo-image-picker";
 
 type RecipientDataType = null | { image: string; name: string };
 type ChatMessagesType =
@@ -42,6 +43,8 @@ const ChatMessageScreen = () => {
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
   const [recipientData, setRecipientData] = useState<RecipientDataType>();
   const [chatMessages, setChatMessages] = useState<ChatMessagesType>([]);
+  const [photo, setPhoto] = useState<string>("");
+
   const { userId, setUserId } = useContext(UserType);
 
   const route = useRoute<MessagesScreenRouteProp>();
@@ -70,22 +73,23 @@ const ChatMessageScreen = () => {
   }, []);
 
   //fetch chat messages
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch(
-          `http://192.168.1.116:8000/messages/getMessages/${userId}/${friendId}`
-        );
+  const fetchMessages = async () => {
+    try {
+      const response = await fetch(
+        `http://192.168.1.116:8000/messages/getMessages/${userId}/${friendId}`
+      );
 
-        const data = await response.json();
-        setChatMessages(data);
-      } catch (error) {
-        console.log(
-          "there was an error trying to fetch the chat's messages:",
-          error
-        );
-      }
-    };
+      const data = await response.json();
+      setChatMessages(data);
+    } catch (error) {
+      console.log(
+        "there was an error trying to fetch the chat's messages:",
+        error
+      );
+    }
+  };
+
+  useEffect(() => {
     fetchMessages();
   }, []);
 
@@ -184,7 +188,8 @@ const ChatMessageScreen = () => {
         setTextInput("");
         setSelectedImage("");
       }
-
+      fetchMessages();
+      //it's this a bit wasteful? we download all the messages every time you write one message?
       //! how do we show the message on the chat room screen?
 
       //resetting the text input field
@@ -199,6 +204,22 @@ const ChatMessageScreen = () => {
       minute: "2-digit",
       hour12: false,
     });
+  };
+
+  const pickPhoto = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      //videos and images
+      allowsEditing: true,
+      //alows to edit the photo/video after it is chosen
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setPhoto(result.assets[0].uri);
+    }
   };
 
   return (
@@ -232,7 +253,16 @@ const ChatMessageScreen = () => {
                 ]}
               >
                 <Text style={{ fontSize: 13 }}>{chatMessage.message}</Text>
-                <Text>{formatTime(chatMessage.timeStamp)}</Text>
+                <Text
+                  style={{
+                    fontSize: 9,
+                    color: "#545454",
+                    textAlign: "left",
+                    //if we would want a hebrew version we would need to change this...
+                  }}
+                >
+                  {formatTime(chatMessage.timeStamp)}
+                </Text>
               </Pressable>
             );
           }
@@ -281,6 +311,7 @@ const ChatMessageScreen = () => {
           name="camera"
           size={24}
           color="grey"
+          onPress={pickPhoto}
         />
 
         {/* Send button or Microphone button*/}

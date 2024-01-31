@@ -30,6 +30,16 @@
         "projectId": "01d12cfd-d957-4458-a440-f57f83e8610f"
       }
     },
-    "owner": "deepkfiz"
+    "owner": "deepkfiz",
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "To let you share photos with your friends, we need access to your photo library...",
+          "cameraPermission": "In order to take a photo, we need access to your camera...",
+          "microphonePermission": "To record audio, we need access to your microphone..."
+        }
+      ]
+    ]
   }
 }
