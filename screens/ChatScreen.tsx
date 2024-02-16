@@ -24,7 +24,8 @@ const ChatScreen = () => {
         }
       } catch (error) {
         console.log(
-          "error happened while trying to get the users friends list"
+          "error happened while trying to get the users friends list:",
+          error
         );
       }
     };

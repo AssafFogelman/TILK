@@ -1,6 +1,7 @@
 import {
   Image,
   KeyboardAvoidingView,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,7 +10,7 @@ import {
   View,
 } from "react-native";
 import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
-import { Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import EmojiSelector from "react-native-emoji-selector";
@@ -20,6 +21,7 @@ import {
   MessagesScreenRouteProp,
 } from "../types/types";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 
 type RecipientDataType = null | { image: string; name: string };
 type ChatMessagesType =
@@ -44,6 +46,7 @@ const ChatMessageScreen = () => {
   const [recipientData, setRecipientData] = useState<RecipientDataType>();
   const [chatMessages, setChatMessages] = useState<ChatMessagesType>([]);
   const [photo, setPhoto] = useState<string>("");
+  const [modalVisible, setModalVisible] = useState(false);
 
   const { userId, setUserId } = useContext(UserType);
 
@@ -156,26 +159,32 @@ const ChatMessageScreen = () => {
 
   const handleSendMessageOfType = async (
     messageType: messageTypes,
-    imageUri: URL = new URL(
-      ""
-    ) /* type URL will force me to do "const myUrl = new Url("http://whatever.com") */
+    imageUri: string
   ) => {
     try {
+      //upload the image file
+      let imagePath = await FileSystem.uploadAsync(
+        "http://192.168.1.116:8000/messages/upload-image",
+        imageUri,
+        {
+          httpMethod: "POST",
+          uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+          fieldName: "imageFile",
+        }
+      ).then((response) => response.body.split("*")[1].replaceAll("\\\\", "/"));
+      // example of "imagePath": files/image-1708103234814-333945908.jpeg
+
       const formData = new FormData();
       formData.append("senderId", userId);
       formData.append("recipientId", friendId);
       formData.append("messageType", messageType);
+      // formData.append("imagePath", imagePath);
       if (messageType === "image") {
-        formData.append(
-          "imageFile",
-          JSON.stringify({
-            uri: imageUri,
-            name: "image.jpg",
-            type: "image/jpeg",
-          })
-        );
+        formData.append("imagePath", imagePath); //!!!! TODO
+        formData.append("imageName", "image.jpeg");
+        formData.append("imageType", "image/jpeg");
       } else {
-        //messageType === "text"
+        //if messageType is "text"
         formData.append("messageText", textInput);
       }
 
@@ -185,14 +194,14 @@ const ChatMessageScreen = () => {
       }); // senderId = the user who sent the message. recipientId = the user receiving the message
 
       if (response.ok) {
+        //resetting the text input field
         setTextInput("");
+        //!selectedImage state isn't used... plus we have another state called "photo" that isn't being used
         setSelectedImage("");
       }
       fetchMessages();
-      //it's this a bit wasteful? we download all the messages every time you write one message?
+      //isn't this a bit wasteful? we download all the messages every time you write one message?
       //! how do we show the message on the chat room screen?
-
-      //resetting the text input field
     } catch (error) {
       console.log("there was a problem sending the message:", error);
     }
@@ -209,16 +218,35 @@ const ChatMessageScreen = () => {
   const pickPhoto = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       //videos and images
       allowsEditing: true,
-      //alows to edit the photo/video after it is chosen
+      //allows to edit the photo/video after it is chosen
       aspect: [4, 3],
       quality: 1,
     });
 
     if (!result.canceled) {
-      setPhoto(result.assets[0].uri);
+      handleSendMessageOfType("image", result.assets[0].uri);
+      // setPhoto(result.assets[0].uri);
+    }
+  };
+
+  const takePhoto = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      //videos and images
+      allowsEditing: true,
+      //allows to edit the photo/video after it is taken
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      handleSendMessageOfType("image", result.assets[0].uri);
+
+      // setPhoto(result.assets[0].uri);
     }
   };
 
@@ -269,6 +297,61 @@ const ChatMessageScreen = () => {
         })}
       </ScrollView>
 
+      {/* Modal for taking photos and choosing photos */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            flexDirection: "row-reverse",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            gap: 20,
+            paddingBottom: 80,
+          }}
+          onPress={() => setModalVisible(false)}
+        >
+          {/* pick photo */}
+          <Entypo
+            style={{
+              backgroundColor: "#007bff",
+              paddingVertical: 10,
+              paddingHorizontal: 10,
+              borderRadius: 25,
+            }}
+            onPress={() => {
+              setModalVisible(false);
+              pickPhoto();
+            }}
+            name="folder-images"
+            size={30}
+            color="white"
+          />
+
+          {/* take photo */}
+
+          <Entypo
+            style={{
+              backgroundColor: "#007bff",
+              paddingVertical: 10,
+              paddingHorizontal: 10,
+              borderRadius: 25,
+            }}
+            name="camera"
+            size={30}
+            onPress={() => {
+              setModalVisible(false);
+              takePhoto();
+            }}
+            color="white"
+          />
+        </Pressable>
+      </Modal>
+
       {/* chat input line */}
       <View
         style={{
@@ -278,7 +361,7 @@ const ChatMessageScreen = () => {
           paddingVertical: 10,
           borderTopWidth: 1,
           borderTopColor: "#dddddd",
-          //   marginBottom: 25,\
+          //   marginBottom: 25,
           // in the tutorial he needed the bottom margin since he had no arrows.
           // we'll see if this becomes a problem later on
         }}
@@ -308,10 +391,10 @@ const ChatMessageScreen = () => {
 
         <Entypo
           style={{ paddingStart: 8 }}
-          name="camera"
+          name="image"
           size={24}
           color="grey"
-          onPress={pickPhoto}
+          onPress={() => setModalVisible(true)}
         />
 
         {/* Send button or Microphone button*/}
@@ -328,7 +411,7 @@ const ChatMessageScreen = () => {
               paddingEnd: 12,
               borderRadius: 25,
             }}
-            onPress={() => handleSendMessageOfType("text", new URL(""))}
+            onPress={() => handleSendMessageOfType("text", "")}
           >
             <Ionicons name="send" size={24} color="white" />
           </Pressable>

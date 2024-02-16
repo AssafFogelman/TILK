@@ -7,30 +7,51 @@ const mongoose = require("mongoose");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const jwt = require("jsonwebtoken");
+const app = express();
 const multer = require("multer");
 
-//Configure multer for handling file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    //Specify the desired destination folder
-    cb(null, "files/");
-  },
-  fileName: function (req, file, cb) {
-    //Generate a unique filename for the uploaded file
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalName);
-  },
-});
-
-const upload = multer({ storage: storage });
-
-const app = express();
 app.use(cors());
 const PORT = 8000;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "files/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    //for some reason, 'req.file isn't being populated. so I'm doing it manually.
+    req.file = JSON.parse(JSON.stringify(file));
+    cb(
+      null,
+      "image" + "-" + uniqueSuffix + "." + file.originalname.split(".")[1]
+    );
+  },
+});
+
+/*
+//Configure multer for handling file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    //Specify the desired destination folder
+    cb(null, "files/");
+  },
+  filename: function (req, file, cb) {
+    //Generate a unique filename for the uploaded file
+    console.log("file:", file);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" /*+ file.originalname*/ /*);
+  },
+});
+*/
+
+const upload = multer({
+  storage: storage,
+  limits: { fieldSize: 10 * 1024 * 1024 },
+}); //10MB limit
 
 mongoose
   .connect(
@@ -294,24 +315,55 @@ app.get("/chat/:userId", async (req, res) => {
 
 //route to post messages and save them in the DB and in the "files" folder.
 
-app.post("/messages", upload.single("imageFile"), async (req, res) => {
-  try {
-    const { senderId, recipientId, messageType, messageText } = req.body;
+app.post(
+  "/messages/upload-image",
+  upload.single("imageFile"),
+  async (req, res) => {
+    try {
+      //we are adding stars to the path so we can later get it through "split()"
+      res.json({ path: "*" + req.file.path + "*" });
+      //req.file.path schema is: files\image-1708099183971-686088747
+    } catch (error) {
+      res.json({
+        message: "there was a problem uploading the file to the server",
+        error: error,
+      });
+    }
+  }
+);
 
+app.post("/messages", async (req, res) => {
+  try {
+    //the route receives the path ot the image that was given to it by the route "/messages/upload-image" in a previous fetch.
+    console.log("req.file:", req.file);
+    const {
+      senderId,
+      recipientId,
+      messageType,
+      messageText,
+      imageName,
+      imageType,
+      imagePath,
+    } = req.body;
     const newMessage = new Message({
       senderId,
       recipientId,
       messageType,
       message: messageText,
       timeStamp: new Date(),
-      //if the messageType is "text", imageUrl is defined as "null".
-      imageUrl: messageType === "image",
+      //if the messageType is "text", imageUrl will be defined as "null".
+      imageUrl: messageType === "image", //? JSON.parse(imageFile).uri : null,
+      //in the tutorial he writes the path of the file as: req.file.path
+      //but I couldn't find that in "req"
     });
     await newMessage.save();
 
-    res.status(200).json({ message: "The message was stored successfully" });
+    res.status(200).json({
+      message: "The message was stored successfully",
+    });
   } catch (error) {
     console.log("there was a problem saving the messages to the database");
+    console.log("error:", error);
     res.status(500).json({
       message: "there was a problem saving the messages to the database",
       error: error,
@@ -347,7 +399,6 @@ app.get("/messages/getMessages/:senderId/:recipientId", async (req, res) => {
   try {
     const { senderId, recipientId } = req.params;
 
-    //!shouldn't this be just "find" instead of "findOne"?
     const messages = await Message.find({
       $or: [
         { senderId: senderId, recipientId: recipientId },
