@@ -8,7 +8,6 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const jwt = require("jsonwebtoken");
 const app = express();
-const multer = require("multer");
 
 app.use(cors());
 const PORT = 8000;
@@ -17,41 +16,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "files/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    //for some reason, 'req.file isn't being populated. so I'm doing it manually.
-    req.file = JSON.parse(JSON.stringify(file));
-    cb(
-      null,
-      "image" + "-" + uniqueSuffix + "." + file.originalname.split(".")[1]
-    );
-  },
-});
-
-/*
-//Configure multer for handling file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    //Specify the desired destination folder
-    cb(null, "files/");
-  },
-  filename: function (req, file, cb) {
-    //Generate a unique filename for the uploaded file
-    console.log("file:", file);
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" /*+ file.originalname*/ /*);
-  },
-});
-*/
-
-const upload = multer({
-  storage: storage,
-  limits: { fieldSize: 10 * 1024 * 1024 },
-}); //10MB limit
+//defining multer
+const upload = require("./upload");
 
 mongoose
   .connect(
@@ -295,6 +261,20 @@ app.delete("/resetValues", async (req, res) => {
   }
 });
 
+app.delete("/deleteMessages", async (req, res) => {
+  try {
+    await Message.deleteMany({});
+
+    res.status(200).json({ message: "all messages were deleted" });
+  } catch (error) {
+    res.status(500).json({
+      message:
+        "something went wrong on the server-database side while trying to delete all messages",
+      error: error,
+    });
+  }
+});
+
 //route to get all the friends of the user
 
 app.get("/chat/:userId", async (req, res) => {
@@ -313,8 +293,9 @@ app.get("/chat/:userId", async (req, res) => {
   }
 });
 
-//route to post messages and save them in the DB and in the "files" folder.
-
+/*
+//this is a route to upload an image, and the return the image's path on the server.
+//this route is deprecated since I will be using the formData method instead.
 app.post(
   "/messages/upload-image",
   upload.single("imageFile"),
@@ -331,20 +312,14 @@ app.post(
     }
   }
 );
+*/
 
-app.post("/messages", async (req, res) => {
+//route to post messages and save them in the DB and in the "files" folder.
+
+app.post("/messages", upload.single("imageFile"), async (req, res) => {
   try {
-    //the route receives the path ot the image that was given to it by the route "/messages/upload-image" in a previous fetch.
     console.log("req.file:", req.file);
-    const {
-      senderId,
-      recipientId,
-      messageType,
-      messageText,
-      imageName,
-      imageType,
-      imagePath,
-    } = req.body;
+    const { senderId, recipientId, messageType, messageText } = req.body;
     const newMessage = new Message({
       senderId,
       recipientId,
@@ -352,9 +327,7 @@ app.post("/messages", async (req, res) => {
       message: messageText,
       timeStamp: new Date(),
       //if the messageType is "text", imageUrl will be defined as "null".
-      imageUrl: messageType === "image", //? JSON.parse(imageFile).uri : null,
-      //in the tutorial he writes the path of the file as: req.file.path
-      //but I couldn't find that in "req"
+      imageUrl: messageType === "image" ? req.file.path : null,
     });
     await newMessage.save();
 

@@ -163,6 +163,11 @@ const ChatMessageScreen = () => {
   ) => {
     try {
       //upload the image file
+
+      /*
+      //this is a way to upload the image not through a formData. 
+      //it works, but you then need to separately upload the other 
+      //data for the database
       let imagePath = await FileSystem.uploadAsync(
         "http://192.168.1.116:8000/messages/upload-image",
         imageUri,
@@ -173,6 +178,7 @@ const ChatMessageScreen = () => {
         }
       ).then((response) => response.body.split("*")[1].replaceAll("\\\\", "/"));
       // example of "imagePath": files/image-1708103234814-333945908.jpeg
+      */
 
       const formData = new FormData();
       formData.append("senderId", userId);
@@ -180,9 +186,11 @@ const ChatMessageScreen = () => {
       formData.append("messageType", messageType);
       // formData.append("imagePath", imagePath);
       if (messageType === "image") {
-        formData.append("imagePath", imagePath); //!!!! TODO
-        formData.append("imageName", "image.jpeg");
-        formData.append("imageType", "image/jpeg");
+        formData.append("imageFile", {
+          uri: imageUri,
+          name: "Image.jpg",
+          type: "image/jpeg",
+        } as unknown as Blob);
       } else {
         //if messageType is "text"
         formData.append("messageText", textInput);
@@ -293,6 +301,12 @@ const ChatMessageScreen = () => {
                 </Text>
               </Pressable>
             );
+          }
+          if (chatMessage.messageType === "image") {
+            const baseUrl = "C:/programming/_chat_app/chat-app/api/files";
+            const imageUrl = chatMessage.imageUrl;
+            console.log("imageUrl:", imageUrl); //the slashes might be opposites...
+            // const filename = imageUrl.split("");
           }
         })}
       </ScrollView>

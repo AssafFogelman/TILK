@@ -15,8 +15,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("Aa123456!"); //! change this, right?
+  const [email, setEmail] = useState("assaf.fogelman@gmail.com"); //! change this, right?
+  const [password, setPassword] = useState("Aa123456!"); //! change this too, right?
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   // useEffect(() => {
@@ -78,6 +78,19 @@ const LoginScreen = () => {
     }
   };
 
+  const deleteAllMessages = async () => {
+    try {
+      const response = await fetch("http://192.168.1.116:8000/deleteMessages", {
+        method: "DELETE",
+      });
+      if (response.ok) console.log("all the users' messages were deleted");
+    } catch (error) {
+      console.log(
+        "there was an error trying to reach the server in order to delete the users' messages"
+      );
+    }
+  };
+
   return (
     <View style={styles.container}>
       <KeyboardAvoidingView>
@@ -105,7 +118,7 @@ const LoginScreen = () => {
               placeholderTextColor={"black"}
               placeholder="Enter Your Email"
               value={email}
-              onChangeText={(text) => setEmail(text)}
+              onChangeText={(text) => setEmail(text.toLocaleLowerCase())}
             />
           </View>
           <View style={{ marginTop: 10 }}>
@@ -182,6 +195,29 @@ const LoginScreen = () => {
           >
             <Text style={{ color: "white", textAlign: "center" }}>
               Reset all user values
+            </Text>
+          </Pressable>
+        </View>
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 60,
+          }}
+        >
+          <Pressable
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+
+              width: 150,
+              height: 50,
+              backgroundColor: "red",
+            }}
+            onPress={deleteAllMessages}
+          >
+            <Text style={{ color: "white", textAlign: "center" }}>
+              Delete all messages
             </Text>
           </Pressable>
         </View>
