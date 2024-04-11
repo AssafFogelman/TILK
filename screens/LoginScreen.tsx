@@ -91,6 +91,24 @@ const LoginScreen = () => {
     }
   };
 
+  //! delete me !
+  // const deleteOnlyMe = async () => {
+  //   try {
+  //     const messageIdsToDelete: object[] = [];
+
+  //     const response = await axios.delete(
+  //       "http://192.168.1.116:8000/messages",
+  //       {
+  //         data: messageIdsToDelete,
+  //       }
+  //     );
+  //     if (response.status === 200)
+  //       console.log("the specific message was ordered to be deleted!");
+  //   } catch (error) {
+  //     console.log("there was an error deleting a specific message");
+  //   }
+  // };
+
   return (
     <View style={styles.container}>
       <KeyboardAvoidingView>

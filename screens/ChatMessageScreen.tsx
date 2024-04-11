@@ -22,31 +22,32 @@ import {
 } from "../types/types";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import styles from "../styles/styles";
 
 type RecipientDataType = null | { image: string; name: string };
-type ChatMessagesType =
-  | []
-  | [
-      {
-        __v: string;
-        _id: string;
-        imageUrl: string;
-        messageType: string;
-        recipientId: string;
-        senderId: { _id: string; name: string };
-        timeStamp: string;
-        message: string;
-      }
-    ];
+
+type ChatMessageType = {
+  __v: string;
+  _id: string;
+  imageUrl: string;
+  messageType: string;
+  recipientId: string;
+  senderId: { _id: string; name: string };
+  timeStamp: string;
+  message: string;
+};
+
+type MessageIdType = { _id: string };
 
 const ChatMessageScreen = () => {
   const [textInput, setTextInput] = useState("");
   const [selectedImage, setSelectedImage] = useState("");
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
   const [recipientData, setRecipientData] = useState<RecipientDataType>();
-  const [chatMessages, setChatMessages] = useState<ChatMessagesType>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
   const [photo, setPhoto] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedMessages, setSelectedMessages] = useState<MessageIdType[]>([]);
 
   const { userId, setUserId } = useContext(UserType);
 
@@ -258,6 +259,25 @@ const ChatMessageScreen = () => {
     }
   };
 
+  const handleSelectMessage = (chatMessage: ChatMessageType) => {
+    //check if the message is already selected (in the selected messages array)
+    const isSelected = selectedMessages.find(
+      (item) => item._id === chatMessage._id
+    ); //if the find method can't find anything, it returnd "undefined".
+    if (isSelected) {
+      //remove from selected messages array
+      setSelectedMessages((currentArray) =>
+        currentArray.filter((item) => item._id !== chatMessage._id)
+      );
+    } else {
+      //add to selected messages array
+      setSelectedMessages((currentArray) => [
+        ...currentArray,
+        { _id: chatMessage._id },
+      ]);
+    }
+  };
+
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#F0F0F0" }}>
       <ScrollView>
@@ -266,34 +286,24 @@ const ChatMessageScreen = () => {
           if (chatMessage.messageType === "text") {
             return (
               <Pressable
+                onLongPress={() => {
+                  handleSelectMessage(chatMessage);
+                }}
                 key={index}
                 /* if the message comes from the user, append certain styles */
                 style={[
                   chatMessage.senderId._id === userId
-                    ? {
-                        alignSelf: "flex-end",
-                        backgroundColor: "#9ab5e3",
-                        padding: 8,
-                        maxWidth: "60%",
-                        borderRadius: 10,
-                        margin: 10,
-                      }
-                    : {
-                        alignSelf: "flex-start",
-                        backgroundColor: "#ccdaf1",
-                        padding: 8,
-                        maxWidth: "60%",
-                        borderRadius: 10,
-                        margin: 10,
-                      },
+                    ? styles.chatMessageScreen_userMessage
+                    : styles.chatMessageScreen_recipientMessage,
                 ]}
               >
                 <Text style={{ fontSize: 13 }}>{chatMessage.message}</Text>
                 <Text
                   style={{
-                    fontSize: 9,
+                    fontSize: 10,
+                    fontWeight: "500",
                     color: "#545454",
-                    textAlign: "left",
+                    textAlign: "right",
                     //if we would want a hebrew version we would need to change this...
                   }}
                 >
@@ -303,10 +313,41 @@ const ChatMessageScreen = () => {
             );
           }
           if (chatMessage.messageType === "image") {
-            const baseUrl = "C:/programming/_chat_app/chat-app/api/files";
-            const imageUrl = chatMessage.imageUrl;
-            console.log("imageUrl:", imageUrl); //the slashes might be opposites...
-            // const filename = imageUrl.split("");
+            const baseUrl = process.env.EXPO_PUBLIC_BASE_ADDRESS_OF_THE_SERVER; //ex.: http://192.168.1.116:8000/
+            const relativeImagePath = chatMessage.imageUrl; //ex.: files/Image-1712659253536-488794165.jpg
+            const imageSource = { uri: baseUrl + relativeImagePath };
+            return (
+              <Pressable
+                key={index}
+                /* if the message comes from the user, append certain styles */
+                style={[
+                  chatMessage.senderId._id === userId
+                    ? styles.chatMessageScreen_userMessage
+                    : styles.chatMessageScreen_recipientMessage,
+                ]}
+              >
+                <View>
+                  <Image
+                    source={imageSource}
+                    style={{ width: 200, height: 200, borderRadius: 7 }}
+                  ></Image>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: "500",
+                      color: "white",
+                      position: "absolute",
+                      bottom: 5,
+                      right: 5,
+
+                      //if we would want a hebrew version we would need to change this...
+                    }}
+                  >
+                    {formatTime(chatMessage.timeStamp)}
+                  </Text>
+                </View>
+              </Pressable>
+            );
           }
         })}
       </ScrollView>
@@ -458,5 +499,3 @@ const ChatMessageScreen = () => {
 };
 
 export default ChatMessageScreen;
-
-const styles = StyleSheet.create({});

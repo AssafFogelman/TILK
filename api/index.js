@@ -8,6 +8,8 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const jwt = require("jsonwebtoken");
 const app = express();
+//file system module for using a pathname
+const path = require("node:path");
 
 app.use(cors());
 const PORT = 8000;
@@ -40,6 +42,15 @@ app.listen(PORT, () => {
 
 const User = require("./models/user");
 const Message = require("./models/message");
+
+//configuring a static public directory of "files"
+app.use(express.static(path.join(__dirname, "files")));
+
+//if the application seeks a filename in "files", give it to it
+app.get("/files/:filename", (req, res) => {
+  const { filename } = req.params;
+  res.sendFile(path.join(__dirname, "files", filename));
+});
 
 //endpoint for registration of the user:
 
@@ -319,6 +330,12 @@ app.post(
 app.post("/messages", upload.single("imageFile"), async (req, res) => {
   try {
     console.log("req.file:", req.file);
+    //we are replacing the "\" with "/" for the database.
+    let correctedImagePath = req.file?.path.replace(
+      String.fromCharCode(92),
+      "/"
+    );
+
     const { senderId, recipientId, messageType, messageText } = req.body;
     const newMessage = new Message({
       senderId,
@@ -327,7 +344,7 @@ app.post("/messages", upload.single("imageFile"), async (req, res) => {
       message: messageText,
       timeStamp: new Date(),
       //if the messageType is "text", imageUrl will be defined as "null".
-      imageUrl: messageType === "image" ? req.file.path : null,
+      imageUrl: messageType === "image" ? correctedImagePath : null,
     });
     await newMessage.save();
 
@@ -387,6 +404,27 @@ app.get("/messages/getMessages/:senderId/:recipientId", async (req, res) => {
     res.status(500).json({
       message: "there was a problem retrieving the chat room messages",
       error,
+    });
+  }
+});
+
+//delete selected messages
+
+app.delete("/messages", async (req, res) => {
+  try {
+    const messageIdsToDelete = req.body;
+
+    console.log("messageIdsToDelete:", messageIdsToDelete);
+
+    await Message.deleteMany({ _id: { $in: messageIdsToDelete } });
+    res
+      .status(200)
+      .json({ message: "the messages were deleted successfully!" });
+  } catch (error) {
+    console.log("there was a problem deleting the messages:", error);
+    res.status(500).json({
+      message: "there was a problem deleting the messages",
+      error: error,
     });
   }
 });
