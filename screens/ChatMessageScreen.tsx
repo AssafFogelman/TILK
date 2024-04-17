@@ -4,40 +4,29 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
-import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import EmojiSelector from "react-native-emoji-selector";
 import { UserType } from "../UserContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
+  ChatMessageType,
+  MessageIdType,
   MessagesScreenNavigationProp,
   MessagesScreenRouteProp,
 } from "../types/types";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
-import styles from "../styles/styles";
+import axios from "axios";
+import ChatMessage from "../components/chatMessage";
+import ChatTimestamp from "../components/ChatTimestamp";
 
 type RecipientDataType = null | { image: string; name: string };
-
-type ChatMessageType = {
-  __v: string;
-  _id: string;
-  imageUrl: string;
-  messageType: string;
-  recipientId: string;
-  senderId: { _id: string; name: string };
-  timeStamp: string;
-  message: string;
-};
-
-type MessageIdType = { _id: string };
 
 const ChatMessageScreen = () => {
   const [textInput, setTextInput] = useState("");
@@ -48,12 +37,24 @@ const ChatMessageScreen = () => {
   const [photo, setPhoto] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<MessageIdType[]>([]);
+  const scrollViewRef = useRef<null | ScrollView>(null);
 
   const { userId, setUserId } = useContext(UserType);
 
   const route = useRoute<MessagesScreenRouteProp>();
   const navigation = useNavigation<MessagesScreenNavigationProp>();
   const { friendId } = route.params;
+
+  //scroll the messages feed to the bottom at the entrance
+  useEffect(() => {
+    scrollToBottom();
+  }, []);
+
+  const scrollToBottom = () => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: false });
+    }
+  };
 
   //fetch recipient data
   useEffect(() => {
@@ -109,6 +110,7 @@ const ChatMessageScreen = () => {
             gap: 10,
           }}
         >
+          {/* the back arrow icon */}
           <Ionicons
             onPress={() => navigation.goBack()}
             name="arrow-back"
@@ -116,6 +118,47 @@ const ChatMessageScreen = () => {
             color="black"
           />
 
+          {/* if there are selected messages, show their amount. if not, show chat recipient details */}
+          {selectedMessages.length > 0 ? (
+            <View>
+              <Text style={{ fontSize: 16, fontWeight: "500" }}>
+                {selectedMessages.length}
+              </Text>
+            </View>
+          ) : (
+            <View
+              style={{
+                flexDirection: "row-reverse",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              {recipientData ? (
+                recipientData.image ? (
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      borderRadius: 15,
+                      resizeMode: "cover",
+                    }}
+                    source={{
+                      uri: recipientData.image,
+                    }}
+                  />
+                ) : null
+              ) : null}
+
+              <Text style={{ fontSize: 15, fontWeight: "500" }}>
+                {recipientData?.name}
+              </Text>
+            </View>
+          )}
+        </View>
+      ),
+      headerRight: () =>
+        // shows only if the user selected messages
+        selectedMessages.length > 0 ? (
           <View
             style={{
               flexDirection: "row-reverse",
@@ -123,35 +166,46 @@ const ChatMessageScreen = () => {
               gap: 10,
             }}
           >
-            {recipientData ? (
-              recipientData.image ? (
-                <Image
-                  style={{
-                    height: 30,
-                    width: 30,
-                    borderRadius: 15,
-                    resizeMode: "cover",
-                  }}
-                  source={{
-                    uri: recipientData.image,
-                  }}
-                />
-              ) : null
-            ) : null}
-
-            <Text style={{ fontSize: 15, fontWeight: "500" }}>
-              {recipientData?.name}
-            </Text>
+            <MaterialIcons
+              onPress={() => {
+                deleteSelectedMessages(selectedMessages);
+              }}
+              name="delete"
+              size={24}
+              color="black"
+            />
           </View>
-        </View>
-      ),
+        ) : null,
     });
-  }, [recipientData]);
+  }, [recipientData, selectedMessages]);
 
   /* we have a problem that if we don't put "recipientData" as a dependency of the "useEffect", 
   it will not load besides the first time we enter the chat screen. however, this makes it much slower. 
   there might be a faster way. try to solve this in the future. */
 
+  const handleContainerSizeChange = () => {};
+
+  const deleteSelectedMessages = async (
+    messageIdsToDelete: MessageIdType[]
+  ) => {
+    try {
+      const response = await axios.delete("/messages", {
+        data: messageIdsToDelete,
+      });
+      //if the deletion process succeeded, reload the messages,
+      //and remove these messages from the selected messages array.
+      if (response.status === 200) {
+        fetchMessages();
+        setSelectedMessages((currentArray) =>
+          currentArray.filter(
+            (messageId) => !messageIdsToDelete.includes(messageId)
+          )
+        );
+      }
+    } catch (error) {
+      console.log("there was a problem deleting the selected messages:", error);
+    }
+  };
   const handleEmojiPress = () => {
     setShowEmojiSelector((currentState) => !currentState);
   };
@@ -216,14 +270,6 @@ const ChatMessageScreen = () => {
     }
   };
 
-  const formatTime = (time: string) => {
-    return new Date(time).toLocaleString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
-
   const pickPhoto = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -259,97 +305,30 @@ const ChatMessageScreen = () => {
     }
   };
 
-  const handleSelectMessage = (chatMessage: ChatMessageType) => {
-    //check if the message is already selected (in the selected messages array)
-    const isSelected = selectedMessages.find(
-      (item) => item._id === chatMessage._id
-    ); //if the find method can't find anything, it returnd "undefined".
-    if (isSelected) {
-      //remove from selected messages array
-      setSelectedMessages((currentArray) =>
-        currentArray.filter((item) => item._id !== chatMessage._id)
-      );
-    } else {
-      //add to selected messages array
-      setSelectedMessages((currentArray) => [
-        ...currentArray,
-        { _id: chatMessage._id },
-      ]);
-    }
-  };
-
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#F0F0F0" }}>
-      <ScrollView>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={{ flexGrow: 1 }}
+        onContentSizeChange={scrollToBottom}
+      >
         {/* chat messages go here */}
-        {chatMessages.map((chatMessage, index) => {
-          if (chatMessage.messageType === "text") {
-            return (
-              <Pressable
-                onLongPress={() => {
-                  handleSelectMessage(chatMessage);
-                }}
-                key={index}
-                /* if the message comes from the user, append certain styles */
-                style={[
-                  chatMessage.senderId._id === userId
-                    ? styles.chatMessageScreen_userMessage
-                    : styles.chatMessageScreen_recipientMessage,
-                ]}
-              >
-                <Text style={{ fontSize: 13 }}>{chatMessage.message}</Text>
-                <Text
-                  style={{
-                    fontSize: 10,
-                    fontWeight: "500",
-                    color: "#545454",
-                    textAlign: "right",
-                    //if we would want a hebrew version we would need to change this...
-                  }}
-                >
-                  {formatTime(chatMessage.timeStamp)}
-                </Text>
-              </Pressable>
-            );
-          }
-          if (chatMessage.messageType === "image") {
-            const baseUrl = process.env.EXPO_PUBLIC_BASE_ADDRESS_OF_THE_SERVER; //ex.: http://192.168.1.116:8000/
-            const relativeImagePath = chatMessage.imageUrl; //ex.: files/Image-1712659253536-488794165.jpg
-            const imageSource = { uri: baseUrl + relativeImagePath };
-            return (
-              <Pressable
-                key={index}
-                /* if the message comes from the user, append certain styles */
-                style={[
-                  chatMessage.senderId._id === userId
-                    ? styles.chatMessageScreen_userMessage
-                    : styles.chatMessageScreen_recipientMessage,
-                ]}
-              >
-                <View>
-                  <Image
-                    source={imageSource}
-                    style={{ width: 200, height: 200, borderRadius: 7 }}
-                  ></Image>
-                  <Text
-                    style={{
-                      fontSize: 10,
-                      fontWeight: "500",
-                      color: "white",
-                      position: "absolute",
-                      bottom: 5,
-                      right: 5,
-
-                      //if we would want a hebrew version we would need to change this...
-                    }}
-                  >
-                    {formatTime(chatMessage.timeStamp)}
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          }
-        })}
+        {chatMessages.map((chatMessage, index) => (
+          <View key={index}>
+            <ChatTimestamp
+              chatMessage={chatMessage}
+              index={index}
+              previousMessageTimestamp={
+                chatMessages[index ? index - 1 : 0].timeStamp
+              }
+            />
+            <ChatMessage
+              chatMessage={chatMessage}
+              selectedMessages={selectedMessages}
+              setSelectedMessages={setSelectedMessages}
+            />
+          </View>
+        ))}
       </ScrollView>
 
       {/* Modal for taking photos and choosing photos */}

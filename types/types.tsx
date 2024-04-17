@@ -8,7 +8,7 @@ export type StackParamList = {
   Home: undefined; //there are no params that are sent to this screen
   Friends: undefined; //there are no params that are sent to this screen
   Chats: undefined; //there are no params that are sent to this screen
-  Messages: {friendId: string }; //this screen will receive a param named "friendID" of type string */;
+  Messages: { friendId: string }; //this screen will receive a param named "friendID" of type string */;
 };
 
 //this is the type for the useRoute() in "Messages" Screen
@@ -19,3 +19,16 @@ export type MessagesScreenNavigationProp = NativeStackNavigationProp<
   StackParamList,
   "Messages"
 >;
+
+export type ChatMessageType = {
+  __v: string;
+  _id: string;
+  imageUrl: string;
+  messageType: string;
+  recipientId: string;
+  senderId: { _id: string; name: string };
+  timeStamp: string;
+  message: string;
+};
+
+export type MessageIdType = string;

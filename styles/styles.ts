@@ -17,6 +17,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 10,
   },
+  chatMessageScreen_selectedMessage: {
+    borderWidth: 1,
+    backgroundColor: "#4663ac",
+  },
 });
 
 export default styles;

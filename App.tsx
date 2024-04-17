@@ -12,6 +12,10 @@ import { StyleSheet, Text, View } from "react-native";
 import StackNavigator from "./StackNavigator";
 import { UserContext } from "./UserContext";
 
+import axios from "axios";
+/* config axios */
+axios.defaults.baseURL = process.env.EXPO_PUBLIC_BASE_ADDRESS_OF_THE_SERVER;
+
 export default function App() {
   return (
     <>
