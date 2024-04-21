@@ -169,6 +169,32 @@ app.post("/request-friendship", async (req, res) => {
   }
 });
 
+//route to accept a friend request
+
+app.post("/accept-friendship", async (req, res) => {
+  const { accepted_id, asked_id } = req.body;
+  try {
+    //update the accepting user's friend and "received friend request" array
+    await User.findByIdAndUpdate(accepted_id, {
+      $push: { friends: asked_id },
+      $pull: { receivedFriendRequests: asked_id },
+    });
+
+    //update the asking user's friend and "sent friend request" array
+    await User.findByIdAndUpdate(asked_id, {
+      $push: { friends: accepted_id },
+      $pull: { sentFriendRequests: accepted_id },
+    });
+
+    res.sendStatus(200);
+  } catch (err) {
+    res.sendStatus(500).json({
+      message: "an error occurred while trying to process the friend request:",
+      error: err,
+    });
+  }
+});
+
 // route to show all the friend requests the user received
 
 app.get("/friend-requests/:userId", async (req, res) => {

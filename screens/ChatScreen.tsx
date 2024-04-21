@@ -1,13 +1,11 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { UserType } from "../UserContext";
-import { useNavigation } from "@react-navigation/native";
 import UserChat from "../components/UserChat";
 
 const ChatScreen = () => {
   const [friendsList, setFriendsList] = useState([]);
   const { userId, setUserId } = useContext(UserType);
-  const navigation = useNavigation();
 
   useEffect(() => {
     //get friends data

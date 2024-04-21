@@ -30,11 +30,9 @@ type RecipientDataType = null | { image: string; name: string };
 
 const ChatMessageScreen = () => {
   const [textInput, setTextInput] = useState("");
-  const [selectedImage, setSelectedImage] = useState("");
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
   const [recipientData, setRecipientData] = useState<RecipientDataType>();
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
-  const [photo, setPhoto] = useState<string>("");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<MessageIdType[]>([]);
   const scrollViewRef = useRef<null | ScrollView>(null);
@@ -49,12 +47,6 @@ const ChatMessageScreen = () => {
   useEffect(() => {
     scrollToBottom();
   }, []);
-
-  const scrollToBottom = () => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({ animated: false });
-    }
-  };
 
   //fetch recipient data
   useEffect(() => {
@@ -112,7 +104,7 @@ const ChatMessageScreen = () => {
         >
           {/* the back arrow icon */}
           <Ionicons
-            onPress={() => navigation.goBack()}
+            onPress={handleGoBack}
             name="arrow-back"
             size={24}
             color="black"
@@ -183,7 +175,15 @@ const ChatMessageScreen = () => {
   it will not load besides the first time we enter the chat screen. however, this makes it much slower. 
   there might be a faster way. try to solve this in the future. */
 
-  const handleContainerSizeChange = () => {};
+  const scrollToBottom = () => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: false });
+    }
+  };
+
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
 
   const deleteSelectedMessages = async (
     messageIdsToDelete: MessageIdType[]
@@ -259,12 +259,9 @@ const ChatMessageScreen = () => {
       if (response.ok) {
         //resetting the text input field
         setTextInput("");
-        //!selectedImage state isn't used... plus we have another state called "photo" that isn't being used
-        setSelectedImage("");
       }
       fetchMessages();
       //isn't this a bit wasteful? we download all the messages every time you write one message?
-      //! how do we show the message on the chat room screen?
     } catch (error) {
       console.log("there was a problem sending the message:", error);
     }

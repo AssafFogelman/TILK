@@ -74,7 +74,7 @@ const HomeScreen = () => {
         axios
           .get("http://192.168.1.116:8000/users/" + decodedToken.userId)
           .then((response) => {
-            //save the users data to a state.
+            //save the users' data to a state.
             setUsers(response.data);
           })
           .catch((error) => {

@@ -20,6 +20,11 @@ export type MessagesScreenNavigationProp = NativeStackNavigationProp<
   "Messages"
 >;
 
+export type HomeScreenNavigationProp = NativeStackNavigationProp<
+  StackParamList,
+  "Home"
+>;
+
 export type ChatMessageType = {
   __v: string;
   _id: string;

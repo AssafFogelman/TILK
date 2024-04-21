@@ -64,7 +64,9 @@ const UserChat = ({ friend }: { friend: friendType }) => {
       }}
       onPress={() => {
         //we are also sending the friend's Id
-        navigation.navigate("Messages", { friendId: friend._id });
+        navigation.navigate("Messages", {
+          friendId: friend._id,
+        });
       }}
     >
       <Image
