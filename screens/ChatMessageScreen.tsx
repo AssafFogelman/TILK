@@ -12,7 +12,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
-import EmojiSelector from "react-native-emoji-selector";
+import EmojiSelector, { Categories } from "react-native-emoji-selector";
 import { UserType } from "../UserContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
@@ -303,134 +303,134 @@ const ChatMessageScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#F0F0F0" }}>
-      <ScrollView
-        ref={scrollViewRef}
-        contentContainerStyle={{ flexGrow: 1 }}
-        onContentSizeChange={scrollToBottom}
-      >
-        {/* chat messages go here */}
-        {chatMessages.map((chatMessage, index) => (
-          <View key={index}>
-            <ChatTimestamp
-              chatMessage={chatMessage}
-              index={index}
-              previousMessageTimestamp={
-                chatMessages[index ? index - 1 : 0].timeStamp
-              }
-            />
-            <ChatMessage
-              chatMessage={chatMessage}
-              selectedMessages={selectedMessages}
-              setSelectedMessages={setSelectedMessages}
-            />
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* Modal for taking photos and choosing photos */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <Pressable
-          style={{
-            flex: 1,
-            flexDirection: "row-reverse",
-            alignItems: "flex-end",
-            justifyContent: "center",
-            gap: 20,
-            paddingBottom: 80,
-          }}
-          onPress={() => setModalVisible(false)}
+    <>
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#F0F0F0" }}>
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={{ flexGrow: 1 }}
+          onContentSizeChange={scrollToBottom}
         >
-          {/* pick photo */}
-          <Entypo
+          {/* chat messages go here */}
+          {chatMessages.map((chatMessage, index) => (
+            <View key={index}>
+              <ChatTimestamp
+                chatMessage={chatMessage}
+                index={index}
+                previousMessageTimestamp={
+                  chatMessages[index ? index - 1 : 0].timeStamp
+                }
+              />
+              <ChatMessage
+                chatMessage={chatMessage}
+                selectedMessages={selectedMessages}
+                setSelectedMessages={setSelectedMessages}
+              />
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Modal for taking photos and choosing photos */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <Pressable
             style={{
-              backgroundColor: "#007bff",
-              paddingVertical: 10,
-              paddingHorizontal: 10,
-              borderRadius: 25,
+              flex: 1,
+              flexDirection: "row-reverse",
+              alignItems: "flex-end",
+              justifyContent: "center",
+              gap: 20,
+              paddingBottom: 80,
             }}
-            onPress={() => {
-              setModalVisible(false);
-              pickPhoto();
-            }}
-            name="folder-images"
-            size={30}
-            color="white"
-          />
+            onPress={() => setModalVisible(false)}
+          >
+            {/* pick photo */}
+            <Entypo
+              style={{
+                backgroundColor: "#007bff",
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+                borderRadius: 25,
+              }}
+              onPress={() => {
+                setModalVisible(false);
+                pickPhoto();
+              }}
+              name="folder-images"
+              size={30}
+              color="white"
+            />
 
-          {/* take photo */}
+            {/* take photo */}
 
-          <Entypo
-            style={{
-              backgroundColor: "#007bff",
-              paddingVertical: 10,
-              paddingHorizontal: 10,
-              borderRadius: 25,
-            }}
-            name="camera"
-            size={30}
-            onPress={() => {
-              setModalVisible(false);
-              takePhoto();
-            }}
-            color="white"
-          />
-        </Pressable>
-      </Modal>
+            <Entypo
+              style={{
+                backgroundColor: "#007bff",
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+                borderRadius: 25,
+              }}
+              name="camera"
+              size={30}
+              onPress={() => {
+                setModalVisible(false);
+                takePhoto();
+              }}
+              color="white"
+            />
+          </Pressable>
+        </Modal>
 
-      {/* chat input line */}
-      <View
-        style={{
-          flexDirection: "row-reverse",
-          alignItems: "center",
-          paddingHorizontal: 10,
-          paddingVertical: 10,
-          borderTopWidth: 1,
-          borderTopColor: "#dddddd",
-          //   marginBottom: 25,
-          // in the tutorial he needed the bottom margin since he had no arrows.
-          // we'll see if this becomes a problem later on
-        }}
-      >
-        <Entypo
-          onPress={handleEmojiPress}
-          style={{ marginStart: 6 }}
-          name={showEmojiSelector ? "circle-with-cross" : "emoji-happy"}
-          size={24}
-          color="grey"
-        />
-        <TextInput
+        {/* chat input line */}
+        <View
           style={{
-            flex: 1,
-            height: 40,
-            borderWidth: 1,
-            borderColor: "#dddddd",
-            borderRadius: 20,
+            flexDirection: "row-reverse",
+            alignItems: "center",
             paddingHorizontal: 10,
+            paddingVertical: 10,
+            borderTopWidth: 1,
+            borderTopColor: "#dddddd",
+            //   marginBottom: 25,
+            // in the tutorial he needed the bottom margin since he had no arrows.
+            // we'll see if this becomes a problem later on
           }}
-          placeholder="Type your message"
-          value={textInput}
-          onChangeText={(text) => {
-            setTextInput(text);
-          }}
-        />
+        >
+          <Entypo
+            onPress={handleEmojiPress}
+            style={{ marginStart: 6 }}
+            name={showEmojiSelector ? "circle-with-cross" : "emoji-happy"}
+            size={24}
+            color="grey"
+          />
+          <TextInput
+            style={{
+              flex: 1,
+              height: 40,
+              borderWidth: 1,
+              borderColor: "#dddddd",
+              borderRadius: 20,
+              paddingHorizontal: 10,
+            }}
+            placeholder="Type your message"
+            value={textInput}
+            onChangeText={(text) => {
+              setTextInput(text);
+            }}
+          />
 
-        <Entypo
-          style={{ paddingStart: 8 }}
-          name="image"
-          size={24}
-          color="grey"
-          onPress={() => setModalVisible(true)}
-        />
+          <Entypo
+            style={{ paddingStart: 8 }}
+            name="image"
+            size={24}
+            color="grey"
+            onPress={() => setModalVisible(true)}
+          />
 
-        {/* Send button or Microphone button*/}
+          {/* Send button */}
 
-        {textInput ? (
           <Pressable
             style={{
               backgroundColor: "#007bff",
@@ -443,26 +443,25 @@ const ChatMessageScreen = () => {
               borderRadius: 25,
             }}
             onPress={() => handleSendMessageOfType("text", "")}
+            disabled={!textInput}
           >
             <Ionicons name="send" size={24} color="white" />
           </Pressable>
-        ) : (
-          <Pressable
-            style={{
-              backgroundColor: "#007bff",
-              paddingVertical: 10,
-              paddingHorizontal: 14,
-              borderRadius: 25,
-              marginEnd: 15,
-              marginStart: 9,
-            }}
-          >
-            <FontAwesome name="microphone" size={24} color="white" />
-          </Pressable>
-        )}
-      </View>
+        </View>
+        {/* {showEmojiSelector && (
+        <EmojiSelector
+          category={Categories.emotion}
+          columns={12}
+          showSearchBar={false}
+          onEmojiSelected={(emoji) => {
+            setTextInput((currentText) => currentText + emoji);
+          }}
+        />
+      )} */}
+      </KeyboardAvoidingView>
       {showEmojiSelector && (
         <EmojiSelector
+          category={Categories.emotion}
           columns={12}
           showSearchBar={false}
           onEmojiSelected={(emoji) => {
@@ -470,7 +469,7 @@ const ChatMessageScreen = () => {
           }}
         />
       )}
-    </KeyboardAvoidingView>
+    </>
   );
 };
 

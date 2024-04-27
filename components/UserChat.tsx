@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { UserType } from "../UserContext";
 import axios from "axios";
 import { ChatMessageType } from "../types/types";
-import formatDate from "../functions/formatDate";
+import formatDate from "../services/formatDate";
 
 type friendType = {
   _id: string;

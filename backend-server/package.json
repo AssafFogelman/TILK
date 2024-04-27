@@ -1,11 +1,28 @@
 {
   "name": "tilk-backend-server",
+  "type": "module",
   "version": "1.0.0",
   "description": "tilk-backend-server",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx watch main.ts",
+    "db:generate": "npx drizzle-kit generate:pg",
+    "db:migrate": "tsx src/drizzle/migrate.ts"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Assaf Fogelman",
+  "license": "ISC",
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^20.12.7",
+    "drizzle-kit": "^0.20.17",
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.30.8",
+    "node": "^22.0.0",
+    "pg": "^8.11.5",
+    "postgres": "^3.4.4"
+  }
 }
