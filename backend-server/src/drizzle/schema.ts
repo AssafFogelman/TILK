@@ -46,7 +46,7 @@ export const users = pgTable("users", {
   created: timestamp("created").default(sql`CURRENT_TIMESTAMP`),
   //is the user currently connected
   connected: boolean("connected").default(true),
-  locationDate: timestamp("location_date").default(new Date(0)),
+  locationDate: timestamp("location_date"),
 });
 /*
 uuid - a long long string for Ids
@@ -68,7 +68,7 @@ we also added a column named "location" of type "geometry".
 we did that through the sql editor in Neon. Because Drizzle couldn't handle it.
 This is the sql code line: 
 `ALTER TABLE "users" ADD COLUMN "location" geometry(POINT,4326);`);
-BTW, 4326 is the SRID number, which is a covention for caculating areas and distances.
+BTW, 4326 is the SRID number, which is a convention for calculating areas and distances.
 It is the default SRID of postGIS. 
 */
 
@@ -307,8 +307,8 @@ export const chatMessages = pgTable("chat_messages", {
     .notNull()
     .references(() => users.userId),
   type: messageTypeEnum("type").notNull(),
-  imageURI: text("image_URI").default(""),
-  text: text("text").default(""),
+  imageURI: text("image_URI"), //if not image, don't insert anything, and it will be null
+  text: text("text"), //if not text, don't insert anything, and it will be null
   unread: boolean("unread").default(true).notNull(),
   receivedSuccessfully: boolean("received_successfully")
     .default(false)
@@ -359,8 +359,8 @@ export const events = pgTable("events", {
   this event. the field "relevant_table_primary_key" records just that.
   */
   relevantTablePrimaryKey: uuid("relevant_table_primary_key").notNull(),
-  //location_as_text is only relevant when storing location history of a user
-  locationAsText: text("location_as_text").default(""),
+  //location_as_text is only relevant when storing location history of a user, else it is null
+  locationAsText: text("location_as_text"),
 });
 
 export const eventsRelations = relations(events, ({ one }) => ({
