@@ -359,6 +359,8 @@ export const events = pgTable("events", {
   this event. the field "relevant_table_primary_key" records just that.
   */
   relevantTablePrimaryKey: uuid("relevant_table_primary_key").notNull(),
+  //location_as_text is only relevant when storing location history of a user
+  locationAsText: text("location_as_text").default(""),
 });
 
 export const eventsRelations = relations(events, ({ one }) => ({
@@ -380,6 +382,8 @@ export const tablesEnum = pgEnum("tables_enum", [
   "chat_messages",
   "tags",
   "tag_templates",
+  "tag_categories",
+  "notificationTemplates",
 ]);
 
 export const eventTypes = pgTable("event_types", {
