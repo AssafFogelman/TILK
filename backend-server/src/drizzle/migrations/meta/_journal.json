@@ -22,6 +22,13 @@
       "when": 1714229979522,
       "tag": "0002_great_ronan",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1714465628902,
+      "tag": "0003_fair_sentry",
+      "breakpoints": true
     }
   ]
 }

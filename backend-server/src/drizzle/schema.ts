@@ -9,6 +9,7 @@ import {
   pgEnum,
   boolean,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 //declaring an enum
@@ -25,6 +26,9 @@ export const users = pgTable("users", {
     user_id: serial("user_id").primaryKey()
     which would have auto incremented the counter.    
   */
+
+  //we will check the validity of the phone number in zod with regex
+  //\+[0-9]?[0-9]?[0-9]?-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9]\
   phoneNumber: text("phone_number").notNull(),
   avatarLink: text("avatar_link")
     .default(
@@ -32,6 +36,7 @@ export const users = pgTable("users", {
     )
     .notNull(),
   biography: text("biography"),
+  //the template of date has to be: "MM/DD/YYYY" or "YYYY-MM-DD"!
   dateOfBirth: date("date_of_birth"),
   //gender is an enum - man, woman, other
   gender: genderEnum("gender").notNull(),
@@ -43,7 +48,7 @@ export const users = pgTable("users", {
   hash: text("hash"),
   nickname: text("nickname").notNull(),
   //makes SQL create a timestamp once the record is created
-  created: timestamp("created").default(sql`CURRENT_TIMESTAMP`),
+  created: timestamp("created").defaultNow(),
   //is the user currently connected
   connected: boolean("connected").default(true),
   locationDate: timestamp("location_date"),
@@ -72,16 +77,6 @@ BTW, 4326 is the SRID number, which is a convention for calculating areas and di
 It is the default SRID of postGIS. 
 */
 
-export const userRelations = relations(users, ({ many }) => ({
-  tags: many(tags),
-  connections: many(connections),
-  receivedConnectionRequests: many(receivedConnectionRequests),
-  sentConnectionRequests: many(sentConnectionRequests),
-  blocks: many(blocks),
-  chats: many(chats),
-  events: many(events),
-}));
-
 //tags
 export const tags = pgTable("tags", {
   tagId: uuid("tag_id").primaryKey().unique().notNull().defaultRandom(),
@@ -92,17 +87,6 @@ export const tags = pgTable("tags", {
     .notNull()
     .references(() => users.userId),
 });
-
-export const tagRelations = relations(tags, ({ one }) => ({
-  tagChooser: one(users, {
-    fields: [tags.tagChooser],
-    references: [users.userId],
-  }),
-  tagTemplateId: one(tagTemplates, {
-    fields: [tags.tagTemplateId],
-    references: [tagTemplates.tagTemplateId],
-  }),
-}));
 
 //tag templates
 export const tagTemplates = pgTable("tag_templates", {
@@ -117,17 +101,6 @@ export const tagTemplates = pgTable("tag_templates", {
     .references(() => tagCategories.tagCategoryId),
 });
 
-export const tagTemplateRelations = relations(
-  tagTemplates,
-  ({ many, one }) => ({
-    tags: many(tags),
-    tagCategory: one(tagCategories, {
-      fields: [tagTemplates.tagCategory],
-      references: [tagCategories.tagCategoryId],
-    }),
-  })
-);
-
 //tag template categories
 export const tagCategories = pgTable("tag_categories", {
   tagCategoryId: uuid("tag_category_id")
@@ -138,10 +111,6 @@ export const tagCategories = pgTable("tag_categories", {
   categoryName: text("category_name").notNull().unique(),
 });
 
-export const tagCategoryRelations = relations(tagCategories, ({ many }) => ({
-  tagTemplates: many(tagTemplates),
-}));
-
 // connections (friendships)
 export const connections = pgTable("connections", {
   connectionId: uuid("connection_id")
@@ -149,9 +118,7 @@ export const connections = pgTable("connections", {
     .unique()
     .defaultRandom()
     .primaryKey(),
-  connectionDate: timestamp("connection_date")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
+  connectionDate: timestamp("connection_date").defaultNow().notNull(),
   connectedUser1: uuid("connected_user1")
     .notNull()
     .references(() => users.userId),
@@ -159,17 +126,6 @@ export const connections = pgTable("connections", {
     .notNull()
     .references(() => users.userId),
 });
-
-export const connectionsRelations = relations(connections, ({ one }) => ({
-  connectedUser1: one(users, {
-    fields: [connections.connectedUser1],
-    references: [users.userId],
-  }),
-  connectedUser2: one(users, {
-    fields: [connections.connectedUser2],
-    references: [users.userId],
-  }),
-}));
 
 // received connection requests
 export const receivedConnectionRequests = pgTable(
@@ -186,23 +142,9 @@ export const receivedConnectionRequests = pgTable(
     senderId: uuid("sender_id")
       .notNull()
       .references(() => users.userId),
-    requestDate: timestamp("request_date").default(sql`CURRENT_TIMESTAMP`),
+    requestDate: timestamp("request_date").defaultNow(),
     unread: boolean("unread").notNull().default(true),
   }
-);
-
-export const receivedConnectionRequestRelations = relations(
-  receivedConnectionRequests,
-  ({ one }) => ({
-    recipientId: one(users, {
-      fields: [receivedConnectionRequests.recipientId],
-      references: [users.userId],
-    }),
-    senderId: one(users, {
-      fields: [receivedConnectionRequests.senderId],
-      references: [users.userId],
-    }),
-  })
 );
 
 // sent connection requests
@@ -218,24 +160,8 @@ export const sentConnectionRequests = pgTable("sent_connection_requests", {
   senderId: uuid("sender_id")
     .notNull()
     .references(() => users.userId),
-  requestDate: timestamp("request_date")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
+  requestDate: timestamp("request_date").defaultNow().notNull(),
 });
-
-export const sentConnectionRequestRelations = relations(
-  sentConnectionRequests,
-  ({ one }) => ({
-    recipientId: one(users, {
-      fields: [sentConnectionRequests.recipientId],
-      references: [users.userId],
-    }),
-    senderId: one(users, {
-      fields: [sentConnectionRequests.senderId],
-      references: [users.userId],
-    }),
-  })
-);
 
 //blocks
 export const blocks = pgTable("blocks", {
@@ -246,21 +172,8 @@ export const blocks = pgTable("blocks", {
   blockedUserId: uuid("blocked_user_id")
     .notNull()
     .references(() => users.userId),
-  blockDate: timestamp("block_date")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
+  blockDate: timestamp("block_date").defaultNow().notNull(),
 });
-
-export const blocksRelations = relations(blocks, ({ one }) => ({
-  blockingUserId: one(users, {
-    fields: [blocks.blockingUserId],
-    references: [users.userId],
-  }),
-  blockedUserId: one(users, {
-    fields: [blocks.blockedUserId],
-    references: [users.userId],
-  }),
-}));
 
 //chats
 export const chats = pgTable("chats", {
@@ -273,18 +186,6 @@ export const chats = pgTable("chats", {
     .references(() => users.userId),
 });
 
-export const chatsRelations = relations(chats, ({ one, many }) => ({
-  participant1: one(users, {
-    fields: [chats.participant1],
-    references: [users.userId],
-  }),
-  participant2: one(users, {
-    fields: [chats.participant1],
-    references: [users.userId],
-  }),
-  chatMessage: many(chatMessages),
-}));
-
 //declaring an enum for message types
 export const messageTypeEnum = pgEnum("message_type_enum", ["image", "text"]);
 
@@ -294,41 +195,42 @@ export const messageTypeEnum = pgEnum("message_type_enum", ["image", "text"]);
 //that way we can index the chat messages with the chat id field.
 //plus, when you just need to fetch all the messages of a certain chat id, it is more efficient
 //than to search every message for the existence of two specific chat participants
-export const chatMessages = pgTable("chat_messages", {
-  messageId: uuid("message_id").primaryKey().unique().notNull().defaultRandom(),
-  chatId: uuid("chat_id").notNull(),
-  date: timestamp("date")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  sender: uuid("sender")
-    .notNull()
-    .references(() => users.userId),
-  recipient: uuid("recipient")
-    .notNull()
-    .references(() => users.userId),
-  type: messageTypeEnum("type").notNull(),
-  imageURI: text("image_URI"), //if not image, don't insert anything, and it will be null
-  text: text("text"), //if not text, don't insert anything, and it will be null
-  unread: boolean("unread").default(true).notNull(),
-  receivedSuccessfully: boolean("received_successfully")
-    .default(false)
-    .notNull(),
-});
-
-export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
-  chatId: one(chats, {
-    fields: [chatMessages.chatId],
-    references: [chats.chatId],
-  }),
-  sender: one(users, {
-    fields: [chatMessages.sender],
-    references: [users.userId],
-  }),
-  recipient: one(users, {
-    fields: [chatMessages.recipient],
-    references: [users.userId],
-  }),
-}));
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    messageId: uuid("message_id")
+      .primaryKey()
+      .unique()
+      .notNull()
+      .defaultRandom(),
+    chatId: uuid("chat_id")
+      .notNull()
+      .references(() => chats.chatId),
+    date: timestamp("date").defaultNow().notNull(),
+    sender: uuid("sender")
+      .notNull()
+      .references(() => users.userId),
+    recipient: uuid("recipient")
+      .notNull()
+      .references(() => users.userId),
+    type: messageTypeEnum("type").notNull(),
+    imageURI: text("image_URI"), //if not image, don't insert anything, and it will be null
+    text: text("text"), //if not text, don't insert anything, and it will be null
+    unread: boolean("unread").default(true).notNull(),
+    receivedSuccessfully: boolean("received_successfully")
+      .default(false)
+      .notNull(),
+  },
+  (table) => {
+    return {
+      /** we will be looking for all the messages that two users share in a chat room.
+      So, will will search the "chat_messages" table for all the messages of that chat.
+      That is why we should index the "chat_Id" column.
+      */
+      chatMessageIndex: uniqueIndex("chat_message_index").on(table.chatId),
+    };
+  }
+);
 
 //notification templates
 export const notificationTemplates = pgTable("notification_templates", {
@@ -347,9 +249,7 @@ export const events = pgTable("events", {
   userId: uuid("user_id")
     .notNull()
     .references(() => users.userId),
-  eventDate: timestamp("event_date")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
+  eventDate: timestamp("event_date").defaultNow().notNull(),
   eventType: uuid("event_type")
     .notNull()
     .references(() => eventTypes.eventTypeId),
@@ -362,13 +262,6 @@ export const events = pgTable("events", {
   //location_as_text is only relevant when storing location history of a user, else it is null
   locationAsText: text("location_as_text"),
 });
-
-export const eventsRelations = relations(events, ({ one }) => ({
-  eventType: one(eventTypes, {
-    fields: [events.eventType],
-    references: [eventTypes.eventTypeId],
-  }),
-}));
 
 //declaring an enum for table names
 export const tablesEnum = pgEnum("tables_enum", [
@@ -395,6 +288,136 @@ export const eventTypes = pgTable("event_types", {
   eventTypeName: text("event_type_name").notNull().unique(),
   tableAffected: tablesEnum("table_affected").notNull(),
 });
+
+//************************************************************* */
+//************************************************************* */
+// RELATIONS
+// only needed for Drizzle to know which columns it can associate with which column
+
+export const userRelations = relations(users, ({ many }) => ({
+  tags: many(tags),
+  connections: many(connections),
+  receivedConnectionRequests: many(receivedConnectionRequests),
+  sentConnectionRequests: many(sentConnectionRequests),
+  blocks: many(blocks),
+  chats: many(chats),
+  events: many(events),
+}));
+
+export const tagRelations = relations(tags, ({ one }) => ({
+  tagChooser: one(users, {
+    fields: [tags.tagChooser],
+    references: [users.userId],
+  }),
+  tagTemplateId: one(tagTemplates, {
+    fields: [tags.tagTemplateId],
+    references: [tagTemplates.tagTemplateId],
+  }),
+}));
+
+export const tagTemplateRelations = relations(
+  tagTemplates,
+  ({ many, one }) => ({
+    tags: many(tags),
+    tagCategory: one(tagCategories, {
+      fields: [tagTemplates.tagCategory],
+      references: [tagCategories.tagCategoryId],
+    }),
+  })
+);
+
+export const tagCategoryRelations = relations(tagCategories, ({ many }) => ({
+  tagTemplates: many(tagTemplates),
+}));
+
+export const connectionsRelations = relations(connections, ({ one }) => ({
+  connectedUser1: one(users, {
+    fields: [connections.connectedUser1],
+    references: [users.userId],
+  }),
+  connectedUser2: one(users, {
+    fields: [connections.connectedUser2],
+    references: [users.userId],
+  }),
+}));
+
+export const receivedConnectionRequestRelations = relations(
+  receivedConnectionRequests,
+  ({ one }) => ({
+    recipientId: one(users, {
+      fields: [receivedConnectionRequests.recipientId],
+      references: [users.userId],
+    }),
+    senderId: one(users, {
+      fields: [receivedConnectionRequests.senderId],
+      references: [users.userId],
+    }),
+  })
+);
+
+export const sentConnectionRequestRelations = relations(
+  sentConnectionRequests,
+  ({ one }) => ({
+    recipientId: one(users, {
+      fields: [sentConnectionRequests.recipientId],
+      references: [users.userId],
+    }),
+    senderId: one(users, {
+      fields: [sentConnectionRequests.senderId],
+      references: [users.userId],
+    }),
+  })
+);
+
+export const blocksRelations = relations(blocks, ({ one }) => ({
+  blockingUserId: one(users, {
+    fields: [blocks.blockingUserId],
+    references: [users.userId],
+  }),
+  blockedUserId: one(users, {
+    fields: [blocks.blockedUserId],
+    references: [users.userId],
+  }),
+}));
+
+export const chatsRelations = relations(chats, ({ one, many }) => ({
+  participant1: one(users, {
+    fields: [chats.participant1],
+    references: [users.userId],
+  }),
+  participant2: one(users, {
+    fields: [chats.participant1],
+    references: [users.userId],
+  }),
+  chatMessage: many(chatMessages),
+}));
+
+export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
+  chatId: one(chats, {
+    fields: [chatMessages.chatId],
+    references: [chats.chatId],
+  }),
+  //relation name
+  sender: one(users, {
+    //foreign key
+    fields: [chatMessages.sender],
+    //references
+    references: [users.userId],
+  }),
+  recipient: one(users, {
+    fields: [chatMessages.recipient],
+    references: [users.userId],
+  }),
+}));
+
+export const eventsRelations = relations(events, ({ one }) => ({
+  eventType: one(eventTypes, {
+    //this foreign key
+    fields: [events.eventType],
+    //references
+    references: [eventTypes.eventTypeId],
+  }),
+}));
 
 export const eventTypesRelations = relations(eventTypes, ({ many }) => ({
   events: many(events),

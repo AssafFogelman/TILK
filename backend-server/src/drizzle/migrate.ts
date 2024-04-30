@@ -14,12 +14,16 @@ const migrationClient = postgres(process.env.CONNECTION_STRING as string, {
 });
 
 const migrateAsync = async () => {
-  // migrate
-  await migrate(drizzle(migrationClient), {
-    migrationsFolder: __dirname + "/migrations",
-  });
-  //end database connection
-  await migrationClient.end();
+  try {
+    // migrate
+    await migrate(drizzle(migrationClient), {
+      migrationsFolder: __dirname + "/migrations",
+    });
+    //end database connection
+    await migrationClient.end();
+  } catch (error) {
+    console.log("there was a problem migration to the database:", error);
+  }
 };
 
 migrateAsync();
