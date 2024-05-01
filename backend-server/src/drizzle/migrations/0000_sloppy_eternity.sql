@@ -11,7 +11,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- CREATE TYPE "tables_enum" AS ENUM('users', 'location_records', 'connections', 'sent_connection_requests', 'received_connection_requests', 'blocks', 'chats', 'chat_messages', 'tags', 'tag_templates');
+ CREATE TYPE "tables_enum" AS ENUM('users', 'location_records', 'connections', 'sent_connection_requests', 'received_connection_requests', 'blocks', 'chats', 'chat_messages', 'tags', 'tag_templates', 'tag_categories', 'notificationTemplates');
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -20,19 +20,19 @@ CREATE TABLE IF NOT EXISTS "blocks" (
 	"block_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"blocking_user_id" uuid NOT NULL,
 	"blocked_user_id" uuid NOT NULL,
-	"block_date" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"block_date" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "blocks_block_id_unique" UNIQUE("block_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "chat_messages" (
 	"message_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"chat_id" uuid NOT NULL,
-	"date" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"date" timestamp DEFAULT now() NOT NULL,
 	"sender" uuid NOT NULL,
 	"recipient" uuid NOT NULL,
 	"type" "message_type_enum" NOT NULL,
-	"image_URI" text DEFAULT '',
-	"text" text DEFAULT '',
+	"image_URI" text,
+	"text" text,
 	"unread" boolean DEFAULT true NOT NULL,
 	"received_successfully" boolean DEFAULT false NOT NULL,
 	CONSTRAINT "chat_messages_message_id_unique" UNIQUE("message_id")
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS "chats" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "connections" (
 	"connection_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"connection_date" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"connection_date" timestamp DEFAULT now() NOT NULL,
 	"connected_user1" uuid NOT NULL,
 	"connected_user2" uuid NOT NULL,
 	CONSTRAINT "connections_connection_id_unique" UNIQUE("connection_id")
@@ -64,9 +64,10 @@ CREATE TABLE IF NOT EXISTS "event_types" (
 CREATE TABLE IF NOT EXISTS "events" (
 	"event_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
-	"event_date" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"event_date" timestamp DEFAULT now() NOT NULL,
 	"event_type" uuid NOT NULL,
 	"relevant_table_primary_key" uuid NOT NULL,
+	"location_as_text" text,
 	CONSTRAINT "events_event_id_unique" UNIQUE("event_id")
 );
 --> statement-breakpoint
@@ -82,7 +83,7 @@ CREATE TABLE IF NOT EXISTS "received_connection_requests" (
 	"received_request_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"recipient_id" uuid NOT NULL,
 	"sender_id" uuid NOT NULL,
-	"request_date" timestamp DEFAULT CURRENT_TIMESTAMP,
+	"request_date" timestamp DEFAULT now(),
 	"unread" boolean DEFAULT true NOT NULL,
 	CONSTRAINT "received_connection_requests_received_request_id_unique" UNIQUE("received_request_id")
 );
@@ -91,7 +92,7 @@ CREATE TABLE IF NOT EXISTS "sent_connection_requests" (
 	"sent_request_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"recipient_id" uuid NOT NULL,
 	"sender_id" uuid NOT NULL,
-	"request_date" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"request_date" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "sent_connection_requests_sent_request_id_unique" UNIQUE("sent_request_id")
 );
 --> statement-breakpoint
@@ -128,12 +129,13 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"off-grid" boolean DEFAULT false,
 	"hash" text,
 	"nickname" text NOT NULL,
-	"created" timestamp DEFAULT CURRENT_TIMESTAMP,
+	"created" timestamp DEFAULT now(),
 	"connected" boolean DEFAULT true,
-	"location_date" timestamp DEFAULT '1970-01-01 00:00:00.000',
+	"location_date" timestamp,
 	CONSTRAINT "users_user_id_unique" UNIQUE("user_id")
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "chat_message_index" ON "chat_messages" ("chat_id");--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "blocks" ADD CONSTRAINT "blocks_blocking_user_id_users_user_id_fk" FOREIGN KEY ("blocking_user_id") REFERENCES "users"("user_id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
@@ -142,6 +144,12 @@ END $$;
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "blocks" ADD CONSTRAINT "blocks_blocked_user_id_users_user_id_fk" FOREIGN KEY ("blocked_user_id") REFERENCES "users"("user_id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "chat_messages" ADD CONSTRAINT "chat_messages_chat_id_chats_chat_id_fk" FOREIGN KEY ("chat_id") REFERENCES "chats"("chat_id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;

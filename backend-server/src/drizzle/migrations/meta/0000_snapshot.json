@@ -1,5 +1,5 @@
 {
-  "id": "f65efb65-1912-43e4-81c9-09ec20065161",
+  "id": "c5cd5842-4f33-4b39-99c7-f0470418bb67",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -32,7 +32,7 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -97,7 +97,7 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "now()"
         },
         "sender": {
           "name": "sender",
@@ -121,15 +121,13 @@
           "name": "image_URI",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "default": "''"
+          "notNull": false
         },
         "text": {
           "name": "text",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "default": "''"
+          "notNull": false
         },
         "unread": {
           "name": "unread",
@@ -146,8 +144,29 @@
           "default": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "chat_message_index": {
+          "name": "chat_message_index",
+          "columns": [
+            "chat_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
+        "chat_messages_chat_id_chats_chat_id_fk": {
+          "name": "chat_messages_chat_id_chats_chat_id_fk",
+          "tableFrom": "chat_messages",
+          "tableTo": "chats",
+          "columnsFrom": [
+            "chat_id"
+          ],
+          "columnsTo": [
+            "chat_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "chat_messages_sender_users_user_id_fk": {
           "name": "chat_messages_sender_users_user_id_fk",
           "tableFrom": "chat_messages",
@@ -266,7 +285,7 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "now()"
         },
         "connected_user1": {
           "name": "connected_user1",
@@ -387,7 +406,7 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "now()"
         },
         "event_type": {
           "name": "event_type",
@@ -400,6 +419,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
+        },
+        "location_as_text": {
+          "name": "location_as_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -514,7 +539,7 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "now()"
         },
         "unread": {
           "name": "unread",
@@ -592,7 +617,7 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -868,7 +893,7 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": "now()"
         },
         "connected": {
           "name": "connected",
@@ -881,8 +906,7 @@
           "name": "location_date",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false,
-          "default": "'1970-01-01 00:00:00.000'"
+          "notNull": false
         }
       },
       "indexes": {},
@@ -927,7 +951,9 @@
         "chats": "chats",
         "chat_messages": "chat_messages",
         "tags": "tags",
-        "tag_templates": "tag_templates"
+        "tag_templates": "tag_templates",
+        "tag_categories": "tag_categories",
+        "notificationTemplates": "notificationTemplates"
       }
     }
   },

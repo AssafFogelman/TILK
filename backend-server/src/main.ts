@@ -13,12 +13,12 @@ async function main() {
     // await db.insert(users).values({
     //   phoneNumber: "+972-54-6735391",
     //   gender: "man",
-    //   nickname: "Eilat",
+    //   nickname: "Holon",
     //   locationDate: new Date(),
     //   dateOfBirth: "1983-01-13",
     // });
 
-    //* inserting locations
+    // * inserting locations
     // const coordinates = {
     //   Holon: { lon: 32.01528, lat: 34.7875 },
     //   TelAviv: { lon: 32.06694, lat: 34.77778 },
@@ -28,13 +28,20 @@ async function main() {
     // };
     // const sqlQuery = sql.raw(
     //   `UPDATE users
-    //    SET location=ST_SetSRID(ST_MakePoint(${coordinates.Eilat.lon},${coordinates.Eilat.lat}),4326)
-    //    WHERE nickname='Eilat';`
+    //    SET user_location=ST_MakePoint(${coordinates.Holon.lon},${coordinates.Holon.lat})
+    //    WHERE nickname='Holon';`
     // );
     // await db.execute(sqlQuery);
 
     //* getting the 3 nearest cities to Eilat
-    const knn = `SELECT users.nickname, users.location <-> 'SRID=4326;POINT(34.786712 31.253107)'::geometry AS distance FROM users ORDER BY distance LIMIT 3;`;
+    /* showing results up to 10 KM */
+
+    const knn = `
+    SELECT nickname, user_location <-> ST_MakePoint(31.77185142779806, 35.12806329924837) AS distance 
+    FROM users 
+    WHERE user_location <-> ST_MakePoint(31.77185142779806, 35.12806329924837)<10000
+    ORDER BY distance 
+    LIMIT 10;`;
     const closestCities = await db.execute(sql.raw(knn));
     console.log("closestCities:", closestCities);
     /************ */
@@ -48,3 +55,17 @@ async function main() {
 main();
 
 // ST_SetSRID(ST_MakePoint(long, lat), 4326);
+
+/****** THIS ACTUALLY WORKS> SLOW MAYBE BUT WORKS
+ * 
+ * 
+ * 
+    //* getting the 3 nearest cities to Eilat
+    const knn = `
+    SELECT nickname, ST_DistanceSphere(location,ST_MakePoint(31.77185142779806, 35.12806329924837)) AS distance 
+    FROM users 
+    ORDER BY distance 
+    LIMIT 10;`;
+    const closestCities = await db.execute(sql.raw(knn));
+    console.log("closestCities:", closestCities);
+ */

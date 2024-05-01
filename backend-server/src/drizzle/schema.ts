@@ -2,7 +2,6 @@ import { relations, sql } from "drizzle-orm";
 import {
   pgTable,
   uuid,
-  varchar,
   integer,
   text,
   date,
@@ -10,6 +9,8 @@ import {
   boolean,
   timestamp,
   uniqueIndex,
+  real,
+  doublePrecision,
 } from "drizzle-orm/pg-core";
 
 //declaring an enum
@@ -260,7 +261,8 @@ export const events = pgTable("events", {
   */
   relevantTablePrimaryKey: uuid("relevant_table_primary_key").notNull(),
   //location_as_text is only relevant when storing location history of a user, else it is null
-  locationAsText: text("location_as_text"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
 });
 
 //declaring an enum for table names
