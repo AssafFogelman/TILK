@@ -70,12 +70,16 @@ defaultRandom - create a random value
 */
 
 /*
-we also added a column named "location" of type "geometry". 
+we also added a column named "location" of type "geography". 
 we did that through the sql editor in Neon. Because Drizzle couldn't handle it.
+
 This is the sql code line: 
-`ALTER TABLE "users" ADD COLUMN "location" geometry(POINT,4326);`);
-BTW, 4326 is the SRID number, which is a convention for calculating areas and distances.
-It is the default SRID of postGIS. 
+//*ALTER TABLE "users" ADD COLUMN "user_location" geography;
+
+Then we added a GIST index to the user_location column (to make it faster):
+//*CREATE INDEX ON users USING gist(user_location);
+
+mind you that you need to create the index BEFORE inserting data.
 */
 
 //tags
