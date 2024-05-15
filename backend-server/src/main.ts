@@ -5,10 +5,9 @@ import { ALL } from "dns";
 
 async function main() {
   try {
-    //deleting all former users:
+    //*deleting all former users:
     // await db.delete(users).where(ne(users.gender, "woman"));
 
-    //testing for distance:
     //* adding cities:
     // await db.insert(users).values({
     //   phoneNumber: "+972-54-6735391",
@@ -33,7 +32,7 @@ async function main() {
     // );
     // await db.execute(sqlQuery);
 
-    //* getting the 3 nearest cities to Eilat
+    //* getting the 10 nearest cities to "Hasataf" creek
     /* showing results up to 10 KM */
 
     const knn = `
@@ -53,19 +52,3 @@ async function main() {
 }
 
 main();
-
-// ST_SetSRID(ST_MakePoint(long, lat), 4326);
-
-/****** THIS ACTUALLY WORKS> SLOW MAYBE BUT WORKS
- * 
- * 
- * 
-    //* getting the 3 nearest cities to Eilat
-    const knn = `
-    SELECT nickname, ST_DistanceSphere(location,ST_MakePoint(31.77185142779806, 35.12806329924837)) AS distance 
-    FROM users 
-    ORDER BY distance 
-    LIMIT 10;`;
-    const closestCities = await db.execute(sql.raw(knn));
-    console.log("closestCities:", closestCities);
- */

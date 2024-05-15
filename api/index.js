@@ -409,7 +409,7 @@ app.get("/messages/:userId", async (req, res) => {
   }
 });
 
-//route to fetch all the messages between two users in the chatroom
+//route to fetch all the messages ;hbetween two users in the chatroom
 
 app.get("/messages/getMessages/:senderId/:recipientId", async (req, res) => {
   try {

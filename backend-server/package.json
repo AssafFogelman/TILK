@@ -5,7 +5,8 @@
   "description": "tilk-backend-server",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch ./src/main.ts",
+    "dev": "tsx watch src/index.ts",
+    "dev2": "tsx watch ./src/main.ts",
     "db:generate": "npx drizzle-kit generate:pg",
     "db:migrate": "tsx src/drizzle/migrate.ts"
   },
@@ -13,16 +14,19 @@
   "license": "ISC",
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.8",
     "drizzle-kit": "^0.20.17",
     "tsx": "^4.7.2",
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@hono/node-server": "^1.11.1",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.30.8",
+    "hono": "^4.2.9",
     "node": "^22.0.0",
     "pg": "^8.11.5",
-    "postgres": "^3.4.4"
+    "postgres": "^3.4.4",
+    "zod": "^3.23.5"
   }
 }

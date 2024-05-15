@@ -1,15 +1,4 @@
-{
-  "name": "chat-app",
-  "version": "1.0.0",
-  "main": "node_modules/expo/AppEntry.js",
-  "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
-  },
-  "dependencies": {
-    "@ethersproject/shims": "^5.7.0",
+const dependenciesString = `@ethersproject/shims": "^5.7.0",
     "@expo/vector-icons": "^14.0.1",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-navigation/native": "^6.1.17",
@@ -24,21 +13,27 @@
     "expo-image-picker": "~15.0.4",
     "expo-status-bar": "~1.12.1",
     "jwt-decode": "^4.0.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-native": "0.74.1",
     "react-native-emoji-selector": "^0.2.0",
     "react-native-get-random-values": "~1.11.0",
     "react-native-safe-area-context": "4.10.1",
-    "react-native-screens": "~3.31.1"
-  },
-  "devDependencies": {
+    "react-native-screens": "~3.31.1",
     "@babel/core": "^7.24.5",
     "@types/multer": "^1.4.11",
-    "@types/react": "~18.2.79",
-    "@types/react-dom": "~18.2.25",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "~18.3.0",
     "@types/react-native": "^0.72.8",
-    "typescript": "~5.3.3"
-  },
-  "private": true
+    "typescript": "^5.4.5",`;
+
+const newString = dependenciesString.split('"');
+// console.log("newString:", newString);
+const newStringLength = newString.length;
+// console.log("newString.length", newString.length);
+let result = "";
+for (let i = 0; i < newStringLength; i += 4) {
+  //   console.log("i:", i);
+  result = result + "npm i " + newString[i] + "@latest ";
 }
+console.log("result:", result);
