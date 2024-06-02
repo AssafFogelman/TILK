@@ -30,7 +30,7 @@ export const users = pgTable("users", {
 
   //we will check the validity of the phone number in zod with regex
   //\+[0-9]?[0-9]?[0-9]?-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9]\
-  phoneNumber: text("phone_number").notNull(),
+  phoneNumber: text("phone_number").notNull().unique(),
   avatarLink: text("avatar_link")
     .default(
       "https://png.pngtree.com/png-clipart/20210915/ourlarge/pngtree-user-avatar-placeholder-black-png-image_3918427.jpg"
@@ -45,7 +45,6 @@ export const users = pgTable("users", {
   active: boolean("active").default(true),
   //off-grid: the user has decided to be invisible and not see others
   offGrid: boolean("off-grid").default(false),
-  //!do we need this hash column? how will this be used? I suppose there will have to be a way to authenticate the token... some password, even if the app is making it
   hash: text("hash"),
   nickname: text("nickname").notNull(),
   //makes SQL create a timestamp once the record is created

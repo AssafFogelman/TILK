@@ -15,6 +15,13 @@
       "when": 1714628998854,
       "tag": "0001_many_timeslip",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1715754936363,
+      "tag": "0002_regular_mandarin",
+      "breakpoints": true
     }
   ]
 }

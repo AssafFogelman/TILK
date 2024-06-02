@@ -5,7 +5,7 @@
     "slug": "chat-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/tilk_icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -18,12 +18,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/tilk_icon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/tilk_icon.png"
     },
     "extra": {
       "eas": {
@@ -38,6 +38,14 @@
           "photosPermission": "To let you share photos with your friends, we need access to your photo library...",
           "cameraPermission": "In order to take a photo, we need access to your camera...",
           "microphonePermission": "To record audio, we need access to your microphone..."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow TILK to use your location."
+          // lets see if this definition is necessary
+          // "isAndroidForegroundServiceEnabled": true
         }
       ]
     ]

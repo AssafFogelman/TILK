@@ -3,6 +3,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 //change this if you want to add "initialParams" to certain screens:
 export type StackParamList = {
+  Welcome: undefined; //there are no params that are sent to this screen
   Login: undefined; //there are no params that are sent to this screen
   Register: undefined; //there are no params that are sent to this screen
   Home: undefined; //there are no params that are sent to this screen
@@ -20,9 +21,16 @@ export type MessagesScreenNavigationProp = NativeStackNavigationProp<
   "Messages"
 >;
 
+//this is the type for the useNavigation() in "Messages" Screen
 export type HomeScreenNavigationProp = NativeStackNavigationProp<
   StackParamList,
   "Home"
+>;
+
+//this is the type for the useNavigation() in "Messages" Screen
+export type WelcomeScreenNavigationProp = NativeStackNavigationProp<
+  StackParamList,
+  "Welcome"
 >;
 
 export type ChatMessageType = {

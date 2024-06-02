@@ -1,7 +1,35 @@
 import { ne, sql } from "drizzle-orm";
 import { db } from "./drizzle/db.js";
 import { connections, users } from "./drizzle/schema.js";
-import { ALL } from "dns";
+
+type UserType = typeof users.$inferInsert;
+
+const exampleUsers: UserType[] = [
+  {
+    phoneNumber: "+972-54-6735391",
+    gender: "man",
+    nickname: "markolit",
+    dateOfBirth: "1983-01-13",
+    // lon: 32.741117510490035,
+    // lat: 35.07818495364527,
+  },
+  {
+    phoneNumber: "+972-54-6735392",
+    gender: "man",
+    nickname: "kolbo",
+    dateOfBirth: "1983-01-13",
+    // lon: 32.739824774535585,
+    // lat: 35.07939731201617,
+  },
+  {
+    phoneNumber: "+972-54-6735393",
+    gender: "man",
+    nickname: "lagin",
+    dateOfBirth: "1983-01-13",
+    // lon: 32.745742678343774,
+    // lat: 35.07383674499869,
+  },
+];
 
 async function main() {
   try {
@@ -34,6 +62,25 @@ async function main() {
 
     //* getting the 10 nearest cities to "Hasataf" creek
     /* showing results up to 10 KM */
+
+    //entering exampleUsers
+    await db.insert(users).values(exampleUsers).onConflictDoNothing();
+
+    //*entering exampleUser's location
+    // const sqlQuery = sql.raw(
+    //   `UPDATE users
+    //    SET user_location=ST_MakePoint(${coordinates.Holon.lon},${coordinates.Holon.lat})
+    //    WHERE nickname='Holon';`
+    // );
+    // await db.execute(sqlQuery);
+
+    //*entering exampleUser's location, one by one...
+    // await db.execute(
+    //   sql.raw(`
+    //   UPDATE users
+    //   SET user_location=ST_MakePoint(${exampleUsers[2].lon},${exampleUsers[2].lat})
+    //   WHERE nickname='lagin';`)
+    // );
 
     const knn = `
     SELECT nickname, user_location <-> ST_MakePoint(31.77185142779806, 35.12806329924837) AS distance 

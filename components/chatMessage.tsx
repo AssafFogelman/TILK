@@ -69,7 +69,7 @@ const ChatMessage = ({
     );
   }
   if (chatMessage.messageType === "image") {
-    const baseUrl = process.env.EXPO_PUBLIC_BASE_ADDRESS_OF_THE_SERVER; //ex.: http://192.168.1.116:8000/
+    const baseUrl = process.env.EXPO_PUBLIC_SERVER_ADDRESS; //ex.: http://192.168.1.116:8000/
     const relativeImagePath = chatMessage.imageUrl; //ex.: files/Image-1712659253536-488794165.jpg
     const imageSource = { uri: baseUrl + relativeImagePath };
     return (

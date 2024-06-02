@@ -9,13 +9,19 @@ import FriendsScreen from "./screens/FriendsScreen";
 import ChatScreen from "./screens/ChatScreen";
 import ChatMessageScreen from "./screens/ChatMessageScreen";
 import { StackParamList } from "./types/types";
+import WelcomeScreen from "./screens/WelcomeScreen";
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
 const StackNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Welcome">
+        <Stack.Screen
+          name="Welcome"
+          component={WelcomeScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="Login"
           component={LoginScreen}
