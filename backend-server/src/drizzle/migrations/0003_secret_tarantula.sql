@@ -1,0 +1,1 @@
+ALTER TABLE "users" ALTER COLUMN "off-grid" SET DEFAULT true;

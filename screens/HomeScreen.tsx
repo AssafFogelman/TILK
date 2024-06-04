@@ -18,6 +18,7 @@ import axios from "axios";
 import { ObjectId } from "mongoose";
 import { jwtDecode } from "jwt-decode";
 import UserSmallDetails from "../components/UserSmallDetails";
+import { useHandleAppStateChange } from "../hooks/useHandleAppStateChange";
 
 interface JwtPayload {
   userId: string;
@@ -27,6 +28,9 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const { userId, setUserId } = useContext(UserType);
   const [users, setUsers] = useState([]);
+
+  //handle minimizing and returning to app - currently checking if location is enabled. the listener starts only after the user loads the HomeScreen.
+  useHandleAppStateChange();
 
   //setting the header
   useEffect(() => {
@@ -60,7 +64,7 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    //set context "userId" from the asyncStorage &
+    //get context "userId" from the asyncStorage &
     //fetch all the user data except this user
     const fetchUsers = async () => {
       try {

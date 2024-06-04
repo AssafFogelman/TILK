@@ -44,7 +44,7 @@ export const users = pgTable("users", {
   //is the user active, a.k.a, has the application on their phone
   active: boolean("active").default(true),
   //off-grid: the user has decided to be invisible and not see others
-  offGrid: boolean("off-grid").default(false),
+  offGrid: boolean("off-grid").default(true),
   hash: text("hash"),
   nickname: text("nickname").notNull(),
   //makes SQL create a timestamp once the record is created

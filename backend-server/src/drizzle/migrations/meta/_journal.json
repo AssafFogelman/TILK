@@ -22,6 +22,13 @@
       "when": 1715754936363,
       "tag": "0002_regular_mandarin",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1717392222891,
+      "tag": "0003_secret_tarantula",
+      "breakpoints": true
     }
   ]
 }
