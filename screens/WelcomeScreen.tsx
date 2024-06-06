@@ -22,7 +22,7 @@ const WelcomeScreen = () => {
       if (coordinates) {
         userCountry = await getCountry(coordinates);
       }
-      navigation.navigate("Register", { userCountry });
+      navigation.navigate("PhoneVerification", { userCountry });
     } catch (error) {
       console.log("there was an error handling the button click:", error);
     }

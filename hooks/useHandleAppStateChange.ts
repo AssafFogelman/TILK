@@ -44,6 +44,8 @@ export function useHandleAppStateChange() {
             //! show others to the user
             setLocationEnabled(true);
             console.log("location enabled!");
+            //offer the user to switch into more accurate location taking
+            await Location.enableNetworkProviderAsync();
           }
           if (!granted) {
             //! ADD - tell the database to make him "off-grid"

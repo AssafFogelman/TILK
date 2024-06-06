@@ -9,6 +9,21 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { cors } from "hono/cors";
 import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
+import twilio from "twilio";
+import { routes } from "./routes/routes";
+
+/** Twilio setup */
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = twilio(accountSid, authToken);
+
+client.messages
+  .create({
+    body: "enter the following code: 195852",
+    from: process.env.TWILIO_PHONE_NUMBER,
+    to: "+972507828447",
+  })
+  .then((message) => console.log(message.sid));
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -33,6 +48,8 @@ app.use(logger());
 // );
 app.use(cors({ origin: "*" }));
 //! Is this needed? It seems to work without CORS.. does this work?! if so, add it to the notebook
+
+app.route("/", routes); // Handle routes
 
 app.get("/", (c) => {
   return c.json({ message: "Hello Hono!" });

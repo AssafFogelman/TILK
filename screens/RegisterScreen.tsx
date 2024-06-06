@@ -10,10 +10,7 @@ import {
 import React, { useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axios from "axios";
-import {
-  RegisterScreenNavigationProp,
-  RegisterScreenRouteProp,
-} from "../types/types";
+import { RegisterScreenNavigationProp } from "../types/types";
 
 const RegisterScreen = () => {
   const [name, setName] = useState("");
@@ -21,9 +18,7 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState("");
   const [image, setImage] = useState("");
 
-  const route = useRoute<RegisterScreenRouteProp>();
   const navigation = useNavigation<RegisterScreenNavigationProp>();
-  const { userCountry } = route.params;
 
   const handleRegister = () => {
     const user = {
@@ -64,12 +59,6 @@ const RegisterScreen = () => {
           <Text style={styles.signInText}>Register</Text>
           <Text style={styles.signInToYourAccountText}>
             Register Your Account
-          </Text>
-        </View>
-
-        <View>
-          <Text>
-            the user's country is: {userCountry ? userCountry : "unknown"}
           </Text>
         </View>
 

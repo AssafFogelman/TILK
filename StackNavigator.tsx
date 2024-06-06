@@ -10,6 +10,7 @@ import ChatScreen from "./screens/ChatScreen";
 import ChatMessageScreen from "./screens/ChatMessageScreen";
 import { StackParamList } from "./types/types";
 import WelcomeScreen from "./screens/WelcomeScreen";
+import PhoneVerificationScreen from "./screens/PhoneVerificationScreen";
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -20,6 +21,11 @@ const StackNavigator = () => {
         <Stack.Screen
           name="Welcome"
           component={WelcomeScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="PhoneVerification"
+          component={PhoneVerificationScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
