@@ -117,17 +117,6 @@ const PhoneVerificationScreen = () => {
     const fullPhoneNumber = countryCode + phoneNumber.join("");
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     setSentCode(code);
-
-    // try {
-    //   await twilioClient.messages.create({
-    //     body: `Your verification code is ${code}`,
-    //     from: "YOUR_TWILIO_PHONE_NUMBER",
-    //     to: fullPhoneNumber,
-    //   });
-    //   Alert.alert("Verification code sent!");
-    // } catch (error) {
-    //   console.log("Failed to send verification code", error);
-    // }
   }
 
   async function verifyCode() {

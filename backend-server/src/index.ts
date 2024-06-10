@@ -9,21 +9,8 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { cors } from "hono/cors";
 import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
-import twilio from "twilio";
 import { routes } from "./routes/routes";
-
-/** Twilio setup */
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = twilio(accountSid, authToken);
-
-client.messages
-  .create({
-    body: "enter the following code: 195852",
-    from: process.env.TWILIO_PHONE_NUMBER,
-    to: "+972507828447",
-  })
-  .then((message) => console.log(message.sid));
+import "dotenv/config";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -39,7 +26,7 @@ app.use(prettyJSON());
 //But I frankly don't care
 app.use(secureHeaders());
 //logger
-app.use(logger());
+app.use("*", logger());
 
 //enable cors if we are not in production mode
 // app.use(
@@ -69,11 +56,13 @@ const server = serve(
   },
   (info) => {
     console.log(`Server is running on: http://${info.address}:${info.port}`);
-    //http://127.0.0.1:5000/
   }
 );
+
+//websocket
+//http://192.168.1.116:5000/ws/
 const io = new Server(server as HttpServer, {
-  path: "/",
+  path: "/ws",
   serveClient: true,
   cors: {
     origin: process.env.DEV_OR_PRODUCTION === "production" ? false : "*",
@@ -84,7 +73,7 @@ io.on("connection", (socket) => {
   console.log(
     `client connected! id: ${socket.id}, headers: ${socket.request.headers}`
   );
-  socket.on("disconnect", () => {
-    console.log(`user ${socket.id} disconnected`);
+  socket.on("disconnect", (reason) => {
+    console.log(`user ${socket.id} disconnected for ${reason}`);
   });
 });
