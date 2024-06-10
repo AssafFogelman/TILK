@@ -11,6 +11,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { PhoneVerificationScreenRouteProp } from "../types/types";
 import { useRoute } from "@react-navigation/native";
 import { countryCodes, CountryPicker } from "react-native-country-codes-picker";
+import axios from "axios";
 
 const PhoneVerificationScreen = () => {
   const route = useRoute<PhoneVerificationScreenRouteProp>();
@@ -21,6 +22,7 @@ const PhoneVerificationScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState(
     Array(10).fill("0", 0, 1).fill("", 1)
   );
+  const [hash, setHash] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [sentCode, setSentCode] = useState("");
   const inputRefs = useRef<(TextInput | null)[]>([]);
@@ -114,9 +116,23 @@ const PhoneVerificationScreen = () => {
   }
 
   async function sendVerificationCode() {
-    const fullPhoneNumber = countryCode + phoneNumber.join("");
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setSentCode(code);
+    try {
+      let concatenatedPhoneNumber = "%2B"; //the character "+" used in query params
+      concatenatedPhoneNumber += countryCode.slice(1); //removing the "+"
+      concatenatedPhoneNumber +=
+        phoneNumber[0] === "0"
+          ? phoneNumber.join("").slice(1)
+          : phoneNumber.join("");
+      //if the phone number starts with "0", remove the "0";
+      const hash = await axios
+        .get(
+          `${process.env.EXPO_PUBLIC_SERVER_ADDRESS}/auth/sendsms?phoneNumber=${concatenatedPhoneNumber}`
+        )
+        .then((response) => response.data);
+      setHash(hash);
+    } catch (error) {
+      console.log("error trying to send code");
+    }
   }
 
   async function verifyCode() {
