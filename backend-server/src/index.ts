@@ -62,7 +62,7 @@ const server = serve(
 //websocket
 //http://192.168.1.116:5000/ws/
 const io = new Server(server as HttpServer, {
-  path: "/ws",
+  path: "/ws/",
   serveClient: true,
   cors: {
     origin: process.env.DEV_OR_PRODUCTION === "production" ? false : "*",

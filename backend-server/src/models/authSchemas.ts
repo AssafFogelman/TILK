@@ -2,11 +2,11 @@ import { HTTPException } from "hono/http-exception";
 import { validator } from "hono/validator";
 import { z } from "zod";
 
-//*"sendsms" route
+//*"send-sms" route
 
 export const phoneNumberSchema = z.string().regex(/^\+[1-9]\d{1,14}$/); //Regular expression matching E.164 formatted phone numbers
 
-export const validatePhoneNo = validator("query", (value, c) => {
+export const validatePhoneNo = validator("json", (value, c) => {
   const { phoneNumber } = value;
   console.log("phoneNumber", phoneNumber);
   const result = phoneNumberSchema.safeParse(phoneNumber);
@@ -17,7 +17,7 @@ export const validatePhoneNo = validator("query", (value, c) => {
   return result.data;
 });
 
-//* might com in handy -
+//* might come in handy -
 // const buildJsonValidator = (schema: z.Schema) => {
 //     return validator('json', (value, c) => {
 //       const result = schema.safeParse(value)

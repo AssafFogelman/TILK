@@ -12,7 +12,7 @@ calculates a hash out of the key+code+phone number
 sends an SMS with the code,
 returns the hash
 */
-auth.get("/sendsms", validatePhoneNo, sendSms);
+auth.post("/send-sms", validatePhoneNo, sendSms);
 
 /*  
     next we will need the user to send the server the code that he got+phone number+unique phone identifier. (and the hash). 

@@ -17,6 +17,8 @@ import { AppState } from "react-native";
 
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { PaperProvider } from "react-native-paper";
+import { theme } from "./styles/react-paper-theme";
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 
@@ -32,7 +34,9 @@ export default function App() {
         user is {isConnected ? "connected" : "disconnected"} to websocket
       </Text>
       <UserContext>
-        <StackNavigator />
+        <PaperProvider theme={theme}>
+          <StackNavigator />
+        </PaperProvider>
       </UserContext>
     </>
   );
