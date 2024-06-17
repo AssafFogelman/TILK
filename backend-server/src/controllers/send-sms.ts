@@ -73,7 +73,7 @@ export const sendSms = async (c: Context) => {
         from: "TILK",
         to: phoneNumber,
       })
-      .then((message) => console.log(message.sid));
+      .then((message) => console.log("SMS sent! Id:", message.sid));
 
     return c.json({ hash: hash }, 201);
   } catch (error) {

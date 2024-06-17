@@ -8,7 +8,6 @@ export const phoneNumberSchema = z.string().regex(/^\+[1-9]\d{1,14}$/); //Regula
 
 export const validatePhoneNo = validator("json", (value, c) => {
   const { phoneNumber } = value;
-  console.log("phoneNumber", phoneNumber);
   const result = phoneNumberSchema.safeParse(phoneNumber);
   if (!result.success) {
     console.log("Invalid phone number!");
