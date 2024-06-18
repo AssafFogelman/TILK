@@ -53,6 +53,17 @@ export const sendSms = async (c: Context) => {
       ...todaysRequests,
       { weekDay: new Date().getDay(), uniqueOSCode },
     ];
+
+    //exclude (don't limit) the requests from the developer's 2 phones
+    if (process.env.DEV_OR_PRODUCTION?.toLowerCase() != "production") {
+      if (
+        uniqueOSCode === "82a517fa0d9bfe4b" ||
+        uniqueOSCode === "e35e4cf2794eed31"
+      ) {
+        todaysRequests.pop();
+      }
+    }
+
     //trim the request log to only the requests of the current 3 days (because the app will be applied globally)
     todaysRequests = todaysRequests.filter(
       (request) =>
