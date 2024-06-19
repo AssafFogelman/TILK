@@ -4,7 +4,7 @@ import { z } from "zod";
 
 //*"send-sms" route
 
-export const phoneNumberSchema = z.string().regex(/^\+[1-9]\d{1,14}$/); //Regular expression matching E.164 formatted phone numbers
+export const phoneNumberSchema = z.string().regex(/^\+[1-9]\d{6,14}$/); //Regular expression matching E.164 formatted phone numbers
 
 export const validatePhoneNo = validator("json", (value, c) => {
   const { phoneNumber } = value;
@@ -12,6 +12,17 @@ export const validatePhoneNo = validator("json", (value, c) => {
   if (!result.success) {
     console.log("Invalid phone number!");
     throw new HTTPException(401, { message: "Invalid phone number!" });
+  }
+  return result.data;
+});
+
+export const codeSchema = z.string().regex(/^\d{5}$/); //5 digit code
+export const validateCode = validator("json", (value, c) => {
+  const { code } = value;
+  const result = phoneNumberSchema.safeParse(codeSchema);
+  if (!result.success) {
+    console.log("Invalid code!");
+    throw new HTTPException(401, { message: "Invalid code!" });
   }
   return result.data;
 });

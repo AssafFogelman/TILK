@@ -28,8 +28,6 @@ export const users = pgTable("users", {
     which would have auto incremented the counter.    
   */
 
-  //we will check the validity of the phone number in zod with regex
-  //\+[0-9]?[0-9]?[0-9]?-[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9]\
   phoneNumber: text("phone_number").notNull().unique(),
   avatarLink: text("avatar_link")
     .default(
@@ -40,17 +38,17 @@ export const users = pgTable("users", {
   //the template of date has to be: "MM/DD/YYYY" or "YYYY-MM-DD"!
   dateOfBirth: date("date_of_birth"),
   //gender is an enum - man, woman, other
-  gender: genderEnum("gender").notNull(),
+  gender: genderEnum("gender"), //it is mandatory , but it is not mandatory for the first phase of the registration
   //is the user active, a.k.a, has the application on their phone
   active: boolean("active").default(true),
   //off-grid: the user has decided to be invisible and not see others
   offGrid: boolean("off-grid").default(true),
-  hash: text("hash"),
-  nickname: text("nickname").notNull(),
+  nickname: text("nickname"), //it is mandatory , but it is not mandatory for the first phase of the registration
   //makes SQL create a timestamp once the record is created
   created: timestamp("created").defaultNow(),
   //is the user currently connected
   connected: boolean("connected").default(true),
+  admin: boolean("admin").default(false),
   locationDate: timestamp("location_date"),
 });
 /*

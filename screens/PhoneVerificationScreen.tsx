@@ -13,7 +13,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { PhoneVerificationScreenRouteProp } from "../types/types";
 import { useRoute } from "@react-navigation/native";
 import { countryCodes, CountryPicker } from "react-native-country-codes-picker";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { osName } from "expo-device";
 import { getIosIdForVendorAsync, getAndroidId } from "expo-application";
 import OTP from "../components/OTP";
@@ -149,8 +149,15 @@ const PhoneVerificationScreen = () => {
         })
         .then((response) => response.data);
       setHash(hash);
-    } catch (error) {
-      console.log("error trying to send code:", error);
+    } catch (error: any) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(
+          "error while trying to send code:",
+          error.response.data.message
+        );
+      }
     }
   }
 
@@ -171,14 +178,45 @@ const PhoneVerificationScreen = () => {
 
   function toggleModal() {
     modalVisible
-      ? setCode(Array(5).fill(""))
-      : setPhoneNumber(Array(10).fill(""));
+      ? setCode(Array(code.length).fill(""))
+      : setPhoneNumber(Array(phoneNumber.length).fill(""));
     setModalVisible(!modalVisible);
   }
 
-  function handleVerifyCode() {
+  async function handleVerifyCode() {
     //if the code is not totally filled, do nothing
     if (!code[code.length - 1]) return;
+    let concatenatedPhoneNumber = countryCode;
+    concatenatedPhoneNumber +=
+      phoneNumber[0] === "0"
+        ? phoneNumber.join("").slice(1)
+        : phoneNumber.join("");
+    //if the phone number starts with "0", remove the "0";
+    try {
+      const userDetails = await axios.post("/auth/create-token", {
+        phoneNumber: concatenatedPhoneNumber,
+        code,
+        hash,
+      });
+      console.log(
+        "code verification (and token creation) successful! userDetails:",
+        userDetails
+      );
+    } catch (error: any) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(
+          "error while trying to verify the code and create a token:",
+          error.response.data.message
+        );
+      } else {
+        console.log(
+          "error trying to verify the code and create a token:",
+          error
+        );
+      }
+    }
   }
 };
 

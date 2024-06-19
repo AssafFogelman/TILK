@@ -1,6 +1,7 @@
 import { Hono } from "hono";
-import { validatePhoneNo } from "../../models/authSchemas";
+import { validateCode, validatePhoneNo } from "../../models/authSchemas";
 import { sendSms } from "../../controllers/send-sms";
+import { createToken } from "../../controllers/create-token";
 
 export const auth = new Hono().basePath("/auth");
 
@@ -36,4 +37,4 @@ auth.post("/send-sms", validatePhoneNo, sendSms);
     create and return a new token containing the new user unique phone ID and phone number and register the user.
     
  */
-auth.post("/create-token", validateCode, createToken);
+auth.post("/create-token", validatePhoneNo, /*validateCode,*/ createToken);

@@ -8,28 +8,7 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
 
-const data = [
-  { weekDay: 1, uniqueOSCode: "82a517fa0d9bfe4b" },
-  { weekDay: 1, uniqueOSCode: "82a517fa0d9bfe4b" },
-  { weekDay: 1, uniqueOSCode: "82a517fa0d9bfe4b" },
-  { weekDay: 1, uniqueOSCode: "82a517fa0d9bfe4b" },
-  { weekDay: 1, uniqueOSCode: "82a517fa0d9bfe4b" },
-  { weekDay: 1, uniqueOSCode: "82a517fa0d9bfe4b" },
-  { weekDay: 1, uniqueOSCode: "e35e4cf2794eed31" },
-  { weekDay: 1, uniqueOSCode: "e35e4cf2794eed31" },
-  { weekDay: 1, uniqueOSCode: "e35e4cf2794eed31" },
-  { weekDay: 1, uniqueOSCode: "e35e4cf2794eed31" },
-  { weekDay: 1, uniqueOSCode: "e35e4cf2794eed31" },
-  { weekDay: 1, uniqueOSCode: "e35e4cf2794eed31" },
-  { weekDay: 1, uniqueOSCode: "string" },
-  { weekDay: 1, uniqueOSCode: "string" },
-  { weekDay: 1, uniqueOSCode: "string" },
-  { weekDay: 1, uniqueOSCode: "string" },
-  { weekDay: 1, uniqueOSCode: "string" },
-  { weekDay: 1, uniqueOSCode: "string" },
-];
-
-//today's requests. This is a toll to prevent endless SMS send requests
+//today's requests. This is to prevent endless SMS send requests
 type todaysRequestsType = { weekDay: number; uniqueOSCode: string }[] | [];
 let todaysRequests: todaysRequestsType = [];
 
