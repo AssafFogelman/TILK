@@ -11,7 +11,7 @@ export const validatePhoneNo = validator("json", (value, c) => {
   const result = phoneNumberSchema.safeParse(phoneNumber);
   if (!result.success) {
     console.log("Invalid phone number!");
-    throw new HTTPException(401, { message: "Invalid phone number!" });
+    return c.json({ message: "Invalid phone number!" }, 401);
   }
   return result.data;
 });

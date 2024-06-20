@@ -2,7 +2,7 @@ import jwt, { Secret } from "jsonwebtoken";
 import "dotenv/config";
 
 //jsonwebtoken only has a callback function, and we want to use it in a try-catch block. so we will return a promise.
-export const generateToken = (payload: object, expDate = "6 months") => {
+export const generateToken = (payload: object, expDate = "6m") => {
   return new Promise((resolve, reject) => {
     jwt.sign(
       payload,

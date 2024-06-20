@@ -63,6 +63,17 @@ async function main() {
     //* getting the 10 nearest cities to "Hasataf" creek
     /* showing results up to 10 KM */
 
+    await db.query.tagCategories.findFirst({
+      with: {
+        tagTemplates: true,
+      },
+    });
+
+    await db.query.tagTemplates.findFirst({
+      with: {
+        tagCategories: true,
+      },
+    });
     //entering exampleUsers
     await db.insert(users).values(exampleUsers).onConflictDoNothing();
 

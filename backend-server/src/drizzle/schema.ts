@@ -11,6 +11,7 @@ import {
   uniqueIndex,
   real,
   doublePrecision,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 
 //declaring an enum
@@ -29,11 +30,7 @@ export const users = pgTable("users", {
   */
 
   phoneNumber: text("phone_number").notNull().unique(),
-  avatarLink: text("avatar_link")
-    .default(
-      "https://png.pngtree.com/png-clipart/20210915/ourlarge/pngtree-user-avatar-placeholder-black-png-image_3918427.jpg"
-    )
-    .notNull(),
+  avatarLink: text("avatar_link"), //it is mandatory , but it is not mandatory for the first phase of the registration
   biography: text("biography"),
   //the template of date has to be: "MM/DD/YYYY" or "YYYY-MM-DD"!
   dateOfBirth: date("date_of_birth"),
@@ -90,7 +87,7 @@ export const tags = pgTable("tags", {
     .references(() => users.userId),
 });
 
-//tag templates
+//tag templates ex. "sea", "JavaScript", "basketball"
 export const tagTemplates = pgTable("tag_templates", {
   tagTemplateId: uuid("tag_template_id")
     .primaryKey()
@@ -98,12 +95,27 @@ export const tagTemplates = pgTable("tag_templates", {
     .unique()
     .defaultRandom(),
   tagContent: text("tag_content").notNull().unique(),
-  tagCategory: uuid("tag_category")
-    .notNull()
-    .references(() => tagCategories.tagCategoryId),
 });
 
-//tag template categories
+//joint table of tag templates and tag categories
+export const tagTempsCats = pgTable(
+  "tag_temps_cats",
+  {
+    tagTemplateId: uuid("tag_template_id")
+      .notNull()
+      .references(() => tagTemplates.tagTemplateId),
+    tagCategoryId: uuid("tag_category_id")
+      .notNull()
+      .references(() => tagCategories.tagCategoryId),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.tagCategoryId, table.tagTemplateId] }), //composite primary key
+    };
+  }
+);
+
+//tag template categories ex. "sports", "computer science", "90's kid"
 export const tagCategories = pgTable("tag_categories", {
   tagCategoryId: uuid("tag_category_id")
     .primaryKey()
@@ -318,19 +330,24 @@ export const tagRelations = relations(tags, ({ one }) => ({
   }),
 }));
 
-export const tagTemplateRelations = relations(
-  tagTemplates,
-  ({ many, one }) => ({
-    tags: many(tags),
-    tagCategory: one(tagCategories, {
-      fields: [tagTemplates.tagCategory],
-      references: [tagCategories.tagCategoryId],
-    }),
-  })
-);
+export const tagTemplateRelations = relations(tagTemplates, ({ many }) => ({
+  tags: many(tags),
+  tagCategories: many(tagTempsCats),
+}));
+
+export const tagTempsCatsRelations = relations(tagTempsCats, ({ one }) => ({
+  tagTemplate: one(tagTemplates, {
+    fields: [tagTempsCats.tagTemplateId],
+    references: [tagTemplates.tagTemplateId],
+  }),
+  tagCategory: one(tagCategories, {
+    fields: [tagTempsCats.tagCategoryId],
+    references: [tagCategories.tagCategoryId],
+  }),
+}));
 
 export const tagCategoryRelations = relations(tagCategories, ({ many }) => ({
-  tagTemplates: many(tagTemplates),
+  tagTemplates: many(tagTempsCats),
 }));
 
 export const connectionsRelations = relations(connections, ({ one }) => ({

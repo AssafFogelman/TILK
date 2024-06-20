@@ -35,21 +35,25 @@ export const createToken = async (c: Context) => {
       hash,
     }: { phoneNumber: string; code: string; hash: string } = await c.req.json();
 
+    console.log("phoneNumber", phoneNumber);
+    console.log("code", code);
     //is the hash valid?
-    const hashValid = compareHash(
+    const hashValid = await compareHash(
       phoneNumber + code + process.env.VALIDATION_KEY,
       hash
     );
-    if (!hashValid) throw "the hash is not valid! retry the validation process";
+    if (!hashValid)
+      throw { message: "the hash is not valid! retry the validation process" };
 
     //does the user exist?
-    let user = await db.query.users.findFirst({
+    let existingUser = await db.query.users.findFirst({
       where: (table, funcs) => funcs.eq(table.phoneNumber, phoneNumber),
+      with: { tags: true },
     });
-
+    console.log("existingUser:", existingUser);
     //if not, create user
     let newUser;
-    if (!user) {
+    if (!existingUser) {
       newUser = await db
         .insert(users)
         .values({
@@ -58,16 +62,16 @@ export const createToken = async (c: Context) => {
         .returning({ userId: users.userId });
       console.log("newUser:", newUser);
     }
-    const userId = newUser ? newUser[0].userId : user?.userId;
+    const userId = newUser ? newUser[0].userId : existingUser?.userId;
     // create token
-    const token = await generateToken({ userId: userId }, "6 months");
+    const token = await generateToken({ userId: userId }, "6m");
     return c.json({
       token: token,
       userId: userId,
-      chosenPhoto: false,
-      chosenBio: false,
-      chosenTags: false,
-      isAdmin: user ? user.admin : false,
+      chosenPhoto: existingUser && existingUser.avatarLink ? true : false,
+      chosenBio: existingUser && existingUser.biography ? true : false,
+      chosenTags: existingUser && existingUser.tags.length ? true : false,
+      isAdmin: existingUser ? existingUser.admin : false,
     });
   } catch (error) {
     console.log('error in "create-token" route:', error);

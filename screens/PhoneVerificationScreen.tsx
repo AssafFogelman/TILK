@@ -142,7 +142,7 @@ const PhoneVerificationScreen = () => {
           ? phoneNumber.join("").slice(1)
           : phoneNumber.join("");
       //if the phone number starts with "0", remove the "0";
-      const hash = await axios
+      const { hash } = await axios
         .post(`/auth/send-sms`, {
           phoneNumber: concatenatedPhoneNumber,
           uniqueOSCode,
@@ -177,9 +177,13 @@ const PhoneVerificationScreen = () => {
   }
 
   function toggleModal() {
+    //if we want to show the modal, then it is now NOT visible, and thus the code needs to be reset.
+    //if we want to hide the modal, then it is NOW visible, and thus the phone number needs to be reset.
+
     modalVisible
-      ? setCode(Array(code.length).fill(""))
-      : setPhoneNumber(Array(phoneNumber.length).fill(""));
+      ? setPhoneNumber(Array(phoneNumber.length).fill(""))
+      : setCode(Array(code.length).fill(""));
+
     setModalVisible(!modalVisible);
   }
 
@@ -192,12 +196,15 @@ const PhoneVerificationScreen = () => {
         ? phoneNumber.join("").slice(1)
         : phoneNumber.join("");
     //if the phone number starts with "0", remove the "0";
+
     try {
-      const userDetails = await axios.post("/auth/create-token", {
-        phoneNumber: concatenatedPhoneNumber,
-        code,
-        hash,
-      });
+      const userDetails = await axios
+        .post("/auth/create-token", {
+          phoneNumber: concatenatedPhoneNumber,
+          code: code.join(""), //concatenated
+          hash,
+        })
+        .then((response) => response.data);
       console.log(
         "code verification (and token creation) successful! userDetails:",
         userDetails
@@ -233,7 +240,8 @@ const styles = StyleSheet.create({
   },
   phoneNumberContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap: 20,
+    justifyContent: "center",
     // borderWidth: 1,
     // borderColor: "red",
     alignItems: "center",

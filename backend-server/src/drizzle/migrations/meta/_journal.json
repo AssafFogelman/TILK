@@ -43,6 +43,13 @@
       "when": 1718783945256,
       "tag": "0005_organic_hobgoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1718878657545,
+      "tag": "0006_tan_true_believers",
+      "breakpoints": true
     }
   ]
 }
