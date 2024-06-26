@@ -13,7 +13,7 @@ import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
-import { UserType } from "../UserContext";
+import { UserContext } from "../UserContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   ChatMessageType,
@@ -37,7 +37,7 @@ const ChatMessageScreen = () => {
   const [selectedMessages, setSelectedMessages] = useState<MessageIdType[]>([]);
   const scrollViewRef = useRef<null | ScrollView>(null);
 
-  const { userId, setUserId } = useContext(UserType);
+  const { userId, setUserId } = useContext(UserContext);
 
   const route = useRoute<MessagesScreenRouteProp>();
   const navigation = useNavigation<MessagesScreenNavigationProp>();

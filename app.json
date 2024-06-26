@@ -14,7 +14,10 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false //tells Apple not to ask me about app encryption type
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -44,10 +47,9 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow TILK to use your location."
-          // lets see if this definition is necessary
-          // "isAndroidForegroundServiceEnabled": true
         }
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }

@@ -7,13 +7,10 @@ import "@ethersproject/shims";
 // Import the ethers library
 import { ethers } from "ethers";
 
-import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import StackNavigator from "./StackNavigator";
-import { UserContext } from "./UserContext";
+import { UserProvider } from "./UserContext";
 import { socket } from "./socket.js";
-import * as Location from "expo-location";
-import { AppState } from "react-native";
 
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -33,11 +30,11 @@ export default function App() {
       <Text>
         user is {isConnected ? "connected" : "disconnected"} to websocket
       </Text>
-      <UserContext>
+      <UserProvider>
         <PaperProvider theme={theme}>
           <StackNavigator />
         </PaperProvider>
-      </UserContext>
+      </UserProvider>
     </>
   );
 }

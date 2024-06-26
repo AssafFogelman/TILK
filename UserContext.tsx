@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useState } from "react";
+import { ReactNode, createContext, useContext, useState } from "react";
 
 /*
 explanation:
@@ -15,7 +15,7 @@ explanation:
 
 2. the component in of type "ReactNode"
 
-3. { children }: { children: ReactNode }  - setting the type of th inner object of "children"
+3. { children }: { children: ReactNode }  - setting the type of the inner object of "children"
 
 4. contextDefaultValue - the default value of the context, if nothing else defines it.
 
@@ -24,19 +24,38 @@ explanation:
 */
 
 const contextDefaultValue = {
-  userId: null as unknown as string,
-  setUserId: (userId: string) => {}, // noop default callback
+  // userId: null as unknown as string,
+  // setUserDetails: (userId: string) => {}, // noop default callback
+  userAttributes: {
+    userId: "",
+    chosenPhoto: false,
+    chosenBio: false,
+    chosenTags: false,
+    isAdmin: false,
+    offGrid: true,
+  },
+  setUserAttributes: (userAttributes: {
+    userId: string;
+    chosenPhoto: boolean;
+    chosenBio: boolean;
+    chosenTags: boolean;
+    isAdmin: boolean;
+    offGrid: boolean;
+  }) => {}, // noop default callback
 };
 
-const UserType = createContext(contextDefaultValue);
+const UserContext = createContext(contextDefaultValue);
 
-const UserContext = ({ children }: { children: ReactNode }) => {
-  const [userId, setUserId] = useState(contextDefaultValue.userId);
+const UserProvider = ({ children }: { children: ReactNode }) => {
+  // const [userId, setUserId] = useState(contextDefaultValue.userId);
+  const [userAttributes, setUserAttributes] = useState(
+    contextDefaultValue.userAttributes
+  );
   return (
-    <UserType.Provider value={{ userId, setUserId }}>
+    <UserContext.Provider value={{ userAttributes, setUserAttributes }}>
       {children}
-    </UserType.Provider>
+    </UserContext.Provider>
   );
 };
 
-export { UserType, UserContext };
+export { UserContext, UserProvider };

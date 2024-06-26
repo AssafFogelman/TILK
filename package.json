@@ -39,7 +39,8 @@
     "socket.io-client": "^4.7.5",
     "twilio": "^5.1.0",
     "expo-device": "~6.0.2",
-    "expo-application": "~5.9.1"
+    "expo-application": "~5.9.1",
+    "expo-secure-store": "~13.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",

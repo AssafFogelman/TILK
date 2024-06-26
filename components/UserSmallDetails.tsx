@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Pressable, Image } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import User from "../api/models/user";
-import { UserType } from "../UserContext";
+import { UserContext } from "../UserContext";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -21,7 +21,7 @@ type UserDataType = {
 };
 
 const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
-  const { userId, setUserId } = useContext(UserType);
+  const { userId, setUserId } = useContext(UserContext);
   const [requestSentByMe, setRequestSentByMe] = useState(false);
   const [requestSentToMe, setRequestSentToMe] = useState(false);
   const [weAreFriends, setWeAreFriends] = useState(false);

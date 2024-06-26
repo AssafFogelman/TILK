@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { UserType } from "../UserContext";
+import { UserContext } from "../UserContext";
 import { useNavigation } from "@react-navigation/native";
 
 type FriendRequestType = {
@@ -21,7 +21,7 @@ const FriendRequest = ({
     React.SetStateAction<FriendRequestType[]>
   >;
 }) => {
-  const { userId, setUserId } = useContext(UserType);
+  const { userId, setUserId } = useContext(UserContext);
 
   const navigation = useNavigation();
 

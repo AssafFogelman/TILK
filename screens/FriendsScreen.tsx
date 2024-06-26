@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { UserType } from "../UserContext";
+import { UserContext } from "../UserContext";
 import FriendRequest from "../components/FriendRequest";
 
 type FriendRequestType = {
@@ -20,7 +20,7 @@ const FriendsScreen = () => {
     fetchFriendRequests();
   }, []);
 
-  const { userId, setUserId } = useContext(UserType);
+  const { userId, setUserId } = useContext(UserContext);
 
   const fetchFriendRequests = async () => {
     try {

@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
-import { UserType } from "../UserContext";
+import { UserContext } from "../UserContext";
 import { getData } from "../config/asyncStorage";
 import axios from "axios";
 import { ObjectId } from "mongoose";
@@ -17,7 +17,7 @@ interface JwtPayload {
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-  const { userId, setUserId } = useContext(UserType);
+  const { userId, setUserId } = useContext(UserContext);
   const [users, setUsers] = useState([]);
 
   //handle minimizing and returning to app - currently checking if location is enabled. the listener starts only after the user loads the HomeScreen.

@@ -9,7 +9,7 @@ import {
   View,
   Modal,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { PhoneVerificationScreenRouteProp } from "../types/types";
 import { useRoute } from "@react-navigation/native";
 import { countryCodes, CountryPicker } from "react-native-country-codes-picker";
@@ -17,6 +17,8 @@ import axios, { AxiosError } from "axios";
 import { osName } from "expo-device";
 import { getIosIdForVendorAsync, getAndroidId } from "expo-application";
 import OTP from "../components/OTP";
+import { setItemAsync, getItemAsync } from "expo-secure-store";
+import { UserContext } from "../UserContext";
 
 const PhoneVerificationScreen = () => {
   const route = useRoute<PhoneVerificationScreenRouteProp>();
@@ -34,6 +36,7 @@ const PhoneVerificationScreen = () => {
   const codeInputRefs = useRef<(TextInput | null)[]>([]);
   const [hint, setHint] = React.useState<string>();
   const [modalVisible, setModalVisible] = useState(false);
+  const { userAttributes, setUserAttributes } = useContext(UserContext);
 
   useGetCountryData(); //get the dial code and flag of the country from "userCountry"
 
@@ -198,17 +201,43 @@ const PhoneVerificationScreen = () => {
     //if the phone number starts with "0", remove the "0";
 
     try {
-      const userDetails = await axios
+      const {
+        token,
+        userId,
+        chosenPhoto,
+        chosenBio,
+        chosenTags,
+        isAdmin,
+      }: {
+        token: string;
+        userId: string;
+        chosenPhoto: boolean;
+        chosenBio: boolean;
+        chosenTags: boolean;
+        isAdmin: boolean;
+        offGrid: boolean;
+      } = await axios
         .post("/auth/create-token", {
           phoneNumber: concatenatedPhoneNumber,
           code: code.join(""), //concatenated
           hash,
         })
         .then((response) => response.data);
-      console.log(
-        "code verification (and token creation) successful! userDetails:",
-        userDetails
-      );
+
+      //store token in secure store
+      await setItemAsync("TILK-token", token);
+      const resultedToken = await getItemAsync("TILK-token");
+
+      //store user details in context
+
+      setUserAttributes({
+        ...userAttributes,
+        userId,
+        chosenPhoto,
+        chosenBio,
+        chosenTags,
+        isAdmin,
+      });
     } catch (error: any) {
       if (error.response) {
         // The request was made and the server responded with a status code
