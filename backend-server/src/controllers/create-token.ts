@@ -20,7 +20,6 @@ import { generateToken } from "../config/jwt";
      * chosenBio
      * chosenTags
      * isAdmin
-     * off-grid (specifically not determined by the server, but by the app)
 
 
     create and return a new token containing the new user unique phone ID and phone number and register the user.

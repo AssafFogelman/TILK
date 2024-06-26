@@ -1,6 +1,13 @@
-import { ne, sql } from "drizzle-orm";
+import { eq, ne, sql } from "drizzle-orm";
 import { db } from "./drizzle/db.js";
-import { connections, users } from "./drizzle/schema.js";
+import {
+  connections,
+  tagCategories,
+  tags,
+  tagsTagCats,
+  tagsUsers,
+  users,
+} from "./drizzle/schema.js";
 
 type UserType = typeof users.$inferInsert;
 
@@ -63,19 +70,155 @@ async function main() {
     //* getting the 10 nearest cities to "Hasataf" creek
     /* showing results up to 10 KM */
 
-    await db.query.tagCategories.findFirst({
-      with: {
-        tagTemplates: true,
-      },
-    });
+    //*insert tags and tag categories:
+    // Insert tags
+    // const insertedTags = await db
+    //   .insert(tags)
+    //   .values([
+    //     {
+    //       tagContent: "bowling",
+    //     },
+    //     {
+    //       tagContent: "fishing",
+    //     },
+    //     {
+    //       tagContent: "anime",
+    //     },
+    //     {
+    //       tagContent: "sushi",
+    //     },
+    //     {
+    //       tagContent: "sumo",
+    //     },
+    //     {
+    //       tagContent: "extra ketchup",
+    //     },
+    //   ])
+    //   .returning()
+    //   .onConflictDoNothing();
 
-    await db.query.tagTemplates.findFirst({
-      with: {
-        tagCategories: true,
-      },
-    });
-    //entering exampleUsers
-    await db.insert(users).values(exampleUsers).onConflictDoNothing();
+    // // Insert categories
+    // const insertedCategories = await db
+    //   .insert(tagCategories)
+    //   .values([
+    //     { categoryName: "sports" },
+    //     { categoryName: "Japan" },
+    //     { categoryName: "food" },
+    //   ])
+    //   .returning()
+    //   .onConflictDoNothing();
+
+    // // Link templates and categories
+    // await db
+    //   .insert(tagsTagCats)
+    //   .values([
+    //     {
+    //       tagId: insertedTags[0].tagId,
+    //       tagCategoryId: insertedCategories[0].tagCategoryId,
+    //     },
+    //     {
+    //       tagId: insertedTags[1].tagId,
+    //       tagCategoryId: insertedCategories[0].tagCategoryId,
+    //     },
+    //     {
+    //       tagId: insertedTags[2].tagId,
+    //       tagCategoryId: insertedCategories[1].tagCategoryId,
+    //     },
+    //     {
+    //       tagId: insertedTags[3].tagId,
+    //       tagCategoryId: insertedCategories[1].tagCategoryId,
+    //     },
+    //     {
+    //       tagId: insertedTags[3].tagId,
+    //       tagCategoryId: insertedCategories[2].tagCategoryId,
+    //     },
+    //     {
+    //       tagId: insertedTags[4].tagId,
+    //       tagCategoryId: insertedCategories[1].tagCategoryId,
+    //     },
+    //     {
+    //       tagId: insertedTags[4].tagId,
+    //       tagCategoryId: insertedCategories[0].tagCategoryId,
+    //     },
+    //     {
+    //       tagId: insertedTags[5].tagId,
+    //       tagCategoryId: insertedCategories[2].tagCategoryId,
+    //     },
+    //   ])
+    //   .onConflictDoNothing();
+
+    //insert user specific tags
+    const foundTemplates = await db.query.tags.findMany({});
+    const id_972546735391 = "a8d8bbc4-6ae9-4f0c-87ca-2cb4da6a210c";
+
+    await db
+      .insert(tagsUsers)
+      .values([
+        {
+          userId: id_972546735391,
+          tagId: foundTemplates[0].tagId,
+        },
+        {
+          userId: id_972546735391,
+          tagId: foundTemplates[1].tagId,
+        },
+        {
+          userId: id_972546735391,
+          tagId: foundTemplates[2].tagId,
+        },
+        {
+          userId: id_972546735391,
+          tagId: foundTemplates[3].tagId,
+        },
+        {
+          userId: id_972546735391,
+          tagId: foundTemplates[4].tagId,
+        },
+        {
+          userId: id_972546735391,
+          tagId: foundTemplates[5].tagId,
+        },
+      ])
+      .onConflictDoNothing();
+
+    // Query to get all tags with their categories
+
+    const tagsWithCategoriesAndUsers = await db
+      .select({
+        tagId: tags.tagId,
+        tagContent: tags.tagContent,
+        categories: sql<
+          string[]
+        >`array_agg(distinct ${tagCategories.categoryName})`,
+        users: sql<string[]>`array_agg(distinct ${users.phoneNumber})`,
+      })
+      .from(tags)
+      .leftJoin(tagsTagCats, eq(tags.tagId, tagsTagCats.tagId))
+      .leftJoin(
+        tagCategories,
+        eq(tagsTagCats.tagCategoryId, tagCategories.tagCategoryId)
+      )
+      .leftJoin(tagsUsers, eq(tags.tagId, tagsUsers.tagId))
+      .leftJoin(users, eq(tagsUsers.userId, users.userId))
+      .groupBy(tags.tagId, tags.tagContent);
+
+    console.log("tagsWithCategoriesAndUsers:", tagsWithCategoriesAndUsers);
+
+    /********************************************************************* */
+    //* fetching templates
+    // await db.query.tagCategories.findFirst({
+    //   with: {
+    //     tagTemplates: true,
+    //   },
+    // });
+
+    // await db.query.tagTemplates.findFirst({
+    //   with: {
+    //     tagCategories: true,
+    //   },
+    // });
+    // //entering exampleUsers
+    // await db.insert(users).values(exampleUsers).onConflictDoNothing();
 
     //*entering exampleUser's location
     // const sqlQuery = sql.raw(
@@ -93,14 +236,15 @@ async function main() {
     //   WHERE nickname='lagin';`)
     // );
 
-    const knn = `
-    SELECT nickname, user_location <-> ST_MakePoint(31.77185142779806, 35.12806329924837) AS distance 
-    FROM users 
-    WHERE user_location <-> ST_MakePoint(31.77185142779806, 35.12806329924837)<10000
-    ORDER BY distance 
-    LIMIT 10;`;
-    const closestCities = await db.execute(sql.raw(knn));
-    console.log("closestCities:", closestCities);
+    //* finding KNN
+    // const knn = `
+    // SELECT nickname, user_location <-> ST_MakePoint(31.77185142779806, 35.12806329924837) AS distance
+    // FROM users
+    // WHERE user_location <-> ST_MakePoint(31.77185142779806, 35.12806329924837)<10000
+    // ORDER BY distance
+    // LIMIT 10;`;
+    // const closestCities = await db.execute(sql.raw(knn));
+    // console.log("closestCities:", closestCities);
     /************ */
     // const users1 = await db.query.users.findMany();
     // console.log("users:", users1);

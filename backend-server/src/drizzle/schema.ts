@@ -76,41 +76,44 @@ Then we added a GIST index to the user_location column (to make it faster):
 mind you that you need to create the index BEFORE inserting data.
 */
 
-//tags
-export const tags = pgTable("tags", {
-  tagId: uuid("tag_id").primaryKey().unique().notNull().defaultRandom(),
-  tagTemplateId: uuid("tag_template_id")
-    .notNull()
-    .references(() => tagTemplates.tagTemplateId), //add a reference to tagTemplate table
-  tagChooser: uuid("tag_chooser")
-    .notNull()
-    .references(() => users.userId),
-});
+//tagsUsers
+export const tagsUsers = pgTable(
+  "tags_users",
+  {
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.tagId), //add a reference to tagTemplate table
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.userId),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.tagId, table.userId] }), //composite primary key
+    };
+  }
+);
 
 //tag templates ex. "sea", "JavaScript", "basketball"
-export const tagTemplates = pgTable("tag_templates", {
-  tagTemplateId: uuid("tag_template_id")
-    .primaryKey()
-    .notNull()
-    .unique()
-    .defaultRandom(),
+export const tags = pgTable("tags", {
+  tagId: uuid("tag_id").primaryKey().notNull().unique().defaultRandom(),
   tagContent: text("tag_content").notNull().unique(),
 });
 
 //joint table of tag templates and tag categories
-export const tagTempsCats = pgTable(
-  "tag_temps_cats",
+export const tagsTagCats = pgTable(
+  "tag_tag_cats",
   {
-    tagTemplateId: uuid("tag_template_id")
+    tagId: uuid("tag_id")
       .notNull()
-      .references(() => tagTemplates.tagTemplateId),
+      .references(() => tags.tagId),
     tagCategoryId: uuid("tag_category_id")
       .notNull()
       .references(() => tagCategories.tagCategoryId),
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.tagCategoryId, table.tagTemplateId] }), //composite primary key
+      pk: primaryKey({ columns: [table.tagCategoryId, table.tagId] }), //composite primary key
     };
   }
 );
@@ -310,7 +313,7 @@ export const eventTypes = pgTable("event_types", {
 // only needed for Drizzle to know which columns it can associate with which column
 
 export const userRelations = relations(users, ({ many }) => ({
-  tags: many(tags),
+  // tags: many(tagsUsers),
   connections: many(connections),
   receivedConnectionRequests: many(receivedConnectionRequests),
   sentConnectionRequests: many(sentConnectionRequests),
@@ -319,35 +322,35 @@ export const userRelations = relations(users, ({ many }) => ({
   events: many(events),
 }));
 
-export const tagRelations = relations(tags, ({ one }) => ({
-  tagChooser: one(users, {
-    fields: [tags.tagChooser],
+export const tagOnUserRelations = relations(tagsUsers, ({ one }) => ({
+  user: one(users, {
+    fields: [tagsUsers.userId],
     references: [users.userId],
   }),
-  tagTemplateId: one(tagTemplates, {
-    fields: [tags.tagTemplateId],
-    references: [tagTemplates.tagTemplateId],
+  tag: one(tags, {
+    fields: [tagsUsers.tagId],
+    references: [tags.tagId],
   }),
 }));
 
-export const tagTemplateRelations = relations(tagTemplates, ({ many }) => ({
-  tags: many(tags),
-  tagCategories: many(tagTempsCats),
+export const tagRelations = relations(tags, ({ many }) => ({
+  users: many(tagsUsers),
+  tagCategories: many(tagsTagCats),
 }));
 
-export const tagTempsCatsRelations = relations(tagTempsCats, ({ one }) => ({
-  tagTemplate: one(tagTemplates, {
-    fields: [tagTempsCats.tagTemplateId],
-    references: [tagTemplates.tagTemplateId],
+export const tagOnTagCatRelations = relations(tagsTagCats, ({ one }) => ({
+  tag: one(tags, {
+    fields: [tagsTagCats.tagId],
+    references: [tags.tagId],
   }),
   tagCategory: one(tagCategories, {
-    fields: [tagTempsCats.tagCategoryId],
+    fields: [tagsTagCats.tagCategoryId],
     references: [tagCategories.tagCategoryId],
   }),
 }));
 
 export const tagCategoryRelations = relations(tagCategories, ({ many }) => ({
-  tagTemplates: many(tagTempsCats),
+  tags: many(tags),
 }));
 
 export const connectionsRelations = relations(connections, ({ one }) => ({
