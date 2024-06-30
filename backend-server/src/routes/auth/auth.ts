@@ -1,7 +1,12 @@
 import { Hono } from "hono";
-import { validateCode, validatePhoneNo } from "../../models/authSchemas";
+import {
+  validateCode,
+  validatePhoneNo,
+  validateToken,
+} from "../../models/authSchemas";
 import { sendSms } from "../../controllers/send-sms";
 import { createToken } from "../../controllers/create-token";
+import { userData } from "../../controllers/user-data";
 
 export const auth = new Hono().basePath("/auth");
 
@@ -38,3 +43,13 @@ auth.post("/send-sms", validatePhoneNo, sendSms);
     
  */
 auth.post("/create-token", validatePhoneNo, /*validateCode,*/ createToken);
+
+/* 
+    1. receives a token
+    2. checks that the token is valid
+    3. checks whether the user exists in the database. 
+    if not, returns an error.
+    if so, returns all relevant user data.
+*/
+
+auth.get("/user-data", validateToken, userData);

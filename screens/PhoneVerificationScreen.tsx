@@ -227,9 +227,9 @@ const PhoneVerificationScreen = () => {
       //store token in secure store
       await setItemAsync("TILK-token", token);
       const resultedToken = await getItemAsync("TILK-token");
-
+      //! should we configure axios here? speling mistake
       //store user details in context
-
+      //! this needs to change I suppose... speing mistake
       setUserAttributes({
         ...userAttributes,
         userId,

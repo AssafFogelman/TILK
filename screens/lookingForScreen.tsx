@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 
-const lookingForScreen = () => {
+const LookingForScreen = () => {
   return (
     <View>
-      <Text>lookingForScreen</Text>
+      <Text>LookingForScreen</Text>
     </View>
   );
 };
 
-export default lookingForScreen;
+export default LookingForScreen;
 
 const styles = StyleSheet.create({});

@@ -19,6 +19,21 @@ import { theme } from "./styles/react-paper-theme";
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 
+//! is this ecceptable?!!!!
+//!we need a secure storae at any rate..
+// axios.interceptors.request.use((config) => {
+//   const token = localStoage.getItem("token");
+//   if (token) {
+//     /*
+//         the token exists in local storage,
+//         the user logged in.
+//         if the token exists then we will add it to header of the request
+//     */
+//     config.headers["TILK-token"] = token;
+//   }
+//   return config;
+// });
+
 export default function App() {
   const [locationEnabled, setLocationEnabled] = useState(false);
 

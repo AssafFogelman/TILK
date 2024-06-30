@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 
-const photoSelectScreen = () => {
+const SelectAvatarScreen = () => {
   return (
     <View>
-      <Text>photoSelectScreen</Text>
+      <Text>SelectAvatarScreen</Text>
     </View>
   );
 };
 
-export default photoSelectScreen;
+export default SelectAvatarScreen;
 
 const styles = StyleSheet.create({});

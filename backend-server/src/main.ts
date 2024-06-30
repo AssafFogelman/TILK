@@ -204,6 +204,8 @@ async function main() {
 
     console.log("tagsWithCategoriesAndUsers:", tagsWithCategoriesAndUsers);
 
+    //*! look in: https://orm.drizzle.team/docs/joins#aggregating-results
+
     /********************************************************************* */
     //* fetching templates
     // await db.query.tagCategories.findFirst({

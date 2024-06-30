@@ -292,7 +292,6 @@ export const tablesEnum = pgEnum("tables_enum", [
   "chats",
   "chat_messages",
   "tags",
-  "tag_templates",
   "tag_categories",
   "notificationTemplates",
 ]);
@@ -313,7 +312,7 @@ export const eventTypes = pgTable("event_types", {
 // only needed for Drizzle to know which columns it can associate with which column
 
 export const userRelations = relations(users, ({ many }) => ({
-  // tags: many(tagsUsers),
+  tagsUsers: many(tagsUsers),
   connections: many(connections),
   receivedConnectionRequests: many(receivedConnectionRequests),
   sentConnectionRequests: many(sentConnectionRequests),
@@ -322,7 +321,7 @@ export const userRelations = relations(users, ({ many }) => ({
   events: many(events),
 }));
 
-export const tagOnUserRelations = relations(tagsUsers, ({ one }) => ({
+export const tagsUsersRelations = relations(tagsUsers, ({ one }) => ({
   user: one(users, {
     fields: [tagsUsers.userId],
     references: [users.userId],
@@ -333,8 +332,8 @@ export const tagOnUserRelations = relations(tagsUsers, ({ one }) => ({
   }),
 }));
 
-export const tagRelations = relations(tags, ({ many }) => ({
-  users: many(tagsUsers),
+export const tagsRelations = relations(tags, ({ many }) => ({
+  tagsUsers: many(tagsUsers),
   tagCategories: many(tagsTagCats),
 }));
 

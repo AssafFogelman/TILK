@@ -11,7 +11,13 @@ export type StackParamList = {
   Friends: undefined; //there are no params that are sent to this screen
   Chats: undefined; //there are no params that are sent to this screen
   Messages: { friendId: string }; //this screen will receive a param named "friendID" of type string */;
+  SelectAvatar: undefined; //there are no params that are sent to this screen
+  PersonalDetails: undefined; //there are no params that are sent to this screen
+  LookingFor: undefined; //there are no params that are sent to this screen
 };
+
+//this is the type for the useRoute() in "Welcome" Screen
+export type WelcomeScreenRouteProp = RouteProp<StackParamList, "Welcome">;
 
 //this is the type for the useRoute() in "Messages" Screen
 export type MessagesScreenRouteProp = RouteProp<StackParamList, "Messages">;
@@ -56,5 +62,28 @@ export type ChatMessageType = {
   timeStamp: string;
   message: string;
 };
+
+//User Context Types
+
+export const ACTIONS = {
+  RESTORE_TOKEN: "RESTORE_TOKEN",
+  SIGN_IN: "SIGN_IN",
+  SIGN_OUT: "SIGN_OUT",
+} as const;
+
+export interface AuthState {
+  chosenPhoto: boolean;
+  chosenBio: boolean;
+  chosenTags: boolean;
+  isAdmin: boolean;
+  isSignOut: boolean;
+  isLoading: boolean;
+  userToken: string | null;
+}
+
+export type AuthAction =
+  | { type: typeof ACTIONS.RESTORE_TOKEN; token: string }
+  | { type: typeof ACTIONS.SIGN_IN; token: string }
+  | { type: typeof ACTIONS.SIGN_OUT };
 
 export type MessageIdType = string;

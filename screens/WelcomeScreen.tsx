@@ -6,8 +6,11 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { WelcomeScreenNavigationProp } from "../types/types";
-import { useNavigation } from "@react-navigation/native";
+import {
+  WelcomeScreenNavigationProp,
+  WelcomeScreenRouteProp,
+} from "../types/types";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import * as Location from "expo-location";
 import axios from "axios";
 

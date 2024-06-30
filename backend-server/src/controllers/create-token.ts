@@ -36,6 +36,7 @@ export const createToken = async (c: Context) => {
 
     console.log("phoneNumber", phoneNumber);
     console.log("code", code);
+
     //is the hash valid?
     const hashValid = await compareHash(
       phoneNumber + code + process.env.VALIDATION_KEY,
@@ -47,7 +48,13 @@ export const createToken = async (c: Context) => {
     //does the user exist?
     let existingUser = await db.query.users.findFirst({
       where: (table, funcs) => funcs.eq(table.phoneNumber, phoneNumber),
-      with: { tags: true },
+      with: {
+        tagsUsers: {
+          columns: {
+            tagId: true,
+          },
+        },
+      },
     });
     console.log("existingUser:", existingUser);
     //if not, create user
@@ -69,7 +76,7 @@ export const createToken = async (c: Context) => {
       userId: userId,
       chosenPhoto: existingUser && existingUser.avatarLink ? true : false,
       chosenBio: existingUser && existingUser.biography ? true : false,
-      chosenTags: existingUser && existingUser.tags.length ? true : false,
+      chosenTags: existingUser && existingUser.tagsUsers.length ? true : false,
       isAdmin: existingUser ? existingUser.admin : false,
     });
   } catch (error) {
