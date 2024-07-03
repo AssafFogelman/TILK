@@ -68,22 +68,34 @@ export type ChatMessageType = {
 export const ACTIONS = {
   RESTORE_TOKEN: "RESTORE_TOKEN",
   SIGN_IN: "SIGN_IN",
+  SIGN_UP: "SIGN_UP",
   SIGN_OUT: "SIGN_OUT",
 } as const;
 
 export interface AuthState {
+  isLoading: boolean;
+  isSignOut: boolean;
+  userToken: string | null;
   chosenPhoto: boolean;
   chosenBio: boolean;
   chosenTags: boolean;
   isAdmin: boolean;
-  isSignOut: boolean;
-  isLoading: boolean;
-  userToken: string | null;
+  userId: string;
 }
 
 export type AuthAction =
-  | { type: typeof ACTIONS.RESTORE_TOKEN; token: string }
+  | { type: typeof ACTIONS.RESTORE_TOKEN; data: SignUpType }
   | { type: typeof ACTIONS.SIGN_IN; token: string }
-  | { type: typeof ACTIONS.SIGN_OUT };
+  | { type: typeof ACTIONS.SIGN_OUT }
+  | { type: typeof ACTIONS.SIGN_UP; data: SignUpType };
 
 export type MessageIdType = string;
+
+export type SignUpType = {
+  userId: string;
+  chosenPhoto: boolean;
+  chosenBio: boolean;
+  chosenTags: boolean;
+  isAdmin: boolean;
+  userToken: string;
+};

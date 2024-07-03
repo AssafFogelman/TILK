@@ -3,11 +3,10 @@ import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
-import { UserContext } from "../UserContext";
+// import { UserContext } from "../UserContext";
 import { getData } from "../config/asyncStorage";
 import axios from "axios";
 import { ObjectId } from "mongoose";
-import { jwtDecode } from "jwt-decode";
 import UserSmallDetails from "../components/UserSmallDetails";
 import { useHandleAppStateChange } from "../hooks/useHandleAppStateChange";
 
@@ -17,7 +16,7 @@ interface JwtPayload {
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-  const { userId, setUserId } = useContext(UserContext);
+  // const { userId, setUserId } = useContext(UserContext);
   const [users, setUsers] = useState([]);
 
   //handle minimizing and returning to app - currently checking if location is enabled. the listener starts only after the user loads the HomeScreen.
@@ -60,24 +59,24 @@ const HomeScreen = () => {
     const fetchUsers = async () => {
       try {
         const token = await getData("authToken");
-        const decodedToken: JwtPayload = jwtDecode(token);
+        // const decodedToken: JwtPayload = jwtDecode(token);
 
         //set context with userId
-        setUserId(decodedToken.userId);
+        // setUserId(decodedToken.userId);
 
         //get the list of all the users except this user.
-        axios
-          .get("http://192.168.1.116:8000/users/" + decodedToken.userId)
-          .then((response) => {
-            //save the users' data to a state.
-            setUsers(response.data);
-          })
-          .catch((error) => {
-            console.log(
-              "an error ocurred while trying to retrieve the user list"
-            );
-            console.log("the error is:", error);
-          });
+        // axios
+        //   .get("http://192.168.1.116:8000/users/" + decodedToken.userId)
+        //   .then((response) => {
+        //     //save the users' data to a state.
+        //     setUsers(response.data);
+        //   })
+        //   .catch((error) => {
+        //     console.log(
+        //       "an error ocurred while trying to retrieve the user list"
+        //     );
+        //     console.log("the error is:", error);
+        //   });
       } catch (error) {
         console.log("error in useEffect of HomeScreen:", error);
       }
@@ -89,9 +88,9 @@ const HomeScreen = () => {
     <View>
       {/* mapping the users downloaded from the server */}
       <View style={{ padding: 10 }}>
-        {users.map((userData, index) => (
+        {/* {users.map((userData, index) => (
           <UserSmallDetails key={index} userData={userData} />
-        ))}
+        ))} */}
       </View>
     </View>
   );

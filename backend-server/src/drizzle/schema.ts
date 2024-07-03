@@ -102,7 +102,7 @@ export const tags = pgTable("tags", {
 
 //joint table of tag templates and tag categories
 export const tagsTagCats = pgTable(
-  "tag_tag_cats",
+  "tags_tag_cats",
   {
     tagId: uuid("tag_id")
       .notNull()

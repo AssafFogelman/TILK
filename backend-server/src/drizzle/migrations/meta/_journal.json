@@ -78,6 +78,20 @@
       "when": 1719395410566,
       "tag": "0010_chief_bloodaxe",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1719844094556,
+      "tag": "0011_mixed_hammerhead",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1719844271502,
+      "tag": "0012_far_satana",
+      "breakpoints": true
     }
   ]
 }

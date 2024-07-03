@@ -18,7 +18,7 @@ import { osName } from "expo-device";
 import { getIosIdForVendorAsync, getAndroidId } from "expo-application";
 import OTP from "../components/OTP";
 import { setItemAsync, getItemAsync } from "expo-secure-store";
-import { UserContext } from "../UserContext";
+import { AuthContext } from "../StackNavigator";
 
 const PhoneVerificationScreen = () => {
   const route = useRoute<PhoneVerificationScreenRouteProp>();
@@ -36,7 +36,7 @@ const PhoneVerificationScreen = () => {
   const codeInputRefs = useRef<(TextInput | null)[]>([]);
   const [hint, setHint] = React.useState<string>();
   const [modalVisible, setModalVisible] = useState(false);
-  const { userAttributes, setUserAttributes } = useContext(UserContext);
+  const { signUp } = useContext(AuthContext);
 
   useGetCountryData(); //get the dial code and flag of the country from "userCountry"
 
@@ -226,18 +226,25 @@ const PhoneVerificationScreen = () => {
 
       //store token in secure store
       await setItemAsync("TILK-token", token);
-      const resultedToken = await getItemAsync("TILK-token");
-      //! should we configure axios here? speling mistake
+
+      //add the token to the header in every request
+      axios.interceptors.request.use((config) => {
+        config.headers["TILK-token"] = token;
+        return config;
+      });
       //store user details in context
       //! this needs to change I suppose... speing mistake
-      setUserAttributes({
-        ...userAttributes,
+
+      signUp({
         userId,
         chosenPhoto,
         chosenBio,
         chosenTags,
         isAdmin,
+        userToken: token,
       });
+
+      //navigate to "add details" screens. will happen automatically.
     } catch (error: any) {
       if (error.response) {
         // The request was made and the server responded with a status code

@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { UserContext } from "../UserContext";
+// import { UserContext } from "../UserContext";
 import { useNavigation } from "@react-navigation/native";
 
 type FriendRequestType = {
@@ -21,7 +21,7 @@ const FriendRequest = ({
     React.SetStateAction<FriendRequestType[]>
   >;
 }) => {
-  const { userId, setUserId } = useContext(UserContext);
+  // const { userId, setUserId } = useContext(UserContext);
 
   const navigation = useNavigation();
 
@@ -39,7 +39,7 @@ const FriendRequest = ({
           },
           body: JSON.stringify({
             sender_userId: sender_userId,
-            recipient_userId: userId,
+            // recipient_userId: userId,
           }), // sender_userId = the user who sent the request. recipient_userId = the user
         }
       );

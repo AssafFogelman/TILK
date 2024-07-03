@@ -1,7 +1,7 @@
 import { Image, Pressable, Text, View } from "react-native";
 import React, { useContext } from "react";
 import { ChatMessageType, MessageIdType } from "../types/types";
-import { UserContext } from "../UserContext";
+// import { UserContext } from "../UserContext";
 import styles from "../styles/styles";
 
 const ChatMessage = ({
@@ -13,7 +13,7 @@ const ChatMessage = ({
   selectedMessages: MessageIdType[];
   setSelectedMessages: React.Dispatch<React.SetStateAction<MessageIdType[]>>;
 }) => {
-  const { userId, setUserId } = useContext(UserContext);
+  // const { userId, setUserId } = useContext(UserContext);
 
   const handleSelectMessage = (chatMessage: ChatMessageType) => {
     //check if the message is already selected (in the selected messages array)
@@ -46,9 +46,9 @@ const ChatMessage = ({
         }}
         /* if the message comes from the user, append certain styles */
         style={[
-          chatMessage.senderId._id === userId
-            ? styles.chatMessageScreen_userMessage
-            : styles.chatMessageScreen_recipientMessage,
+          // chatMessage.senderId._id === userId
+          //   ? styles.chatMessageScreen_userMessage
+          //   : styles.chatMessageScreen_recipientMessage,
 
           isMessageSelected ? styles.chatMessageScreen_selectedMessage : null,
         ]}
@@ -79,9 +79,9 @@ const ChatMessage = ({
         }}
         /* if the message comes from the user, append certain styles */
         style={[
-          chatMessage.senderId._id === userId
-            ? styles.chatMessageScreen_userMessage
-            : styles.chatMessageScreen_recipientMessage,
+          // chatMessage.senderId._id === userId
+          //   ? styles.chatMessageScreen_userMessage
+          //   : styles.chatMessageScreen_recipientMessage,
 
           isMessageSelected ? styles.chatMessageScreen_selectedMessage : null,
         ]}

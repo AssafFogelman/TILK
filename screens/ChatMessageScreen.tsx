@@ -13,7 +13,7 @@ import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
-import { UserContext } from "../UserContext";
+// import { UserContext } from "../UserContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   ChatMessageType,
@@ -37,7 +37,7 @@ const ChatMessageScreen = () => {
   const [selectedMessages, setSelectedMessages] = useState<MessageIdType[]>([]);
   const scrollViewRef = useRef<null | ScrollView>(null);
 
-  const { userId, setUserId } = useContext(UserContext);
+  // const { userId, setUserId } = useContext(UserContext);
 
   const route = useRoute<MessagesScreenRouteProp>();
   const navigation = useNavigation<MessagesScreenNavigationProp>();
@@ -72,12 +72,11 @@ const ChatMessageScreen = () => {
   //fetch chat messages
   const fetchMessages = async () => {
     try {
-      const response = await fetch(
-        `http://192.168.1.116:8000/messages/getMessages/${userId}/${friendId}`
-      );
-
-      const data = await response.json();
-      setChatMessages(data);
+      // const response = await fetch(
+      //   `http://192.168.1.116:8000/messages/getMessages/${userId}/${friendId}`
+      // );
+      // const data = await response.json();
+      // setChatMessages(data);
     } catch (error) {
       console.log(
         "there was an error trying to fetch the chat's messages:",
@@ -236,7 +235,7 @@ const ChatMessageScreen = () => {
       */
 
       const formData = new FormData();
-      formData.append("senderId", userId);
+      // formData.append("senderId", userId);
       formData.append("recipientId", friendId);
       formData.append("messageType", messageType);
       // formData.append("imagePath", imagePath);

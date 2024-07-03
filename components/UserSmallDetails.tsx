@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Pressable, Image } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import User from "../api/models/user";
-import { UserContext } from "../UserContext";
+// import { UserContext } from "../UserContext";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -21,7 +21,7 @@ type UserDataType = {
 };
 
 const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
-  const { userId, setUserId } = useContext(UserContext);
+  // const { userId, setUserId } = useContext(UserContext);
   const [requestSentByMe, setRequestSentByMe] = useState(false);
   const [requestSentToMe, setRequestSentToMe] = useState(false);
   const [weAreFriends, setWeAreFriends] = useState(false);
@@ -39,22 +39,25 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
     */
 
     //are we connected/friends?
-    if (userData.friends.includes(userId)) {
-      setWeAreFriends(true);
-      return;
-    }
+
+    // if (userData.friends.includes(userId)) {
+    //   setWeAreFriends(true);
+    //   return;
+    // }
 
     //did I send him a connect request?
-    if (userData.receivedFriendRequests.includes(userId)) {
-      setRequestSentByMe(true);
-      return;
-    }
+
+    // if (userData.receivedFriendRequests.includes(userId)) {
+    //   setRequestSentByMe(true);
+    //   return;
+    // }
 
     //did he send me a connect request?
-    if (userData.sentFriendRequests.includes(userId)) {
-      setRequestSentToMe(true);
-      return;
-    }
+
+    // if (userData.sentFriendRequests.includes(userId)) {
+    //   setRequestSentToMe(true);
+    //   return;
+    // }
 
     //it is false by default, but better safe than sorry
     setWeAreFriends(false);
@@ -168,7 +171,7 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
             borderRadius: 9,
           }}
           onPress={() => {
-            acceptFriendRequest(userId, userData._id);
+            // acceptFriendRequest(userId, userData._id);
           }}
         >
           <Text style={{ textAlign: "center", color: "white", fontSize: 13 }}>
@@ -181,7 +184,7 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
       {!weAreFriends && !requestSentByMe && !requestSentToMe && (
         <Pressable
           onPress={() => {
-            sendFriendRequest(userId, userData._id);
+            // sendFriendRequest(userId, userData._id);
           }}
           style={{
             backgroundColor: "#567189",

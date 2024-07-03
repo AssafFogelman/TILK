@@ -9,7 +9,6 @@ import { ethers } from "ethers";
 
 import { StyleSheet, Text, View } from "react-native";
 import StackNavigator from "./StackNavigator";
-import { UserProvider } from "./UserContext";
 import { socket } from "./socket.js";
 
 import axios from "axios";
@@ -45,11 +44,7 @@ export default function App() {
       <Text>
         user is {isConnected ? "connected" : "disconnected"} to websocket
       </Text>
-      <UserProvider>
-        <PaperProvider theme={theme}>
-          <StackNavigator />
-        </PaperProvider>
-      </UserProvider>
+      <StackNavigator />
     </>
   );
 }

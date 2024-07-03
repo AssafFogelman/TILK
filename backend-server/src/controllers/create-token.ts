@@ -84,3 +84,4 @@ export const createToken = async (c: Context) => {
     return c.json({ message: 'error in "create-token" route:' + error }, 401);
   }
 };
+

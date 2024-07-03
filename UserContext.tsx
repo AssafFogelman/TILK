@@ -2,6 +2,7 @@ import {
   ReactNode,
   createContext,
   useContext,
+  useMemo,
   useReducer,
   useState,
 } from "react";
@@ -53,53 +54,39 @@ const contextDefaultValue = {
   }) => {}, // noop default callback
 };
 
-const initialValues = {
-  chosenPhoto: false,
-  chosenBio: false,
-  chosenTags: false,
-  isAdmin: false,
-  isSignOut: false,
-  isLoading: true,
-  userToken: null,
-};
+// const AuthContext = createContext();
 
-const UserContext = createContext(contextDefaultValue);
-
-const UserProvider = ({ children }: { children: ReactNode }) => {
-  // const [userId, setUserId] = useState(contextDefaultValue.userId);
-  const [userAttributes, setUserAttributes] = useState(
-    contextDefaultValue.userAttributes
-  );
-  const [state, dispatch] = useReducer(reducer, initialValues);
-
-  return (
-    <UserContext.Provider value={{ userAttributes, setUserAttributes }}>
-      {children}
-    </UserContext.Provider>
-  );
-};
-
-function reducer(prevState: AuthState, action: AuthAction) {
-  switch (action.type) {
-    case ACTIONS.RESTORE_TOKEN:
-      return {
-        ...prevState,
-        userToken: action.token,
-        isLoading: false,
-      };
-    case ACTIONS.SIGN_IN:
-      return {
-        ...prevState,
-        isSignOut: false,
-        userToken: action.token,
-      };
-    case ACTIONS.SIGN_OUT:
-      return {
-        ...prevState,
-        isSignOut: true,
-        userToken: null,
-      };
-  }
+// const AuthProvider = ({ children }: { children: ReactNode }) => {
+//   return (
+{
+  /* <AuthContext.Provider value={authContext}>{children}</AuthContext.Provider>; */
 }
+//   );
+// };
 
-export { UserContext, UserProvider };
+// export const authContext = useMemo(
+//   () => ({
+//     signIn: async (data) => {
+//       // In a production app, we need to send some data (usually username, password) to server and get a token
+//       // We will also need to handle errors if sign in failed
+//       // After getting token, we need to persist the token using `SecureStore`
+//       // In the example, we'll use a dummy token
+
+//       dispatch({ type: ACTIONS.SIGN_IN, token: "dummy-auth-token" });
+//     },
+//     signOut: () => dispatch({ type: "SIGN_OUT" }),
+//     signUp: async (data: AuthState) => {
+//       // In a production app, we need to send user data to server and get a token
+//       // We will also need to handle errors if sign up failed
+//       // After getting token, we need to persist the token using `SecureStore`
+//       // In the example, we'll use a dummy token
+
+//       dispatch({ type: "SIGN_IN", token: "dummy-auth-token" });
+//     },
+//   }),
+//   []
+// );
+
+export const [state, dispatch] = useReducer(reducer, initialValues);
+
+// export { AuthContext, AuthProvider };
