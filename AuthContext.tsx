@@ -9,12 +9,12 @@ import {
 import { ACTIONS, AuthAction, AuthState, SignUpType } from "./types/types";
 import { deleteItemAsync, getItemAsync } from "expo-secure-store";
 import axios, { AxiosError } from "axios";
-import { useAutoLogin } from "./hooks/useAutoLogin";
 
 const initialAuthDispatchContext = {
   signIn: async () => {},
   signOut: () => {},
   signUp: async (data: SignUpType) => {},
+  resetState: () => {},
 };
 
 const reducerInitialValues: AuthState = {
@@ -28,7 +28,7 @@ const reducerInitialValues: AuthState = {
   userId: "",
 };
 
-function authReducer(prevState: AuthState, action: AuthAction) {
+function authReducer(prevState: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
     //used for auto login
     case ACTIONS.RESTORE_TOKEN:
@@ -69,11 +69,15 @@ function authReducer(prevState: AuthState, action: AuthAction) {
         userToken: null,
         isLoading: false,
       };
+    case ACTIONS.RESET:
+      return {
+        ...reducerInitialValues,
+      };
   }
 }
 
-const AuthStateContext = createContext(reducerInitialValues);
-const AuthDispatchContext = createContext(initialAuthDispatchContext);
+export const AuthStateContext = createContext(reducerInitialValues);
+export const AuthDispatchContext = createContext(initialAuthDispatchContext);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, reducerInitialValues);
@@ -89,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // dispatch({ type: ACTIONS.SIGN_IN, token: "dummy-auth-token" });
       },
       signOut: () => {} /*dispatch({ type: "SIGN_OUT" })*/,
+
       signUp: async (data: SignUpType) => {
         /*
         userId,
@@ -102,6 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // We will also need to handle errors if sign up failed
         // After getting token, we need to persist the token using `SecureStore`
         dispatch({ type: ACTIONS.SIGN_UP, data: data });
+      },
+      resetState: () => {
+        dispatch({ type: ACTIONS.RESET });
       },
     }),
     []
@@ -121,11 +129,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const getTokenAsync = async () => {
         let userToken: string | null;
         let user;
+        let interceptorId: number | undefined;
         try {
           userToken = await getItemAsync("TILK-token");
           if (userToken) {
             //add the token to the header in every request
-            axios.interceptors.request.use((config) => {
+            interceptorId = axios.interceptors.request.use((config) => {
               config.headers["TILK-token"] = userToken;
               return config;
             });
@@ -153,8 +162,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               const axiosError = error as AxiosError;
               console.log("token invalid:", axiosError.response?.data);
               try {
-                //delete the corrupt token (mind you that axios will still send requests using the bad token. but then again, who cares?)
+                //delete the corrupt token
                 await deleteItemAsync("TILK-token");
+                //delete the axios interceptor with the bad token
+                if (typeof interceptorId !== "undefined") {
+                  axios.interceptors.request.eject(interceptorId);
+                }
                 //get out of the loading phase, as a guest
                 dispatch({ type: ACTIONS.SIGN_OUT });
               } catch (deleteError) {

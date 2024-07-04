@@ -18,7 +18,7 @@ import { osName } from "expo-device";
 import { getIosIdForVendorAsync, getAndroidId } from "expo-application";
 import OTP from "../components/OTP";
 import { setItemAsync, getItemAsync } from "expo-secure-store";
-import { AuthContext } from "../StackNavigator";
+import { useAuthDispatch } from "../AuthContext";
 
 const PhoneVerificationScreen = () => {
   const route = useRoute<PhoneVerificationScreenRouteProp>();
@@ -36,7 +36,7 @@ const PhoneVerificationScreen = () => {
   const codeInputRefs = useRef<(TextInput | null)[]>([]);
   const [hint, setHint] = React.useState<string>();
   const [modalVisible, setModalVisible] = useState(false);
-  const { signUp } = useContext(AuthContext);
+  const { signUp } = useAuthDispatch();
 
   useGetCountryData(); //get the dial code and flag of the country from "userCountry"
 
@@ -233,7 +233,6 @@ const PhoneVerificationScreen = () => {
         return config;
       });
       //store user details in context
-      //! this needs to change I suppose... speing mistake
 
       signUp({
         userId,

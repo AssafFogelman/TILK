@@ -70,6 +70,7 @@ export const ACTIONS = {
   SIGN_IN: "SIGN_IN",
   SIGN_UP: "SIGN_UP",
   SIGN_OUT: "SIGN_OUT",
+  RESET: "RESET",
 } as const;
 
 export interface AuthState {
@@ -87,7 +88,8 @@ export type AuthAction =
   | { type: typeof ACTIONS.RESTORE_TOKEN; data: SignUpType }
   | { type: typeof ACTIONS.SIGN_IN; token: string }
   | { type: typeof ACTIONS.SIGN_OUT }
-  | { type: typeof ACTIONS.SIGN_UP; data: SignUpType };
+  | { type: typeof ACTIONS.SIGN_UP; data: SignUpType }
+  | { type: typeof ACTIONS.RESET };
 
 export type MessageIdType = string;
 
