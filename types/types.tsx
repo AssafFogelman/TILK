@@ -63,7 +63,7 @@ export type ChatMessageType = {
   message: string;
 };
 
-//User Context Types
+//auth Context Types
 
 export const ACTIONS = {
   RESTORE_TOKEN: "RESTORE_TOKEN",
@@ -91,8 +91,6 @@ export type AuthAction =
   | { type: typeof ACTIONS.SIGN_UP; data: SignUpType }
   | { type: typeof ACTIONS.RESET };
 
-export type MessageIdType = string;
-
 export type SignUpType = {
   userId: string;
   chosenPhoto: boolean;
@@ -101,3 +99,5 @@ export type SignUpType = {
   isAdmin: boolean;
   userToken: string;
 };
+
+export type MessageIdType = string;

@@ -12,11 +12,13 @@
       "resizeMode": "contain",
       "backgroundColor": "#12021a"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "config": {
-        "usesNonExemptEncryption": false //tells Apple not to ask me about app encryption type
+        "usesNonExemptEncryption": false
       }
     },
     "android": {
@@ -49,7 +51,8 @@
           "locationAlwaysAndWhenInUsePermission": "Allow TILK to use your location."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "react-native-vision-camera"
     ]
   }
 }

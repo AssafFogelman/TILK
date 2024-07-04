@@ -152,6 +152,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               isAdmin: user.admin,
             };
             dispatch({ type: ACTIONS.RESTORE_TOKEN, data: data });
+          } else {
+            //get out of the loading phase, as a guest
+            dispatch({ type: ACTIONS.SIGN_OUT });
           }
         } catch (error) {
           //if the problem came from the server, then the token is invalid (or the route address is wrong)
@@ -176,8 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   deleteError
                 );
               }
-            }
-            if (error.request) {
+            } else if (error.request) {
               // The request was made but no response was received
               console.error(
                 "No response received from the server:",
