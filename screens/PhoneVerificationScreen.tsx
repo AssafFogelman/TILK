@@ -233,7 +233,6 @@ const PhoneVerificationScreen = () => {
         return config;
       });
       //store user details in context
-
       signUp({
         userId,
         chosenPhoto,

@@ -74,7 +74,8 @@ export const createToken = async (c: Context) => {
     return c.json({
       token: token,
       userId: userId,
-      chosenPhoto: existingUser && existingUser.avatarLink ? true : false,
+      chosenPhoto:
+        existingUser && existingUser.avatarLink.length ? true : false,
       chosenBio: existingUser && existingUser.biography ? true : false,
       chosenTags: existingUser && existingUser.tagsUsers.length ? true : false,
       isAdmin: existingUser ? existingUser.admin : false,
@@ -84,4 +85,3 @@ export const createToken = async (c: Context) => {
     return c.json({ message: 'error in "create-token" route:' + error }, 401);
   }
 };
-

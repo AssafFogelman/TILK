@@ -9,7 +9,9 @@
     "dev2": "tsx watch ./src/main.ts",
     "db:generate": "npx drizzle-kit generate:pg",
     "db:migrate": "tsx src/drizzle/migrate.ts",
-    "db:execute": "tsx src/drizzle/main.ts"
+    "db:execute": "tsx watch src/drizzle/main.ts",
+    "db:upgrade": "npx drizzle-kit up:pg",
+    "db:drop": "npx drizzle-kit drop"
   },
   "author": "Assaf Fogelman",
   "license": "ISC",

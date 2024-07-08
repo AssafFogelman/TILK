@@ -12,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#12021a"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "config": {
@@ -51,8 +49,15 @@
           "locationAlwaysAndWhenInUsePermission": "Allow TILK to use your location."
         }
       ],
-      "expo-secure-store",
-      "react-native-vision-camera"
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow TILK to access your camera",
+          "microphonePermission": "Allow TILK to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      "expo-secure-store"
     ]
   }
 }

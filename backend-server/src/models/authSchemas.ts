@@ -34,7 +34,6 @@ export const validateCode = validator("json", (value, c) => {
 export const validateToken = async (c: Context, next: Next) => {
   try {
     const token = c.req.header("TILK-token");
-    console.log("testing! (in: validateToken middleware) the token is:", token);
     if (!token) throw new Error("no token provided");
     const payload = await verifyToken(token);
     c.set("tokenPayload", payload);

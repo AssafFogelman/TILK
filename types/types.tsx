@@ -28,6 +28,12 @@ export type MessagesScreenNavigationProp = NativeStackNavigationProp<
   "Messages"
 >;
 
+//this is the type for the useNavigation() in "SelectAvatar" Screen
+export type SelectAvatarScreenNavigationProp = NativeStackNavigationProp<
+  StackParamList,
+  "SelectAvatar"
+>;
+
 //this is the type for the useNavigation() in "Home" Screen
 export type HomeScreenNavigationProp = NativeStackNavigationProp<
   StackParamList,
@@ -71,6 +77,9 @@ export const ACTIONS = {
   SIGN_UP: "SIGN_UP",
   SIGN_OUT: "SIGN_OUT",
   RESET: "RESET",
+  AVATAR_WAS_CHOSEN: "AVATAR_WAS_CHOSEN",
+  BIO_WAS_CHOSEN: "BIO_WAS_CHOSEN",
+  TAGS_WERE_CHOSEN: "TAGS_WERE_CHOSEN",
 } as const;
 
 export interface AuthState {
@@ -89,6 +98,9 @@ export type AuthAction =
   | { type: typeof ACTIONS.SIGN_IN; token: string }
   | { type: typeof ACTIONS.SIGN_OUT }
   | { type: typeof ACTIONS.SIGN_UP; data: SignUpType }
+  | { type: typeof ACTIONS.AVATAR_WAS_CHOSEN }
+  | { type: typeof ACTIONS.BIO_WAS_CHOSEN }
+  | { type: typeof ACTIONS.TAGS_WERE_CHOSEN }
   | { type: typeof ACTIONS.RESET };
 
 export type SignUpType = {

@@ -17,6 +17,7 @@ import { PaperProvider } from "react-native-paper";
 import { theme } from "./styles/react-paper-theme";
 import { AuthProvider } from "./AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
+import Toast from "react-native-toast-message";
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 
@@ -38,6 +39,7 @@ export default function App() {
           </PaperProvider>
         </ErrorBoundary>
       </AuthProvider>
+      <Toast />
     </>
   );
 }

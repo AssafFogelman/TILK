@@ -15,6 +15,9 @@ const initialAuthDispatchContext = {
   signOut: () => {},
   signUp: async (data: SignUpType) => {},
   resetState: () => {},
+  avatarWasChosen: () => {},
+  bioWasChosen: () => {},
+  tagsWereChosen: () => {},
 };
 
 const reducerInitialValues: AuthState = {
@@ -73,6 +76,21 @@ function authReducer(prevState: AuthState, action: AuthAction): AuthState {
       return {
         ...reducerInitialValues,
       };
+    case ACTIONS.AVATAR_WAS_CHOSEN:
+      return {
+        ...prevState,
+        chosenPhoto: true,
+      };
+    case ACTIONS.BIO_WAS_CHOSEN:
+      return {
+        ...prevState,
+        chosenBio: true,
+      };
+    case ACTIONS.TAGS_WERE_CHOSEN:
+      return {
+        ...prevState,
+        chosenTags: true,
+      };
   }
 }
 
@@ -111,6 +129,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       resetState: () => {
         dispatch({ type: ACTIONS.RESET });
       },
+      avatarWasChosen: () => {
+        dispatch({ type: ACTIONS.AVATAR_WAS_CHOSEN });
+      },
+      bioWasChosen: () => {
+        dispatch({ type: ACTIONS.BIO_WAS_CHOSEN });
+      },
+      tagsWereChosen: () => {
+        dispatch({ type: ACTIONS.TAGS_WERE_CHOSEN });
+      },
     }),
     []
   );
@@ -146,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const data = {
               userToken,
               userId: user.userId,
-              chosenPhoto: user.avatarLink ? true : false,
+              chosenPhoto: user.avatarLink.length ? true : false, //is it an empty array
               chosenBio: user.biography ? true : false,
               chosenTags: user.tagsUsers.length ? true : false,
               isAdmin: user.admin,
