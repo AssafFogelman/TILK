@@ -8,6 +8,13 @@ export const userData = async (c: Context) => {
     const payload = c.get("tokenPayload");
     const user = await db.query.users.findFirst({
       where: eq(users.userId, payload.userId),
+      with: {
+        tagsUsers: {
+          columns: {
+            tagId: true,
+          },
+        },
+      },
     });
     return c.json(
       {

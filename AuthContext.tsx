@@ -166,9 +166,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               return config;
             });
             //validate the token in the server and get user details
+            console.log("user:", user);
             user = await axios
               .get("/user/user-data")
-              .then((response) => response.data);
+              .then((response) => response.data.user);
+            console.log("user:", user);
             //if everything is OK, update the state. this also makes "isLoading" false.
             const data = {
               userToken,

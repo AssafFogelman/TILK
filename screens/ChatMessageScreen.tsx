@@ -447,16 +447,6 @@ const ChatMessageScreen = () => {
             <Ionicons name="send" size={24} color="white" />
           </Pressable>
         </View>
-        {/* {showEmojiSelector && (
-        <EmojiSelector
-          category={Categories.emotion}
-          columns={12}
-          showSearchBar={false}
-          onEmojiSelected={(emoji) => {
-            setTextInput((currentText) => currentText + emoji);
-          }}
-        />
-      )} */}
       </KeyboardAvoidingView>
       {showEmojiSelector && (
         <EmojiSelector

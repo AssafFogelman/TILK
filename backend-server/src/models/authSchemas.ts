@@ -18,6 +18,7 @@ export const validatePhoneNo = validator("json", (value, c) => {
 });
 
 export const codeSchema = z.string().regex(/^\d{5}$/); //5 digit code
+
 export const validateCode = validator("json", (value, c) => {
   const { code } = value;
   const result = phoneNumberSchema.safeParse(codeSchema);
@@ -27,9 +28,6 @@ export const validateCode = validator("json", (value, c) => {
   }
   return result.data;
 });
-
-//! how the fuck do I validate a token that comes from the header? spelling mistake (so you will come here)
-//! and I still need to build a route to validate the token.... perhaps only then can I insert the token into the requests header?
 
 export const validateToken = async (c: Context, next: Next) => {
   try {
