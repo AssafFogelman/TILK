@@ -30,10 +30,11 @@ export const users = pgTable("users", {
   */
 
   phoneNumber: text("phone_number").notNull().unique(),
-  avatarLink: text("avatar_link")
+  originalAvatars: text("original_avatars")
     .array()
     .notNull()
     .default(sql`ARRAY[]::text[]`), //creates an empty text array by default. it must be populated, but it is not mandatory for the first phase of the registration
+  smallAvatar: text("small_avatar"), //it is mandatory , but it is not mandatory for the first phase of the registration
   biography: text("biography"),
   //the template of date has to be: "MM/DD/YYYY" or "YYYY-MM-DD"!
   dateOfBirth: date("date_of_birth"),

@@ -70,12 +70,12 @@ export const createToken = async (c: Context) => {
     }
     const userId = newUser ? newUser[0].userId : existingUser?.userId;
     // create token
-    const token = await generateToken({ userId: userId }, "2d");
+    const token = await generateToken({ userId: userId }, "1d");
+    console.log("the token:", token);
     return c.json({
       token: token,
       userId: userId,
-      chosenPhoto:
-        existingUser && existingUser.avatarLink.length ? true : false,
+      chosenPhoto: existingUser && existingUser.smallAvatar ? true : false,
       chosenBio: existingUser && existingUser.biography ? true : false,
       chosenTags: existingUser && existingUser.tagsUsers.length ? true : false,
       isAdmin: existingUser ? existingUser.admin : false,

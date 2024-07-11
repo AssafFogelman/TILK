@@ -175,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const data = {
               userToken,
               userId: user.userId,
-              chosenPhoto: user.avatarLink.length ? true : false, //is it an empty array
+              chosenPhoto: user.smallAvatar ? true : false, //is it an empty array
               chosenBio: user.biography ? true : false,
               chosenTags: user.tagsUsers.length ? true : false,
               isAdmin: user.admin,

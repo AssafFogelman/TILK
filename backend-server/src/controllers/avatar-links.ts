@@ -8,7 +8,7 @@ export const avatarLinks = async (c: Context) => {
     const payload = c.get("tokenPayload");
     const avatarLinks = await db.query.users.findFirst({
       where: eq(users.userId, payload.userId),
-      columns: { avatarLink: true },
+      columns: { originalAvatars: true },
     });
     return c.json(
       {

@@ -6,6 +6,7 @@ import {
 } from "../../models/authSchemas";
 import { userData } from "../../controllers/user-data";
 import { avatarLinks } from "../../controllers/avatar-links";
+import { postAvatars } from "../../controllers/post-avatars";
 
 export const user = new Hono().basePath("/user");
 
@@ -28,3 +29,12 @@ user.get("/user-data", validateToken, userData);
 */
 
 user.get("/avatar-links", validateToken, avatarLinks);
+
+/* 
+1. gets the files from the form data
+2. coverts to webp and saves only full image cells
+3. saves a small version of the first photo (which is the chosen avatar)
+4. uploads the paths to the database
+6. returns "success" of "failure"
+ */
+user.post("/post-avatars", validateToken, postAvatars);

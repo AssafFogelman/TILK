@@ -17,6 +17,7 @@ import { useAuthDispatch } from "../AuthContext";
 import Toast from "react-native-toast-message";
 import placeholderImage from "../assets/Profile_avatar_placeholder_large.png";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import * as FileSystem from "expo-file-system";
 
 const SelectAvatarScreen = () => {
   const [indexOfFrame, setIndexOfFrame] = useState<number>(-1);
@@ -83,6 +84,8 @@ const SelectAvatarScreen = () => {
   }
 
   async function launchCamera(index: number) {
+    //close the bottom sheet
+    closeBottomSheet();
     try {
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
@@ -99,6 +102,8 @@ const SelectAvatarScreen = () => {
   }
 
   async function launchImageLibrary(index: number) {
+    //close the bottom sheet
+    closeBottomSheet();
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -146,24 +151,48 @@ const SelectAvatarScreen = () => {
     bottomSheetRef.current?.expand();
   }, []);
 
-  const handleNext = async () => {
-    if (mainAvatar) {
-      try {
-        const allAvatars = [
-          mainAvatar,
-          ...smallAvatars.filter((avatar) => avatar !== null),
-        ];
-        //!  the server needs to update the database that the avatars were chosen mistak
-        await axios.post("YOUR_SERVER_URL/user/post-avatar", {
-          avatars: allAvatars,
-        });
+  // Function to close the bottom sheet
+  const closeBottomSheet = () => {
+    bottomSheetRef.current?.close();
+  };
 
-        //update the context that the avatar was chosen
-        avatarWasChosen();
-        navigation.navigate("PersonalDetails");
-      } catch (error) {
-        console.error("Error posting avatars:", error);
+  const handleNext = async () => {
+    if (!mainAvatar) return;
+    try {
+      const allAvatarUris = [
+        mainAvatar,
+        ...smallAvatars.filter((avatar) => avatar !== null),
+      ];
+      const formData = new FormData();
+
+      for (let i = 0; i < allAvatarUris.length; i++) {
+        const uri = allAvatarUris[i];
+
+        const fileExtension = uri.split(".").pop();
+        const fileName = `Image-${i}.${fileExtension}`;
+        const mimeType = `image/${
+          fileExtension === "jpg" || fileExtension === "jpeg"
+            ? "jpeg"
+            : fileExtension
+        }`;
+        formData.append(`Image-${i}`, {
+          uri: uri,
+          type: mimeType,
+          name: fileName,
+        } as any);
       }
+
+      const response = await axios.post(
+        `${process.env.EXPO_PUBLIC_SERVER_ADDRESS}/user/post-avatars`,
+        formData
+      );
+      why isnt this working?!
+      
+      //update the context that the avatar was chosen
+      avatarWasChosen();
+      navigation.navigate("PersonalDetails");
+    } catch (error) {
+      console.error("Error posting avatars:", error);
     }
   };
 
@@ -317,24 +346,3 @@ const styles = StyleSheet.create({
 });
 
 export default SelectAvatarScreen;
-
-/*
-Alert.alert(
-        "Choose Image Source",
-        "Would you like to take a new photo or choose from gallery?",
-        [
-          {
-            text: "Take Photo",
-            onPress: () => launchCamera(index),
-          },
-          {
-            text: "Choose from Gallery",
-            onPress: () => launchImageLibrary(index),
-          },
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
-        ]
-      );
-*/

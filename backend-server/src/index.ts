@@ -33,8 +33,10 @@ app.use("*", logger());
 //   "*",
 //   cors({ origin: process.env.DEV_OR_PRODUCTION === "production" ? "*" : "" })
 // );
-app.use(cors({ origin: "*" }));
-//! Is this needed? It seems to work without CORS.. does this work?! if so, add it to the notebook
+
+// app.use(cors({ origin: "*" }));
+app.use("*", cors());
+//! Is the cors setting needed? It seems to work without CORS.. does this work?! if so, add it to the notebook
 
 app.route("/", routes); // Handle routes
 
@@ -43,8 +45,7 @@ app.get("/", (c) => {
 });
 
 //setting a static (public) directory
-app.use("/files/*", serveStatic({ root: "./" }));
-//It works!
+app.use("/public/*", serveStatic({ root: "./" }));
 
 //setting up the server listener to the port
 const port = 5000;
