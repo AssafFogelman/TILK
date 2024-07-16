@@ -21,7 +21,7 @@ export const codeSchema = z.string().regex(/^\d{5}$/); //5 digit code
 
 export const validateCode = validator("json", (value, c) => {
   const { code } = value;
-  const result = phoneNumberSchema.safeParse(codeSchema);
+  const result = codeSchema.safeParse(code);
   if (!result.success) {
     console.log("Invalid code!");
     return c.json({ message: "Invalid code!" }, 401);

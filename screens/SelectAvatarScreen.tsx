@@ -4,20 +4,19 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   Pressable,
 } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { Camera } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
-import axios from "axios";
-import { useNavigation } from "@react-navigation/native";
-import { SelectAvatarScreenNavigationProp } from "../types/types";
-import { useAuthDispatch } from "../AuthContext";
+import axios, {isAxiosError} from "axios";
+import {useAuthDispatch, useAuthState} from "../AuthContext";
 import Toast from "react-native-toast-message";
 import placeholderImage from "../assets/Profile_avatar_placeholder_large.png";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import * as FileSystem from "expo-file-system";
+import {useNavigation} from "@react-navigation/native";
+import {SelectAvatarScreenNavigationProp} from "../types/types";
 
 const SelectAvatarScreen = () => {
   const [indexOfFrame, setIndexOfFrame] = useState<number>(-1);
@@ -27,15 +26,9 @@ const SelectAvatarScreen = () => {
     null,
     null,
   ]);
-  const [cameraPermission, setCameraPermission] = useState<boolean | null>(
-    null
-  );
-  const [galleryPermission, setGalleryPermission] = useState<boolean | null>(
-    null
-  );
-  const navigation = useNavigation<SelectAvatarScreenNavigationProp>();
   const { avatarWasChosen } = useAuthDispatch();
 
+  const navigation = useNavigation<SelectAvatarScreenNavigationProp>();
   // ref
   const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -59,6 +52,8 @@ const SelectAvatarScreen = () => {
       }
     })();
   }, []);
+
+
 
   async function handleImageSelection(index: number) {
     try {
@@ -156,43 +151,51 @@ const SelectAvatarScreen = () => {
     bottomSheetRef.current?.close();
   };
 
+  // post the photos to the server. then update the state
   const handleNext = async () => {
     if (!mainAvatar) return;
     try {
+
+      //getting the empty cells out
       const allAvatarUris = [
         mainAvatar,
         ...smallAvatars.filter((avatar) => avatar !== null),
-      ];
-      const formData = new FormData();
+      ] as string[];
 
-      for (let i = 0; i < allAvatarUris.length; i++) {
-        const uri = allAvatarUris[i];
+      const readAssetAsBase64 = async (uri: string) => {
+        return await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      };
 
-        const fileExtension = uri.split(".").pop();
-        const fileName = `Image-${i}.${fileExtension}`;
-        const mimeType = `image/${
-          fileExtension === "jpg" || fileExtension === "jpeg"
-            ? "jpeg"
-            : fileExtension
-        }`;
-        formData.append(`Image-${i}`, {
-          uri: uri,
-          type: mimeType,
-          name: fileName,
-        } as any);
-      }
+      //turn URIs into base64 files
+      const base64Files = await Promise.all(allAvatarUris.map(uri => readAssetAsBase64(uri)));
 
-      const response = await axios.post(
-        `${process.env.EXPO_PUBLIC_SERVER_ADDRESS}/user/post-avatars`,
-        formData
-      );
-      why isnt this working?!
-      
+      const payload = {
+        files: base64Files.map((content, index) => ({
+          content,
+          type: 'image/jpeg',
+          name: `avatar-${index}.jpg`,
+        })),
+      };
+
+      const {data} = await axios.post("user/post-avatars", payload, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+
+
       //update the context that the avatar was chosen
       avatarWasChosen();
-      navigation.navigate("PersonalDetails");
-    } catch (error) {
-      console.error("Error posting avatars:", error);
+      // we shouldn't even need to navigate, since the state changed. besides, this screen will be used also for updating information
+      useNavigateToTheNextScreen();
+
+    } catch (error :unknown) {
+      console.log("Error posting avatars:", error);
+      if (isAxiosError(error)) {
+        console.log("Error posting avatars:(request) ", error?.request);
+        console.log("Error posting avatars: (response) ", error?.response);
+      }
     }
   };
 
@@ -267,6 +270,32 @@ const SelectAvatarScreen = () => {
   );
 };
 
+problem here
+function useNavigateToTheNextScreen(){
+  const {
+    chosenPhoto,
+    chosenBio,
+    chosenTags,
+    isAdmin,
+    isSignOut,
+    isLoading,
+    userToken,
+    userId,
+  } = useAuthState();
+  const navigation = useNavigation<SelectAvatarScreenNavigationProp>();
+  useEffect(() => {
+    if (chosenPhoto) {
+      if(chosenBio && chosenTags) {
+        navigation.navigate("Home");
+      } else {
+        navigation.navigate("PersonalDetails");
+      }
+    }
+
+  }, [chosenPhoto,navigation,userToken]);
+
+
+}
 const showToast = (
   headline: string = "Enter Headline",
   content: string = "Enter Content"
@@ -277,6 +306,9 @@ const showToast = (
     text2: content,
   });
 };
+
+
+
 
 const styles = StyleSheet.create({
   container: {

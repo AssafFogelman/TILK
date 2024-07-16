@@ -19,6 +19,7 @@ import { AuthProvider } from "./AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
 import Toast from "react-native-toast-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {NavigationContainer} from "@react-navigation/native";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
@@ -38,7 +39,9 @@ export default function App() {
         <ErrorBoundary>
           <PaperProvider theme={theme}>
             <GestureHandlerRootView>
+              <NavigationContainer>
               <StackNavigator />
+              </NavigationContainer>
             </GestureHandlerRootView>
           </PaperProvider>
         </ErrorBoundary>

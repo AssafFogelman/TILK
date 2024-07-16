@@ -6,7 +6,7 @@ import React, {
   useReducer,
   useState,
 } from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import {NavigationContainer, useNavigation} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
@@ -48,13 +48,15 @@ const StackNavigator = () => {
   } = useAuthState();
   const { signIn, signOut, signUp, resetState } = useAuthDispatch();
 
+  const navigation = useNavigation(); // add this line
+
+
   if (isLoading) {
     // We haven't finished checking for the token yet
     return <SplashScreen />;
   }
 
   return (
-    <NavigationContainer>
       <Stack.Navigator
         initialRouteName={
           chosenPhoto
@@ -138,7 +140,6 @@ const StackNavigator = () => {
           </>
         )}
       </Stack.Navigator>
-    </NavigationContainer>
   );
 
   // function authReducer(prevState: AuthState, action: AuthAction) {

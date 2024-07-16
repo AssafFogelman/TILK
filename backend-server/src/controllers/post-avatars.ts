@@ -5,8 +5,9 @@ import { users } from "../drizzle/schema";
 import * as fs from "fs/promises";
 import { fileURLToPath } from "url";
 import path from "path";
-import { stringify } from "querystring";
 import sharp from "sharp";
+import util from 'util';
+import {user} from "../routes/user/user";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,21 +19,8 @@ const __dirname = path.dirname(__filename);
 4. saves the files
 5. uploads the paths to the database
 6. returns "success" of "failure"
- */
-export const postAvatars = async (c: Context) => {
-  try {
-    console.log("Received headers:", c.req.header);
-    console.log("Content-Type:", c.req.header("Content-Type"));
 
-    console.log("Request headers:", c.req.header);
-    console.log("Request body:", await c.req.text());
-
-    const { userId } = c.get("tokenPayload");
-    const data = await c.req.formData();
-    console.log("Received form data:", data);
-    //how do you send/receive many files? by giving them different names?
-
-    /*
+ dir tree:
     public
 │   └── avatars
 │       ├── default
@@ -45,111 +33,99 @@ export const postAvatars = async (c: Context) => {
 │           │   └── [user_id].webp
 │           └── medium
 │               └── [user_id].webp
-    */
 
-    const largeFileDirectory = path.join(
-      __dirname,
-      "..",
-      "..",
-      "public",
-      "avatars",
-      "original",
-      userId
-    );
+ */
 
-    const smallFileDirectory = path.join(
-      __dirname,
-      "..",
-      "..",
-      "public",
-      "avatars",
-      "thumbnails",
-      "small"
-    );
+const maxFiles = 8;
+const largeAvatarRoot = path.join(process.cwd(), "public", "avatars", "original");
+const smallAvatarRoot = path.join(process.cwd(), "public", "avatars", "thumbnails", "small");
+const errorTooManyFiles = {message: "tried to upload too many files at once!"};
+const errorRoute = {message: 'error in "post-avatars" route:'};
 
-    // if the directory doesn't exist, create it.
-    await fs.mkdir(largeFileDirectory, { recursive: true });
-    await fs.mkdir(smallFileDirectory, { recursive: true });
 
-    let originalAvatarPaths = []; //list of the files uploaded
-    let smallAvatarPath;
-    let i = -1;
-    for (const [key, value] of data.entries()) {
-      i++;
-      if (i > 8) throw { message: "tried to upload too many files at once!" };
 
-      //is the value a file?
-      if (value instanceof File) {
-        // is the file an image?
-        if (value.type.startsWith("image/")) {
-          const fileName = `avatar-${i}-large.webp`;
-          const filePath = path.join(largeFileDirectory, fileName);
-
-          //turn into a NodeJS "Buffer"
-          const buffer = await value.arrayBuffer();
-          const imageBuffer = Buffer.from(buffer);
-
-          //verify that the image size is less than 1000X1000 px
-          // Get image metadata
-          const metadata = await sharp(imageBuffer).metadata();
-
-          // Convert the image to WebP format,
-          // and make sure it does not exceed 1000X1000 px
-          const webpBuffer = await sharp(imageBuffer)
-            .webp()
-            .resize({
-              width: 1000,
-              height: 1000,
-              fit: "inside",
-              withoutEnlargement: true,
-            })
-            .toBuffer();
-
-          //write the file
-          await fs.writeFile(filePath, webpBuffer);
-
-          //if this is the first and main avatar, also make a smaller version of it
-          if (i === 0) {
-            //different path and different file name
-            const fileName = `${userId}.webp`;
-            const filePath = path.join(smallFileDirectory, fileName);
-
-            //convert to webp the size of 80X80
-            const smallWebpBuffer = await sharp(imageBuffer)
-              .webp()
-              .resize({ width: 80, height: 80, fit: "inside" })
-              .toBuffer();
-            //write file
-            await fs.writeFile(filePath, smallWebpBuffer);
-            //save details of this first file (which is small)
-            smallAvatarPath = filePath;
-            console.log(`Uploaded file: ${filePath}`);
-          }
-          //save details of this file (which is large)
-          originalAvatarPaths.push(filePath);
-          console.log(`Uploaded file: ${filePath}`);
-        } else {
-          console.log(`Skipped non-image file: ${value.name}`);
+export const postAvatars = async (c: Context) => {
+    try {
+        const {userId} = c.get("tokenPayload");
+        const {files} = await c.req.json();
+        if (files.length > maxFiles) {
+            throw new Error("too many files to upload at once!");
         }
-      }
-    }
-    //saving the paths in the database
-    await db
-      .update(users)
-      .set({
-        originalAvatars: originalAvatarPaths,
-        smallAvatar: smallAvatarPath,
-      })
-      .where(eq(users.userId, userId));
+        console.log("Received data:", files.map((file:object) => JSON.stringify(file).substring(0, 100) + '...')); // Log a preview of the received data
 
-    return c.json(
-      {
-        message: "the token is valid. uploaded avatars",
-      },
-      200
-    );
-  } catch (error) {
-    console.log('error in "post-avatars" route:', error);
-    return c.json({ message: 'error in "post-avatars" route:' + error }, 401);
-  }
+        const largeAvatarDirectory = path.join(largeAvatarRoot, userId);
+        const smallAvatarDirectory = path.join(smallAvatarRoot);
+
+        // Create directory if it doesn't exist
+        await fs.mkdir(largeAvatarDirectory, {recursive: true});
+        await fs.mkdir(smallAvatarDirectory, {recursive: true});
+
+
+        let smallAvatarPath = null;
+
+        const originalAvatarPaths = await Promise.all(files.map(async (file: { type: string; content: WithImplicitCoercion<string> | { [Symbol.toPrimitive](hint: "string"): string; }; name: any; }, index:number) => {
+            if (file.type.startsWith("image/")) {
+                const fileName = `avatar-${index}-large.webp`;
+                const filePath = path.join(largeAvatarDirectory, fileName);
+
+                // Decode the Base64 content
+                const buffer = Buffer.from(file.content, 'base64');
+
+                // Convert the image to WebP
+                const webpBuffer = await sharp(buffer)
+                    .webp()
+                    .resize({
+                        width: 1000,
+                        height: 1000,
+                        fit: "inside",
+                        withoutEnlargement: true,
+                    })
+                    .toBuffer();
+
+                // Write the file
+                await fs.writeFile(filePath, webpBuffer);
+
+                //make a small copy of the first avatar
+                if (index === 0) {
+                    const smallAvatarName = `${userId}.webp`;
+                    const smallFilePath = path.join(smallAvatarDirectory, smallAvatarName);
+                    const smallWebpBuffer = await sharp(buffer)
+                        .webp()
+                        .resize({width: 80, height: 80, fit: "inside"})
+                        .toBuffer();
+                    await fs.writeFile(smallFilePath, smallWebpBuffer);
+                    smallAvatarPath = {name: smallAvatarName, path: smallFilePath}
+                }
+                //return large file info
+                return {name: fileName, path: filePath};
+            } else {
+                console.log(`Skipped non-image file: ${file.name}`);
+                return null;
+            }
+
+
+
+
+
+
+
+
+            }));
+
+
+
+        //update the database
+        await db
+            .update(users)
+            .set({
+                originalAvatars: originalAvatarPaths,
+                smallAvatar: smallAvatarPath,
+            })
+            .where(eq(users.userId, userId));
+
+        return c.json({message: "the token is valid. uploaded avatars", files: [...smallAvatarPath,...originalAvatarPaths]}, 200);
+    } catch (error) {
+        console.log('error in "post-avatars" route:', error);
+        return c.json({...errorRoute, error}, 401);
+    }
 };

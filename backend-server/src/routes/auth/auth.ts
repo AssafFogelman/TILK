@@ -42,7 +42,7 @@ auth.post("/send-sms", validatePhoneNo, sendSms);
     create and return a new token containing the new user unique phone ID and phone number and register the user.
     
  */
-auth.post("/create-token", validatePhoneNo, /*validateCode,*/ createToken);
+auth.post("/create-token", validatePhoneNo, validateCode, createToken);
 
 /* 
     1. receives a token
