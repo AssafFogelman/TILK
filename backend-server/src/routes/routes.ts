@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { auth } from "./auth/auth";
 import { user } from "./user/user";
-import { admin } from "./admin/admin";
 
 export const routes = new Hono();
 

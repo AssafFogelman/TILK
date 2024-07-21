@@ -5,7 +5,7 @@
   "description": "tilk-backend-server",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --clear-screen=false  src/index.ts",
     "dev2": "tsx watch ./src/main.ts",
     "db:generate": "npx drizzle-kit generate:pg",
     "db:migrate": "tsx src/drizzle/migrate.ts",

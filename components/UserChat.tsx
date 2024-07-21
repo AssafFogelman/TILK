@@ -1,10 +1,10 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { UserContext } from "../UserContext";
 import axios from "axios";
 import { ChatMessageType } from "../types/types";
 import formatDate from "../services/formatDate";
+import {useAuthState} from "../AuthContext";
 
 type friendType = {
   _id: string;
@@ -15,7 +15,10 @@ type friendType = {
 
 const UserChat = ({ friend }: { friend: friendType }) => {
   const navigation = useNavigation();
-  const { userId, setUserId } = useContext(UserContext);
+  const {
+
+    userId,
+  } = useAuthState();
   const [lastTextMessage, setLastTextMessage] = useState<string>("");
   const [lastMessageTimestamp, setLastMessageTimestamp] = useState<string>("");
 
