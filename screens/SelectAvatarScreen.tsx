@@ -30,6 +30,7 @@ const SelectAvatarScreen = () => {
 
     const {
         chosenBio,
+        chosenTags
     } = useAuthState();
 
     const navigation = useNavigation<SelectAvatarScreenNavigationProp>();
@@ -213,8 +214,8 @@ const SelectAvatarScreen = () => {
             //update the context that the avatar was chosen
             avatarWasChosen();
             // navigate to home screen unless the user hasn't chosen a bio
-            if (!chosenBio) {
-                navigation.navigate("PersonalDetails");
+            if (!chosenBio || !chosenTags) {
+                navigation.navigate("LookingTo");
             } else {
                 navigation.navigate("Home")
             }

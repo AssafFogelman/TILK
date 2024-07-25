@@ -25,19 +25,20 @@ import WelcomeScreen from "./screens/WelcomeScreen";
 import PhoneVerificationScreen from "./screens/PhoneVerificationScreen";
 import SelectAvatarScreen from "./screens/SelectAvatarScreen";
 import PersonalDetailsScreen from "./screens/PersonalDetailsScreen";
-import LookingForScreen from "./screens/LookingForScreen";
+import LookingToScreen from "./screens/LookingToScreen";
 import SplashScreen from "./screens/SplashScreen";
 import {theme} from "./styles/react-paper-theme";
 import {PaperProvider} from "react-native-paper";
 import {getItemAsync} from "expo-secure-store";
 import {ErrorBoundary} from "./components/ErrorBoundary/ErrorBoundary";
 import {useAuthDispatch, useAuthState} from "./AuthContext";
+import {useScreenOrder} from "./hooks/useScreenOrder";
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
 const StackNavigator = () => {
     const {
-        chosenPhoto,
+        chosenAvatar,
         chosenBio,
         chosenTags,
         isAdmin,
@@ -46,9 +47,6 @@ const StackNavigator = () => {
         userToken,
         userId,
     } = useAuthState();
-    const {signIn, signOut, signUp, resetState} = useAuthDispatch();
-
-    const navigation = useNavigation(); // add this line
 
 
     if (isLoading) {
@@ -58,15 +56,7 @@ const StackNavigator = () => {
 
     return (
         <Stack.Navigator
-            initialRouteName={
-                chosenPhoto
-                    ? chosenBio
-                        ? chosenTags
-                            ? "Home"
-                            : "LookingFor"
-                        : "PersonalDetails"
-                    : "SelectAvatar"
-            }
+            initialRouteName={useScreenOrder()}
         >
             {userToken ? (
                 <>
@@ -83,8 +73,8 @@ const StackNavigator = () => {
                     />
 
                     <Stack.Screen
-                        name="LookingFor"
-                        component={LookingForScreen}
+                        name="LookingTo"
+                        component={LookingToScreen}
                         options={{headerShown: false}}
                     />
 
@@ -142,40 +132,11 @@ const StackNavigator = () => {
         </Stack.Navigator>
     );
 
-    // function authReducer(prevState: AuthState, action: AuthAction) {
-    //   switch (action.type) {
-    //     case ACTIONS.RESTORE_TOKEN:
-    //       return {
-    //         ...prevState,
-    //         userToken: action.token,
-    //         isLoading: false,
-    //       };
-    //     case ACTIONS.SIGN_IN:
-    //       return {
-    //         ...prevState,
-    //         isSignOut: false,
-    //         userToken: action.token,
-    //       };
-    //     case ACTIONS.SIGN_UP:
-    //       return {
-    //         ...prevState,
-    //         isSignOut: false,
-    //         userToken: action.data.userToken,
-    //         chosenPhoto: action.data.chosenPhoto,
-    //         chosenBio: action.data.chosenBio,
-    //         chosenTags: action.data.chosenTags,
-    //         isAdmin: action.data.isAdmin,
-    //         userId: action.data.userId,
-    //       };
-    //     case ACTIONS.SIGN_OUT:
-    //       return {
-    //         ...prevState,
-    //         isSignOut: true,
-    //         userToken: null,
-    //       };
-    //   }
-    // }
 };
+
+export function screenOrder() {
+    return
+}
 
 export default StackNavigator;
 

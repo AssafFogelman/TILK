@@ -1,8 +1,8 @@
-import { Context } from "hono";
-import { compareHash } from "../config/bcrypt";
-import { db } from "../drizzle/db";
-import { users } from "../drizzle/schema";
-import { generateToken } from "../config/jwt";
+import {Context} from "hono";
+import {compareHash} from "../config/bcrypt";
+import {db} from "../drizzle/db";
+import {users} from "../drizzle/schema";
+import {generateToken} from "../config/jwt";
 
 /*  
     the user sends the server the code that he got+phone number+the hash. 
@@ -16,7 +16,7 @@ import { generateToken } from "../config/jwt";
      - the server also returns global user attributes: (to be added to the context)
      the attributes:
      * userId
-     * chosenPhoto
+     * chosenAvatar
      * chosenBio
      * chosenTags
      * isAdmin
@@ -27,61 +27,61 @@ import { generateToken } from "../config/jwt";
  */
 
 export const createToken = async (c: Context) => {
-  try {
-    const {
-      phoneNumber,
-      code,
-      hash,
-    }: { phoneNumber: string; code: string; hash: string } = await c.req.json();
+    try {
+        const {
+            phoneNumber,
+            code,
+            hash,
+        }: { phoneNumber: string; code: string; hash: string } = await c.req.json();
 
-    console.log("phoneNumber", phoneNumber);
-    console.log("code", code);
+        console.log("phoneNumber", phoneNumber);
+        console.log("code", code);
 
-    //is the hash valid?
-    const hashValid = await compareHash(
-      phoneNumber + code + process.env.VALIDATION_KEY,
-      hash
-    );
-    if (!hashValid)
-      throw { message: "the hash is not valid! retry the validation process" };
+        //is the hash valid?
+        const hashValid = await compareHash(
+            phoneNumber + code + process.env.VALIDATION_KEY,
+            hash
+        );
+        if (!hashValid)
+            throw {message: "the hash is not valid! retry the validation process"};
 
-    //does the user exist?
-    let existingUser = await db.query.users.findFirst({
-      where: (table, funcs) => funcs.eq(table.phoneNumber, phoneNumber),
-      with: {
-        tagsUsers: {
-          columns: {
-            tagId: true,
-          },
-        },
-      },
-    });
-    console.log("existingUser:", existingUser);
-    //if not, create user
-    let newUser;
-    if (!existingUser) {
-      newUser = await db
-        .insert(users)
-        .values({
-          phoneNumber: phoneNumber,
-        })
-        .returning({ userId: users.userId });
-      console.log("newUser:", newUser);
+        //does the user exist?
+        let existingUser = await db.query.users.findFirst({
+            where: (table, funcs) => funcs.eq(table.phoneNumber, phoneNumber),
+            with: {
+                tagsUsers: {
+                    columns: {
+                        tagId: true,
+                    },
+                },
+            },
+        });
+        console.log("existingUser:", existingUser);
+        //if not, create user
+        let newUser;
+        if (!existingUser) {
+            newUser = await db
+                .insert(users)
+                .values({
+                    phoneNumber: phoneNumber,
+                })
+                .returning({userId: users.userId});
+            console.log("newUser:", newUser);
+        }
+        const userId = newUser ? newUser[0].userId : existingUser?.userId;
+        // create token
+        const token = await generateToken({userId: userId}, "10d");
+        console.log("the token:", token);
+        return c.json({
+            token: token,
+            userId: userId,
+            chosenAvatar: existingUser && existingUser.smallAvatar ? true : false,
+            chosenBio: existingUser && existingUser.biography ? true : false,
+            chosenTags: existingUser && existingUser.tagsUsers.length ? true : false,
+            isAdmin: existingUser ? existingUser.admin : false,
+        });
+    } catch (error) {
+        console.log('error in "create-token" route:', error);
+        return c.json({message: 'error in "create-token" route:' + error}, 401);
     }
-    const userId = newUser ? newUser[0].userId : existingUser?.userId;
-    // create token
-    const token = await generateToken({ userId: userId }, "10d");
-    console.log("the token:", token);
-    return c.json({
-      token: token,
-      userId: userId,
-      chosenPhoto: existingUser && existingUser.smallAvatar ? true : false,
-      chosenBio: existingUser && existingUser.biography ? true : false,
-      chosenTags: existingUser && existingUser.tagsUsers.length ? true : false,
-      isAdmin: existingUser ? existingUser.admin : false,
-    });
-  } catch (error) {
-    console.log('error in "create-token" route:', error);
-    return c.json({ message: 'error in "create-token" route:' + error }, 401);
-  }
 };

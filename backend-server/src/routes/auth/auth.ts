@@ -1,12 +1,12 @@
-import { Hono } from "hono";
+import {Hono} from "hono";
 import {
-  validateCode,
-  validatePhoneNo,
-  validateToken,
+    validateCode,
+    validatePhoneNo,
+    validateToken,
 } from "../../models/authSchemas";
-import { sendSms } from "../../controllers/send-sms";
-import { createToken } from "../../controllers/create-token";
-import { userData } from "../../controllers/user-data";
+import {sendSms} from "../../controllers/send-sms";
+import {createToken} from "../../controllers/create-token";
+import {userData} from "../../controllers/user-data";
 
 export const auth = new Hono().basePath("/auth");
 
@@ -32,7 +32,7 @@ auth.post("/send-sms", validatePhoneNo, sendSms);
      - the server also returns global user attributes: (to be added to the context)
      the attributes:
      * userId
-     * chosenPhoto
+     * chosenAvatar
      * chosenBio
      * chosenTags
      * isAdmin

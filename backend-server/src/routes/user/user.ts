@@ -1,16 +1,14 @@
-import {Context, Hono} from "hono";
+import {Hono} from "hono";
 
 
 import {
-  validateCode,
-  validatePhoneNo,
-  validateToken,
+    validateToken,
 } from "../../models/authSchemas";
-import { userData } from "../../controllers/user-data";
-import { avatarLinks } from "../../controllers/avatar-links";
-import { postAvatars } from "../../controllers/post-avatars";
-import path from "path";
-import * as fs from 'fs/promises';
+import {userData} from "../../controllers/user-data";
+import {avatarLinks} from "../../controllers/avatar-links";
+import {postAvatars} from "../../controllers/post-avatars";
+import {postBio} from "../../controllers/post-bio";
+import {getTags} from "../../controllers/get-tags";
 
 export const user = new Hono().basePath("/user");
 
@@ -41,52 +39,15 @@ user.get("/avatar-links", validateToken, avatarLinks);
 4. uploads the paths to the database
 6. returns "success" of "failure"
  */
-//
-// user.post("/test", test)
-//
-// async function test (c:Context){
-//   try {
-//     const data = await c.req.json();
-//
-//     //library to save the data
-//
-//
-//     const publicDir = path.join(process.cwd(), 'test');
-//     // Ensure the directory exists
-//
-//     await fs.mkdir(publicDir, { recursive: true });
-//     //we are performing async operations as one, and so, the entire operation is async.
-//
-//     const savedFiles = await Promise.all(data.files.map(async (file, index) => {
-//       const fileName = file.name;
-//       const filePath = path.join(publicDir, fileName);
-//
-//       // Decode the Base64 content
-//       const buffer = Buffer.from(file.content, 'base64');
-//
-//       // Write the file
-//       await fs.writeFile(filePath, buffer);
-//
-//       //file data
-//       return { name: fileName, path: filePath };
-//     }));
-//     console.log({
-//       message: "Files were saved successfully!",
-//       savedFiles: savedFiles
-//     })
-//
-//       return c.json({
-//         message: "Files were saved successfully!",
-//         savedFiles: savedFiles
-//       });
-//   } catch (error)
-//
-//
-//     {
-//       console.log(error);
-//       return c.json({message:"error uploading data", error})
-//
-//     }}
 
 
 user.post("/post-avatars", validateToken, postAvatars);
+
+/*
+    check for html malicious content
+    update bio
+ */
+user.post("/post-bio", validateToken, postBio)
+
+
+user.get("/get-tags", validateToken, getTags);
