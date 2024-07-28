@@ -95,13 +95,13 @@ export const tagsUsers = pgTable(
     return {
       pk: primaryKey({ columns: [table.tagId, table.userId] }), //composite primary key
     };
-  }
+  },
 );
 
-//tag templates ex. "sea", "JavaScript", "basketball"
+//tags  ex. "sea", "JavaScript", "basketball"
 export const tags = pgTable("tags", {
   tagId: uuid("tag_id").primaryKey().notNull().unique().defaultRandom(),
-  tagContent: text("tag_content").notNull().unique(),
+  tagContent: text("tag_content").notNull(), //tag_content should not be unique, since there might be similar tags of different categories.
 });
 
 //joint table of tag templates and tag categories
@@ -119,7 +119,7 @@ export const tagsTagCats = pgTable(
     return {
       pk: primaryKey({ columns: [table.tagCategoryId, table.tagId] }), //composite primary key
     };
-  }
+  },
 );
 
 //tag template categories ex. "sports", "computer science", "90's kid"
@@ -165,7 +165,7 @@ export const receivedConnectionRequests = pgTable(
       .references(() => users.userId),
     requestDate: timestamp("request_date").defaultNow(),
     unread: boolean("unread").notNull().default(true),
-  }
+  },
 );
 
 // sent connection requests
@@ -250,7 +250,7 @@ export const chatMessages = pgTable(
       */
       chatMessageIndex: uniqueIndex("chat_message_index").on(table.chatId),
     };
-  }
+  },
 );
 
 //notification templates
@@ -378,7 +378,7 @@ export const receivedConnectionRequestRelations = relations(
       fields: [receivedConnectionRequests.senderId],
       references: [users.userId],
     }),
-  })
+  }),
 );
 
 export const sentConnectionRequestRelations = relations(
@@ -392,7 +392,7 @@ export const sentConnectionRequestRelations = relations(
       fields: [sentConnectionRequests.senderId],
       references: [users.userId],
     }),
-  })
+  }),
 );
 
 export const blocksRelations = relations(blocks, ({ one }) => ({

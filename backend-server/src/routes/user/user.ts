@@ -1,14 +1,12 @@
-import {Hono} from "hono";
+import { Hono } from "hono";
 
-
-import {
-    validateToken,
-} from "../../models/authSchemas";
-import {userData} from "../../controllers/user-data";
-import {avatarLinks} from "../../controllers/avatar-links";
-import {postAvatars} from "../../controllers/post-avatars";
-import {postBio} from "../../controllers/post-bio";
-import {getTags} from "../../controllers/get-tags";
+import { validateToken } from "../../models/authSchemas";
+import { userData } from "../../controllers/user-data";
+import { avatarLinks } from "../../controllers/avatar-links";
+import { postAvatars } from "../../controllers/post-avatars";
+import { postBio } from "../../controllers/post-bio";
+import { getTags } from "../../controllers/get-tags";
+import { postTags } from "../../controllers/post-tags";
 
 export const user = new Hono().basePath("/user");
 
@@ -40,14 +38,15 @@ user.get("/avatar-links", validateToken, avatarLinks);
 6. returns "success" of "failure"
  */
 
-
 user.post("/post-avatars", validateToken, postAvatars);
 
 /*
     check for html malicious content
     update bio
  */
-user.post("/post-bio", validateToken, postBio)
+user.post("/post-bio", validateToken, postBio);
 
-
+//get all the tags
 user.get("/get-tags", validateToken, getTags);
+
+user.post("/post-tags", validateToken, postTags);

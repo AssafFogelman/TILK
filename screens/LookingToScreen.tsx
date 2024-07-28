@@ -1,142 +1,250 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, ScrollView, FlatList} from 'react-native';
-import {Searchbar, Chip, Text} from 'react-native-paper';
+import React, { useCallback, useEffect, useState } from "react";
+import { StyleSheet, View, FlatList } from "react-native";
+import { Searchbar, Chip, Text } from "react-native-paper";
 import axios from "axios";
-import {FlashList} from "@shopify/flash-list";
+import { FlashList } from "@shopify/flash-list";
+import { FAB } from "react-native-paper";
+import { useAuthDispatch } from "../AuthContext";
+import { useNavigation } from "@react-navigation/native";
+import { LookingToScreenNavigationProp } from "../types/types";
 
+type TagItem = {
+  categoryName: string;
+  tags: { tagContent: string }[];
+};
+type TagList = TagItem[];
 
 const LookingToScreen = () => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
-    const [filteredTags, setFilteredTags] = useState<string[]>(allTags)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTags, setSelectedTags] = useState<TagList>([]);
+  const [filteredTags, setFilteredTags] = useState<TagList>([]);
+  const [staticTagList, setStaticTagList] = useState<TagList>([]);
+  const { tagsWereChosen } = useAuthDispatch();
+  const navigation = useNavigation<LookingToScreenNavigationProp>();
+  //get the categories and the tags
+  useEffect(() => {
+    (async () => {
+      try {
+        const { categoryAndTagList } = await axios
+          .get("/user/get-tags")
+          .then((response) => response.data);
+        //update staticTagList
+        setStaticTagList(categoryAndTagList);
+        //update filteredTags
+        setFilteredTags(categoryAndTagList);
+      } catch (error) {
+        console.log(
+          "Error trying to retrieve tags and tag categories: ",
+          error,
+        );
+      }
+    })();
+  }, []);
 
-    //get the categories and the tags
-    useEffect(() => {
-        (async () => {
-            try {
-                const {categoryAndTagList} = await axios.get("/user/tags").then(response => response.data);
-            } catch (error) {
-                console.log("Error trying to retrieve tags and tag categories: ", error)
-            }
-        })()
-    }, []);
-
-    return (
-        <View style={styles.container}>
-
-            <Text variant="headlineLarge" style={styles.title}>
-                Looking To..
-            </Text>
-            <View style={styles.searchAndCount}>
-                {/* Search Bar */}
-                <Searchbar
-                    placeholder="Search tags..."
-                    onChangeText={handleSearchChange}
-                    value={searchQuery}
-                    style={styles.searchBar}
-                />
-                <Text>{selectedTags.length}/5</Text>
-            </View>
-
-            {/* Selected Tags Section */}
-            <View style={styles.selectedTagsContainer}>
-                <FlatList
-                    data={selectedTags}
-                    keyExtractor={(item) => item} //TODO - we want it to be possible to have duplicate tags in different categories
-                    renderItem={({item}) => (
-                        <Chip
-                            style={styles.selectedTag}
-                            onClose={() => handleTagPress(item)}
-                        >
-                            {item}
-                        </Chip>
-                    )}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                />
-            </View>
-
-            {/* Scrollable Tags Section */}
-            <FlashList data></FlashList>
-
-
-            {/*<ScrollView style={styles.tagsContainer}>*/}
-            {/*    <View style={styles.tagsWrapper}>*/}
-            {/*        {filteredTags.map((tag) => (*/}
-            {/*            <Chip*/}
-            {/*                key={tag}*/}
-            {/*                style={[*/}
-            {/*                    styles.tag,*/}
-            {/*                    selectedTags.includes(tag) && styles.selectedTag,*/}
-            {/*                ]}*/}
-            {/*                onPress={() => handleTagPress(tag)}*/}
-            {/*            >*/}
-            {/*                {tag}*/}
-            {/*            </Chip>*/}
-            {/*        ))}*/}
-            {/*    </View>*/}
-            {/*</ScrollView>*/}
+  //the categories and tags item
+  const renderItem = useCallback(
+    ({ item }: { item: TagItem }) =>
+      item.tags.length ? (
+        <View style={styles.categoryContainer}>
+          <Text style={styles.categoryName}>{item.categoryName}</Text>
+          <View style={styles.chipsContainer}>
+            {item.tags.map((tag) => (
+              <Chip
+                key={item.categoryName + "-" + tag.tagContent}
+                style={[
+                  styles.tag,
+                  //if the tag is equal to a tag in the selected tags, style it as a selected tag
+                  selectedTags.some(
+                    (selectedTagItem) =>
+                      selectedTagItem.tags[0].tagContent.toLowerCase() ===
+                      tag.tagContent.toLowerCase(),
+                  ) && styles.selectedTag,
+                ]}
+                onPress={() =>
+                  handleTagPress(item.categoryName, tag.tagContent)
+                }
+              >
+                {tag.tagContent}
+              </Chip>
+            ))}
+          </View>
         </View>
-    );
+      ) : null,
+    [selectedTags],
+  );
 
-    function handleSearchChange(text: string) {
-        setSearchQuery(text);
-        setFilteredTags(allTags.filter((tag) =>
-            tag.toLowerCase().includes(text.toLowerCase())
-        ));
+  return (
+    <View style={styles.container}>
+      <Text variant="headlineLarge" style={styles.title}>
+        Looking To..
+      </Text>
+      <View style={styles.searchAndCount}>
+        {/* Search Bar */}
+        <Searchbar
+          placeholder="Search tags..."
+          onChangeText={handleSearchChange}
+          value={searchQuery}
+          style={styles.searchBar}
+        />
+        <Text>{selectedTags.length}/5</Text>
+      </View>
 
+      {/* Selected Tags Section */}
+      <View style={styles.selectedTagsContainer}>
+        <FlatList
+          data={selectedTags}
+          keyExtractor={(item) => item.tags[0].tagContent}
+          renderItem={({ item }) => (
+            <Chip
+              style={styles.selectedTag}
+              onClose={() =>
+                handleTagPress(item.categoryName, item.tags[0].tagContent)
+              }
+            >
+              {item.tags[0].tagContent}
+            </Chip>
+          )}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        />
+      </View>
+
+      {/* Scrollable Tags Section */}
+      <FlashList
+        data={filteredTags}
+        renderItem={renderItem}
+        estimatedItemSize={315}
+        keyExtractor={(item) => item.categoryName}
+        extraData={selectedTags}
+      />
+      <FAB
+        icon="arrow-right"
+        style={styles.fab}
+        size={"medium"}
+        disabled={!selectedTags.length}
+        onPress={handleNext}
+      />
+    </View>
+  );
+
+  async function handleNext() {
+    /*
+     * saves selected tags to the database
+     * updates the global state
+     * navigates to home
+     */
+    try {
+      await axios.post("/user/post-tags", selectedTags);
+      tagsWereChosen();
+      navigation.navigate("Home");
+    } catch (error) {
+      console.log("error trying to save the chose tags to the server: ", error);
     }
+  }
 
-    function handleTagPress(tag: string) {
-        console.log("selectedTags.length", selectedTags.length);
-        console.log("selectedTags: ", selectedTags);
-        if (selectedTags.includes(tag)) {
-            setSelectedTags(selectedTags.filter((selectedTag) => selectedTag !== tag));
-        } else {
-            if (selectedTags.length < 5) {
-                setSelectedTags([...selectedTags, tag]);
-            }
-        }
-    };
+  // Extracted method for filtering tag based on content
+  function filterTagsByContent(tags: { tagContent: string }[], text: string) {
+    return tags.filter((tag) =>
+      tag.tagContent.toLowerCase().includes(text.toLowerCase()),
+    );
+  }
+
+  // Updated handleSearchChange using above method
+  function handleSearchChange(text: string) {
+    setSearchQuery(text);
+    setFilteredTags(
+      staticTagList.map((tagItem) => ({
+        categoryName: tagItem.categoryName,
+        tags: filterTagsByContent(tagItem.tags, text),
+      })),
+    );
+  }
+
+  function handleTagPress(tagCategory: string, tagContent: string) {
+    //if the tag (in the right category) is already selected
+    if (
+      selectedTags.some(
+        (selectedTagItem) =>
+          selectedTagItem.categoryName === tagCategory &&
+          selectedTagItem.tags.some(
+            (selectedTag) => selectedTag.tagContent === tagContent,
+          ),
+      )
+    ) {
+      //get the tag out of the "selected tag" array
+      setSelectedTags(
+        selectedTags.filter(
+          (selectedTagItem) =>
+            selectedTagItem.tags[0].tagContent !== tagContent,
+        ),
+      );
+    } else {
+      if (selectedTags.length < 5) {
+        //add the tag to the "selected tag" array
+        setSelectedTags((current) => [
+          ...current,
+          { categoryName: tagCategory, tags: [{ tagContent: tagContent }] },
+        ]);
+      }
+    }
+  }
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 16,
-    },
-    title: {
-        marginBottom: 20,
-        marginTop: 20,
-    },
-    searchAndCount: {
-        flexDirection: "row",
-        gap: 5,
-        alignItems: "center",
-        marginBottom: 16,
-    },
-    searchBar: {
-
-        flex: 1,
-    },
-    selectedTagsContainer: {
-        marginBottom: 16,
-    },
-    selectedTag: {
-        marginRight: 8,
-        backgroundColor: '#e0f2f7', // Light blue color for selected tags
-    },
-    tagsContainer: {
-        flex: 1,
-    },
-    tagsWrapper: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-    },
-    tag: {
-        margin: 4,
-        borderRadius: 16, // Soft edges
-    },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  title: {
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  searchAndCount: {
+    flexDirection: "row",
+    gap: 5,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  searchBar: {
+    flex: 1,
+  },
+  selectedTagsContainer: {
+    marginBottom: 16,
+  },
+  selectedTag: {
+    marginRight: 8,
+    backgroundColor: "#e0f2f7", // Light blue color for selected tags
+  },
+  tagsContainer: {
+    flex: 1,
+  },
+  tagsWrapper: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  tag: {
+    margin: 4,
+    borderRadius: 16, // Soft edges
+  },
+  categoryContainer: {
+    marginBottom: 20,
+    padding: 10,
+  },
+  categoryName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  chipsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  fab: {
+    position: "absolute",
+    margin: 50,
+    right: 0,
+    bottom: 0,
+  },
 });
 
 export default LookingToScreen;
