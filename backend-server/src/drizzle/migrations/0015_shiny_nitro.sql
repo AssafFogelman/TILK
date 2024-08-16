@@ -1,0 +1,1 @@
+ALTER TABLE "tags" DROP CONSTRAINT "tags_tag_content_unique";
