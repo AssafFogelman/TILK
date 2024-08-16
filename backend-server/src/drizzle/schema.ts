@@ -41,16 +41,18 @@ export const users = pgTable("users", {
   //gender is an enum - man, woman, other
   gender: genderEnum("gender"), //it is mandatory , but it is not mandatory for the first phase of the registration
   //is the user active, a.k.a, has the application on their phone
-  active: boolean("active").default(true),
-  //off-grid: the user has decided to be invisible and not see others
-  offGrid: boolean("off-grid").default(true),
+  activeUser: boolean("active_user").default(true),
+  //off-grid: the user has decided to be invisible to users he is not connected to (or requested connection)
+  offGrid: boolean("off-grid").default(false),
   nickname: text("nickname"), //it is mandatory , but it is not mandatory for the first phase of the registration
   //makes SQL create a timestamp once the record is created
   created: timestamp("created").defaultNow(),
   //is the user currently connected
-  connected: boolean("connected").default(true),
+  currentlyConnected: boolean("currently_connected").default(false),
   admin: boolean("admin").default(false),
   locationDate: timestamp("location_date"),
+  //used to set whether the user is currently connected
+  socketId: text("socket_id"),
 });
 /*
 uuid - a long long string for Ids

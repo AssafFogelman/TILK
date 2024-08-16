@@ -93,7 +93,9 @@ const LookingToScreen = () => {
       <View style={styles.selectedTagsContainer}>
         <FlatList
           data={selectedTags}
-          keyExtractor={(item) => item.tags[0].tagContent}
+          keyExtractor={(item) =>
+            item.categoryName + "-" + item.tags[0].tagContent
+          }
           renderItem={({ item }) => (
             <Chip
               style={styles.selectedTag}

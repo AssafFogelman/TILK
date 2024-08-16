@@ -23,6 +23,7 @@ returns the hash
 
 export const sendSms = async (c: Context) => {
   try {
+    console.log("we are in 'send-sms'");
     const {
       phoneNumber,
       uniqueOSCode,
@@ -47,14 +48,14 @@ export const sendSms = async (c: Context) => {
     todaysRequests = todaysRequests.filter(
       (request) =>
         request.weekDay >= new Date().getDay() - 1 &&
-        request.weekDay <= new Date().getDay() + 1
+        request.weekDay <= new Date().getDay() + 1,
     );
     if (areTooManyInstances(todaysRequests, uniqueOSCode, 5)) {
       throw "this user's ID has sent too many SMS requests today";
     }
     const code = Math.floor(10000 + Math.random() * 90000).toString();
     const hash = await createHash(
-      phoneNumber + code + process.env.VALIDATION_KEY
+      phoneNumber + code + process.env.VALIDATION_KEY,
     );
     //send SMS
     // await client.messages
@@ -78,7 +79,7 @@ type countsType = Record<string, number>;
 function areTooManyInstances(
   arr: todaysRequestsType,
   uniqueOSCode: string,
-  restrictNumber: number
+  restrictNumber: number,
 ) {
   let count = 0;
 

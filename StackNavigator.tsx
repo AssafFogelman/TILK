@@ -33,10 +33,19 @@ import { getItemAsync } from "expo-secure-store";
 import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
 import { useAuthDispatch, useAuthState } from "./AuthContext";
 import { useScreenOrder } from "./hooks/useScreenOrder";
+import * as Location from "expo-location";
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
-const StackNavigator = () => {
+type StackNavigatorProps = {
+  startDeviceMotionTracking: () => {};
+  startLocationTrackingInterval: () => void;
+  locationDataIsLoading: boolean;
+  locationDataIsError: boolean;
+  locationData: null;
+};
+
+const StackNavigator = (props: StackNavigatorProps) => {
   const {
     chosenAvatar,
     chosenBio,
@@ -48,7 +57,13 @@ const StackNavigator = () => {
     userId,
   } = useAuthState();
   const initialRouteName = useScreenOrder();
-
+  const {
+    startDeviceMotionTracking,
+    startLocationTrackingInterval,
+    locationDataIsLoading,
+    locationDataIsError,
+    locationData,
+  } = props;
   if (isLoading) {
     // We haven't finished checking for the token yet
     return <SplashScreen />;
@@ -78,9 +93,19 @@ const StackNavigator = () => {
 
           <Stack.Screen
             name="Home"
-            component={HomeScreen}
             // options={{ headerShown: false }}
-          />
+          >
+            {(props) => (
+              <HomeScreen
+                {...props}
+                startDeviceMotionTracking={startDeviceMotionTracking}
+                startLocationTrackingInterval={startLocationTrackingInterval}
+                locationDataIsLoading={locationDataIsLoading}
+                locationDataIsError={locationDataIsError}
+                locationData={locationData}
+              />
+            )}
+          </Stack.Screen>
           <Stack.Screen
             name="Friends"
             component={FriendsScreen}
@@ -130,10 +155,6 @@ const StackNavigator = () => {
     </Stack.Navigator>
   );
 };
-
-export function screenOrder() {
-  return;
-}
 
 export default StackNavigator;
 

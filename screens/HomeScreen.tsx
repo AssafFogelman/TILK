@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 // import { UserContext } from "../UserContext";
@@ -9,80 +9,45 @@ import axios from "axios";
 import { ObjectId } from "mongoose";
 import UserSmallDetails from "../components/UserSmallDetails";
 import { useHandleAppStateChange } from "../hooks/useHandleAppStateChange";
+import { socket } from "../socket";
+import { useAuthState } from "../AuthContext";
+import {
+  HomeProps,
+  HomeScreenNavigationProp,
+  HomeScreenRouteProp,
+  PhoneVerificationScreenRouteProp,
+} from "../types/types";
+import * as Location from "expo-location";
 
-interface JwtPayload {
-  userId: string;
-}
+/* TODO
 
-const HomeScreen = () => {
-  const navigation = useNavigation();
-  // const { userId, setUserId } = useContext(UserContext);
-  const [users, setUsers] = useState([]);
+ * add "bottom sheet" from RN Paper
+ * add cards
+ */
 
-  //handle minimizing and returning to app - currently checking if location is enabled. the listener starts only after the user loads the HomeScreen.
-  useHandleAppStateChange();
+const HomeScreen = (props: HomeProps) => {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+  const { userId } = useAuthState();
+  const {
+    startDeviceMotionTracking,
+    startLocationTrackingInterval,
+    locationDataIsLoading,
+    locationDataIsError,
+    locationData,
+  } = props;
+
+  //start location tracking
+  useLocationTracking();
+
+  //create a websocket connection
+  //and set the userId to the server as "currently connected".
+  useSetCurrentlyConnected();
 
   //setting the header
-  useEffect(() => {
-    navigation.setOptions({
-      headerTitle: "",
-      headerLeft: () => (
-        <Text style={{ fontSize: 16, fontWeight: "bold" }}>Tilk</Text>
-      ),
-      headerRight: () => (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Ionicons
-            onPress={() => {
-              navigation.navigate("Chats");
-            }}
-            name="chatbox-ellipses-outline"
-            size={24}
-            color="black"
-          />
+  useSetHeader();
 
-          <MaterialIcons
-            onPress={() => {
-              navigation.navigate("Friends");
-            }}
-            name="people-outline"
-            size={24}
-            color="black"
-          />
-        </View>
-      ),
-    });
-  }, []);
-
-  useEffect(() => {
-    //get context "userId" from the asyncStorage &
-    //fetch all the user data except this user
-    const fetchUsers = async () => {
-      try {
-        const token = await getData("authToken");
-        // const decodedToken: JwtPayload = jwtDecode(token);
-
-        //set context with userId
-        // setUserId(decodedToken.userId);
-
-        //get the list of all the users except this user.
-        // axios
-        //   .get("http://192.168.1.116:8000/users/" + decodedToken.userId)
-        //   .then((response) => {
-        //     //save the users' data to a state.
-        //     setUsers(response.data);
-        //   })
-        //   .catch((error) => {
-        //     console.log(
-        //       "an error ocurred while trying to retrieve the user list"
-        //     );
-        //     console.log("the error is:", error);
-        //   });
-      } catch (error) {
-        console.log("error in useEffect of HomeScreen:", error);
-      }
-    };
-    fetchUsers();
-  }, []);
+  //when minimizing and returning to app - check if location is enabled.
+  // useHandleAppStateChange();
 
   return (
     <View>
@@ -94,6 +59,58 @@ const HomeScreen = () => {
       </View>
     </View>
   );
+
+  function useLocationTracking() {
+    useEffect(() => {
+      //subscribe to location updates
+      startDeviceMotionTracking();
+      //start an interval for location acquirement.
+      startLocationTrackingInterval();
+    }, []);
+  }
+
+  function useSetCurrentlyConnected() {
+    useEffect(() => {
+      (async () => {
+        socket.connect();
+        socket.emit("setCurrentlyConnected", userId);
+      })();
+      //the socket is removed in the "app.js" file in order that the user will be
+      //registered as off-line only when the app is closed, and not when "homeScreen" is unmounted
+    }, []);
+  }
+
+  function useSetHeader() {
+    useEffect(() => {
+      navigation.setOptions({
+        headerTitle: "",
+        headerLeft: () => (
+          <Text style={{ fontSize: 16, fontWeight: "bold" }}>Tilk</Text>
+        ),
+        headerRight: () => (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Ionicons
+              onPress={() => {
+                navigation.navigate("Chats");
+              }}
+              name="chatbox-ellipses-outline"
+              size={24}
+              color="black"
+            />
+
+            <MaterialIcons
+              onPress={() => {
+                navigation.navigate("Friends");
+              }}
+              name="people-outline"
+              size={24}
+              color="black"
+            />
+          </View>
+        ),
+      });
+    }, []);
+  }
 };
 
 export default HomeScreen;

@@ -166,6 +166,11 @@ const PhoneVerificationScreen = () => {
           "error while trying to send code:",
           error.response.data.message,
         );
+      } else {
+        console.log(
+          "error trying to send the phone number and get a code: ",
+          error,
+        );
       }
     }
   }
@@ -241,16 +246,25 @@ const PhoneVerificationScreen = () => {
       //store user details in context
       signUp({
         userId,
-        chosenAvatar: chosenAvatar,
+        chosenAvatar,
         chosenBio,
         chosenTags,
         isAdmin,
         userToken: token,
       });
-
       //since it takes time for the context to update the state,
       //for the stackNavigator to not throw us to a wrong screen, we will navigate manually
-      navigation.navigate(initialScreenOrder);
+      //if the user has already chosen bio, avatar and tags, navigate to "home" screen
+
+      const navigateTo = chosenBio
+        ? chosenAvatar
+          ? chosenTags
+            ? "Home"
+            : "LookingTo"
+          : "SelectAvatar"
+        : "PersonalDetails";
+
+      navigation.navigate(navigateTo);
     } catch (error: any) {
       if (error.response) {
         // The request was made and the server responded with a status code

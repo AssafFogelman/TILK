@@ -1,5 +1,7 @@
 import { RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as Location from "expo-location";
+import React from "react";
 
 //change this if you want to add "initialParams" to certain screens:
 export type StackParamList = {
@@ -70,11 +72,23 @@ export type PhoneVerificationScreenRouteProp = RouteProp<
   "PhoneVerification"
 >;
 
+//this is the type for the useRoute() in "Home" Screen
+export type HomeScreenRouteProp = RouteProp<StackParamList, "Home">;
+
 //this is the type for the useNavigation() in "Register" Screen
 export type RegisterScreenNavigationProp = NativeStackNavigationProp<
   StackParamList,
   "Register"
 >;
+
+//props of "Home" screen
+export type HomeProps = {
+  startDeviceMotionTracking: () => {};
+  startLocationTrackingInterval: () => void;
+  locationDataIsLoading: boolean;
+  locationDataIsError: boolean;
+  locationData: null;
+};
 
 export type ChatMessageType = {
   __v: string;
