@@ -135,30 +135,36 @@ export const tagCategories = pgTable("tag_categories", {
 });
 
 // connections (friendships)
-export const connections = pgTable("connections", {
-  connectionId: uuid("connection_id")
-    .notNull()
-    .unique()
-    .defaultRandom()
-    .primaryKey(),
-  connectionDate: timestamp("connection_date").defaultNow().notNull(),
-  connectedUser1: uuid("connected_user1")
-    .notNull()
-    .references(() => users.userId),
-  connectedUser2: uuid("connected_user2")
-    .notNull()
-    .references(() => users.userId),
-});
-
-// received connection requests
-export const receivedConnectionRequests = pgTable(
-  "received_connection_requests",
+export const connections = pgTable(
+  "connections",
   {
-    receivedRequestId: uuid("received_request_id")
-      .primaryKey()
-      .defaultRandom()
-      .unique()
-      .notNull(),
+    connectionDate: timestamp("connection_date").defaultNow().notNull(),
+    connectedUser1: uuid("connected_user1")
+      .notNull()
+      .references(() => users.userId),
+    connectedUser2: uuid("connected_user2")
+      .notNull()
+      .references(() => users.userId),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.connectedUser1, table.connectedUser2] }), // composite primary key
+      checkDifferentUsers: sql`CHECK (${table.connectedUser1} <> ${table.connectedUser2})`, //a user cannot connect to himself
+      checkUniqueDirection: sql`CHECK (${table.connectedUser1} < ${table.connectedUser2})`,
+      /*
+    A connection of A and B would be stored as (connectedUser1: B, connectedUser2: A)
+    A connection request from B to A would also be stored as (connectedUser1: B, connectedUser2: A)
+    This is because B's UUID is "greater than" A's UUID.
+    That ensures that there's only one way to represent a connection between two users in the database
+     */
+    };
+  },
+);
+
+// connection requests
+export const connectionRequests = pgTable(
+  "connection_requests",
+  {
     recipientId: uuid("recipient_id")
       .notNull()
       .references(() => users.userId),
@@ -168,23 +174,20 @@ export const receivedConnectionRequests = pgTable(
     requestDate: timestamp("request_date").defaultNow(),
     unread: boolean("unread").notNull().default(true),
   },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.recipientId, table.senderId] }), // composite primary key
+      checkDifferentUsers: sql`CHECK (${table.recipientId} <> ${table.senderId})`, //a user cannot send a connection request to himself
+      checkUniqueDirection: sql`CHECK (${table.recipientId} < ${table.senderId})`,
+      /*
+      A connection request from A to B would be stored as (recipientId: B, senderId: A)
+      A connection request from B to A would also be stored as (recipientId: B, senderId: A)
+      This is because B's UUID is "greater than" A's UUID.
+      That ensures that there's only one way to represent a connection request between two users in the database
+       */
+    };
+  },
 );
-
-// sent connection requests
-export const sentConnectionRequests = pgTable("sent_connection_requests", {
-  sentRequestId: uuid("sent_request_id")
-    .notNull()
-    .primaryKey()
-    .defaultRandom()
-    .unique(),
-  recipientId: uuid("recipient_id")
-    .notNull()
-    .references(() => users.userId),
-  senderId: uuid("sender_id")
-    .notNull()
-    .references(() => users.userId),
-  requestDate: timestamp("request_date").defaultNow().notNull(),
-});
 
 //blocks
 export const blocks = pgTable("blocks", {
@@ -292,8 +295,7 @@ export const tablesEnum = pgEnum("tables_enum", [
   "users",
   "location_records",
   "connections",
-  "sent_connection_requests",
-  "received_connection_requests",
+  "connection_requests",
   "blocks",
   "chats",
   "chat_messages",
@@ -320,8 +322,7 @@ export const eventTypes = pgTable("event_types", {
 export const userRelations = relations(users, ({ many }) => ({
   tagsUsers: many(tagsUsers),
   connections: many(connections),
-  receivedConnectionRequests: many(receivedConnectionRequests),
-  sentConnectionRequests: many(sentConnectionRequests),
+  connectionRequests: many(connectionRequests),
   blocks: many(blocks),
   chats: many(chats),
   events: many(events),
@@ -369,29 +370,15 @@ export const connectionsRelations = relations(connections, ({ one }) => ({
   }),
 }));
 
-export const receivedConnectionRequestRelations = relations(
-  receivedConnectionRequests,
+export const connectionRequestRelations = relations(
+  connectionRequests,
   ({ one }) => ({
-    recipientId: one(users, {
-      fields: [receivedConnectionRequests.recipientId],
+    sender: one(users, {
+      fields: [connectionRequests.senderId],
       references: [users.userId],
     }),
-    senderId: one(users, {
-      fields: [receivedConnectionRequests.senderId],
-      references: [users.userId],
-    }),
-  }),
-);
-
-export const sentConnectionRequestRelations = relations(
-  sentConnectionRequests,
-  ({ one }) => ({
-    recipientId: one(users, {
-      fields: [sentConnectionRequests.recipientId],
-      references: [users.userId],
-    }),
-    senderId: one(users, {
-      fields: [sentConnectionRequests.senderId],
+    recipient: one(users, {
+      fields: [connectionRequests.recipientId],
       references: [users.userId],
     }),
   }),

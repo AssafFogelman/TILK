@@ -35,58 +35,50 @@ export const getKnn = async (c: Context) => {
     // WHERE user_location <-> ST_MakePoint(${longitude},${latitude})<10000
     // ORDER BY distance
     // LIMIT ${limit};`;
-    const knnQuery = `SELECT 
-        u.userId, 
-        u.originalAvatars, 
-        u.smallAvatar, 
-        u.gender, 
-        u.nickname, 
-        u.currentlyConnected, 
-        u.dateOfBirth, 
-        u.biography, 
-        u.user_location <-> ST_MakePoint(${longitude},${latitude}) AS distance,
-        EXISTS (
-          SELECT 1 FROM connections 
-          WHERE (connectedUser1 = u.userId AND connectedUser2 = '${userId}') 
-             OR (connectedUser2 = u.userId AND connectedUser1 = '${userId}')
-        ) AS connected,
-        EXISTS (
-          SELECT 1 FROM sent_connection_requests 
-          WHERE senderId = '${userId}' AND recipientId = u.userId
-        ) AS sent_request,
-        EXISTS (
-          SELECT 1 FROM received_connection_requests 
-          WHERE senderId = u.userId AND recipientId = '${userId}'
-        ) AS received_request,
-        ARRAY(
-          SELECT t.tagContent
-          FROM tagsUsers tu
-          JOIN tags t ON tu.tagId = t.tagId
-          WHERE tu.userId = u.userId
-        ) AS tag_names
-      FROM users u
-      WHERE u.userId != '${userId}'
-        AND u.user_location <-> ST_MakePoint(${longitude},${latitude}) < 10000
-        AND u.activeUser = true
-        AND NOT EXISTS (
-          SELECT 1 FROM blocks 
-          WHERE (blockingUserId = '${userId}' AND blockedUserId = u.userId) 
-             OR (blockingUserId = u.userId AND blockedUserId = '${userId}')
-        )
-        AND (
-          u.offGrid = false 
-          OR EXISTS (
-            SELECT 1 FROM connections 
-            WHERE (connectedUser1 = u.userId AND connectedUser2 = '${userId}') 
-               OR (connectedUser2 = u.userId AND connectedUser1 = '${userId}')
-          )
-          OR EXISTS (
-            SELECT 1 FROM sent_connection_requests 
-            WHERE senderId = u.userId AND recipientId = '${userId}'
-          )
-        )
-      ORDER BY distance
-      LIMIT ${limit};
+    const knnQuery = `   SELECT 
+                user_id, 
+                nickname, 
+                original_avatars, 
+                small_avatar, 
+                gender, 
+                currently_connected, 
+                date_of_birth, 
+                biography,
+                user_location <-> ST_MakePoint(${longitude}, ${latitude}) AS distance,
+                EXISTS (
+                    SELECT 1 
+                    FROM connections 
+                    WHERE (connected_user1 = '${userId}' AND connected_user2 = users.user_id) 
+                       OR (connected_user2 = '${userId}' AND connected_user1 = users.user_id)
+                ) AS connected,
+                EXISTS (
+                    SELECT 1 
+                    FROM connection_requests 
+                    WHERE sender_id = '${userId}' AND recipient_id = users.user_id
+                ) AS request_recipient,
+                EXISTS (
+                    SELECT 1 
+                    FROM connection_requests 
+                    WHERE sender_id = users.user_id AND recipient_id = '${userId}'
+                ) AS request_sender,
+                ARRAY(
+                    SELECT tag_content 
+                    FROM tags 
+                    INNER JOIN tags_users ON tags.tag_id = tags_users.tag_id 
+                    WHERE tags_users.user_id = users.user_id
+                ) AS tags
+            FROM users
+            WHERE user_id <> '${userId}'
+            AND active_user = TRUE
+            AND (off_grid = FALSE OR connected IS TRUE OR request_sender IS TRUE)
+            AND user_id NOT IN (
+                SELECT blocked_user_id 
+                FROM blocks 
+                WHERE blocking_user_id = '${userId}'
+            )
+            AND user_location <-> ST_MakePoint(${longitude}, ${latitude}) < 10000
+            ORDER BY distance
+            LIMIT ${limit};
     `;
     const knn = await db.execute(sql.raw(knnQuery));
     return c.json({ knn }, 200);
