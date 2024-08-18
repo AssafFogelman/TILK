@@ -29,12 +29,6 @@ export const getKnn = async (c: Context) => {
     );
 
     // finding KNN
-    // const knnQuery = `
-    // SELECT nickname, user_location <-> ST_MakePoint(${longitude},${latitude}) AS distance
-    // FROM users
-    // WHERE user_location <-> ST_MakePoint(${longitude},${latitude})<10000
-    // ORDER BY distance
-    // LIMIT ${limit};`;
     const knnQuery = `   SELECT 
                 user_id, 
                 nickname, 
@@ -61,6 +55,7 @@ export const getKnn = async (c: Context) => {
                     FROM connection_requests 
                     WHERE sender_id = users.user_id AND recipient_id = '${userId}'
                 ) AS request_sender,
+                 (SELECT unread FROM connection_requests WHERE sender_id = users.user_id AND recipient_id = '${userId}') AS unread,
                 ARRAY(
                     SELECT tag_content 
                     FROM tags 
