@@ -4,8 +4,8 @@ import { Searchbar, Chip, Text } from "react-native-paper";
 import axios from "axios";
 import { FlashList } from "@shopify/flash-list";
 import { FAB } from "react-native-paper";
-import { useAuthDispatch } from "../AuthContext";
-import { useNavigation } from "@react-navigation/native";
+import { useAuthDispatch, useAuthState } from "../AuthContext";
+import { CommonActions, useNavigation } from "@react-navigation/native";
 import { LookingToScreenNavigationProp } from "../types/types";
 
 type TagItem = {
@@ -20,6 +20,7 @@ const LookingToScreen = () => {
   const [filteredTags, setFilteredTags] = useState<TagList>([]);
   const [staticTagList, setStaticTagList] = useState<TagList>([]);
   const { tagsWereChosen } = useAuthDispatch();
+  const { chosenBio, chosenAvatar } = useAuthState();
   const navigation = useNavigation<LookingToScreenNavigationProp>();
   //get the categories and the tags
   useEffect(() => {
@@ -138,9 +139,32 @@ const LookingToScreen = () => {
     try {
       await axios.post("/user/post-tags", selectedTags);
       tagsWereChosen();
-      navigation.navigate("Home");
+      const previousScreen =
+        navigation.getState().routes[navigation.getState().index - 1].name;
+      console.log("previousScreen: ", previousScreen);
+      if (previousScreen != "Home" && chosenAvatar && chosenBio) {
+        //if the user came to the lookingTo screen not from the home screen
+        //and has already chosen an avatar and bio, this means we should now activate him
+        await axios.post("/user/activate-user");
+
+        //also, we don't want the user to be able to return to the registration screens once
+        // he navigates to the "Home" screen
+        //removing the navigation history
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Home" }],
+          }),
+        );
+      }
+      // else, navigate to "Home" and don't let the user return to this specific screen
+      // (he may return to other screens in the navigation stack)
+      navigation.replace("Home");
     } catch (error) {
-      console.log("error trying to save the chose tags to the server: ", error);
+      console.log(
+        "error trying to save the chosen tags to the server: ",
+        error,
+      );
     }
   }
 

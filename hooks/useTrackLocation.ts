@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as Location from "expo-location";
+import axios from "axios";
+import { knnDataType } from "../types/types";
 
 export function useTrackLocation() {
   const locationRef = useRef<null | Location.LocationObject>(null);
@@ -8,9 +10,9 @@ export function useTrackLocation() {
   const locationSubscription = useRef<null | Location.LocationSubscription>(
     null,
   );
-  const [locationDataIsLoading, setLocationDataIsLoading] = useState(true);
-  const [locationDataIsError, setLocationDataIsError] = useState(false);
-  const [locationData, setLocationData] = useState(null);
+  const [knnDataIsLoading, setKnnDataIsLoading] = useState(true);
+  const [knnDataIsError, setKnnDataIsError] = useState(false);
+  const [knnData, setKnnData] = useState<knnDataType>(null);
 
   const stopInterval = useCallback(() => {
     if (intervalRef.current) {
@@ -33,28 +35,31 @@ export function useTrackLocation() {
     }
   }
 
+  //subscribe to location services
   const startDeviceMotionTracking = async () => {
-    // if we are already subscribed, do nothing.
-    // this could happen if the "home" screen unmounts and then remounts
-    // (once the user left it and then returned to it)
-    if (locationSubscription.current) {
-      return;
-    }
+    try {
+      // if we are already subscribed to the location services, do nothing.
+      if (locationSubscription.current) {
+        return;
+      }
 
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      console.log("Permission to access location was denied");
-      return;
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
+      }
+      locationSubscription.current = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          distanceInterval: 50,
+          //If you want to check that it works without having to move 50 meters, change distanceInterval to 0 (update regardless of location change)
+          timeInterval: 1000 * 30, //update location if the device moved more than 50 meters, and no more that an update every 30 seconds
+        },
+        handleNewLocation,
+      );
+    } catch (error) {
+      console.log("error in startDeviceMotionTracking function: ", error);
     }
-    locationSubscription.current = await Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.High,
-        distanceInterval: 50,
-        //If you want to check that it works without having to move 50 meters, change distanceInterval to 0 (update regardless of location change)
-        timeInterval: 1000 * 30, //update location if the device moved more than 50 meters, and no more that an update every 30 seconds
-      },
-      handleNewLocation,
-    );
   };
 
   //periodically send location to the server even if the location doesn't change
@@ -84,7 +89,6 @@ export function useTrackLocation() {
 
   async function sendLocationToServer(location: Location.LocationObject) {
     try {
-      setLocationDataIsLoading(true);
       console.log(
         "location is: lat- ",
         location.coords.latitude,
@@ -94,14 +98,18 @@ export function useTrackLocation() {
         location.timestamp,
       );
       console.log("this location was going to be sent to the server. fix it");
-      // await axios.post("YOUR_SERVER_URL", {
-      //   latitude: location.coords.latitude,
-      //   longitude: location.coords.longitude,
-      //   timestamp: location.timestamp,
-      // });
-      // console.log("Location sent to server successfully");
-      //FIXME
+      const knn = await axios
+        .post("/location", {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          limit: 20,
+        })
+        .then((response) => response.data);
+      console.log("an example of the knn type is: ", knn);
+      setKnnDataIsLoading(false);
+      setKnnData(knn);
     } catch (error) {
+      setKnnDataIsError(true);
       console.error("Error sending location to server:", error);
     }
   }
@@ -109,8 +117,8 @@ export function useTrackLocation() {
   return {
     startDeviceMotionTracking,
     startLocationTrackingInterval,
-    locationDataIsLoading,
-    locationDataIsError,
-    locationData,
+    knnDataIsLoading,
+    knnDataIsError,
+    knnData,
   };
 }

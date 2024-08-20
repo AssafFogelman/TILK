@@ -40,10 +40,11 @@ export const users = pgTable("users", {
   dateOfBirth: date("date_of_birth"),
   //gender is an enum - man, woman, other
   gender: genderEnum("gender"), //it is mandatory , but it is not mandatory for the first phase of the registration
-  //is the user active, a.k.a, has the application on their phone
-  activeUser: boolean("active_user").default(true),
+  //is the user active, a.k.a, has the application on their phone and used it once. if the user did not finish registration, he is still not considered active.
+  //he is being activated only once he completes the registration. non-active users are not retrieved in the KNN queries.
+  activeUser: boolean("active_user").default(false),
   //off-grid: the user has decided to be invisible to users he is not connected to (or requested connection)
-  offGrid: boolean("off-grid").default(false),
+  offGrid: boolean("off_grid").default(false),
   nickname: text("nickname"), //it is mandatory , but it is not mandatory for the first phase of the registration
   //makes SQL create a timestamp once the record is created
   created: timestamp("created").defaultNow(),

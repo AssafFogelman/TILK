@@ -40,9 +40,9 @@ const Stack = createNativeStackNavigator<StackParamList>();
 type StackNavigatorProps = {
   startDeviceMotionTracking: () => {};
   startLocationTrackingInterval: () => void;
-  locationDataIsLoading: boolean;
-  locationDataIsError: boolean;
-  locationData: null;
+  knnDataIsLoading: boolean;
+  knnDataIsError: boolean;
+  knnData: null;
 };
 
 const StackNavigator = (props: StackNavigatorProps) => {
@@ -60,9 +60,9 @@ const StackNavigator = (props: StackNavigatorProps) => {
   const {
     startDeviceMotionTracking,
     startLocationTrackingInterval,
-    locationDataIsLoading,
-    locationDataIsError,
-    locationData,
+    knnDataIsLoading,
+    knnDataIsError,
+    knnData,
   } = props;
   if (isLoading) {
     // We haven't finished checking for the token yet
@@ -100,9 +100,9 @@ const StackNavigator = (props: StackNavigatorProps) => {
                 {...props}
                 startDeviceMotionTracking={startDeviceMotionTracking}
                 startLocationTrackingInterval={startLocationTrackingInterval}
-                locationDataIsLoading={locationDataIsLoading}
-                locationDataIsError={locationDataIsError}
-                locationData={locationData}
+                knnDataIsLoading={knnDataIsLoading}
+                knnDataIsError={knnDataIsError}
+                knnData={knnData}
               />
             )}
           </Stack.Screen>

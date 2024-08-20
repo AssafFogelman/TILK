@@ -33,9 +33,9 @@ export default function App() {
   const {
     startDeviceMotionTracking,
     startLocationTrackingInterval,
-    locationDataIsLoading,
-    locationDataIsError,
-    locationData,
+    knnDataIsLoading,
+    knnDataIsError,
+    knnData,
   } = useTrackLocation();
 
   return (
@@ -51,9 +51,9 @@ export default function App() {
                 <StackNavigator
                   startDeviceMotionTracking={startDeviceMotionTracking}
                   startLocationTrackingInterval={startLocationTrackingInterval}
-                  locationDataIsLoading={locationDataIsLoading}
-                  locationDataIsError={locationDataIsError}
-                  locationData={locationData}
+                  knnDataIsLoading={knnDataIsLoading}
+                  knnDataIsError={knnDataIsError}
+                  knnData={knnData}
                 />
               </NavigationContainer>
             </GestureHandlerRootView>

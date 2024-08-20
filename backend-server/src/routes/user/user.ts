@@ -7,6 +7,7 @@ import { postAvatars } from "../../controllers/post-avatars";
 import { postBio } from "../../controllers/post-bio";
 import { getTags } from "../../controllers/get-tags";
 import { postTags } from "../../controllers/post-tags";
+import { activateUser } from "../../controllers/activate-user";
 
 export const user = new Hono().basePath("/user");
 
@@ -50,3 +51,6 @@ user.post("/post-bio", validateToken, postBio);
 user.get("/get-tags", validateToken, getTags);
 
 user.post("/post-tags", validateToken, postTags);
+
+//activate user in DB after he completes registration
+user.post("/activate-user", validateToken, activateUser);

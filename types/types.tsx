@@ -85,10 +85,29 @@ export type RegisterScreenNavigationProp = NativeStackNavigationProp<
 export type HomeProps = {
   startDeviceMotionTracking: () => {};
   startLocationTrackingInterval: () => void;
-  locationDataIsLoading: boolean;
-  locationDataIsError: boolean;
-  locationData: null;
+  knnDataIsLoading: boolean;
+  knnDataIsError: boolean;
+  knnData: null;
 };
+
+export type knnDataType =
+  | {
+      user_id: string;
+      nickname: string;
+      original_avatars: string[];
+      small_avatar: string;
+      gender: "man" | "woman" | "other";
+      currently_connected: boolean;
+      date_of_birth: string;
+      biography: string;
+      distance: number;
+      connected: boolean;
+      request_recipient: boolean;
+      request_sender: boolean;
+      unread: null | true | false;
+      tags: string[];
+    }[]
+  | null;
 
 export type ChatMessageType = {
   __v: string;

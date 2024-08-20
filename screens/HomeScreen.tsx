@@ -18,6 +18,8 @@ import {
   PhoneVerificationScreenRouteProp,
 } from "../types/types";
 import * as Location from "expo-location";
+import { ActivityIndicator, MD2Colors } from "react-native-paper";
+import { theme } from "../styles/react-paper-theme";
 
 /* TODO
 
@@ -31,9 +33,9 @@ const HomeScreen = (props: HomeProps) => {
   const {
     startDeviceMotionTracking,
     startLocationTrackingInterval,
-    locationDataIsLoading,
-    locationDataIsError,
-    locationData,
+    knnDataIsLoading,
+    knnDataIsError,
+    knnData,
   } = props;
 
   //start location tracking
@@ -43,20 +45,35 @@ const HomeScreen = (props: HomeProps) => {
   //and set the userId to the server as "currently connected".
   useSetCurrentlyConnected();
 
-  //setting the header
+  //set the header
   useSetHeader();
 
-  //when minimizing and returning to app - check if location is enabled.
+  //when minimizing and returning to app - check if location is enabled. FIXME is this at all necessary?
   // useHandleAppStateChange();
 
   return (
-    <View>
-      {/* mapping the users downloaded from the server */}
-      <View style={{ padding: 10 }}>
-        {/* {users.map((userData, index) => (
-          <UserSmallDetails key={index} userData={userData} />
-        ))} */}
-      </View>
+    <View style={{ flex: 1 }}>
+      {knnDataIsLoading ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator
+            animating={true}
+            color={theme.colors.primary}
+            size={"large"}
+          />
+        </View>
+      ) : knnDataIsError ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text>Could not load nearby users...</Text>
+        </View>
+      ) : (
+        <View style={{ padding: 10 }}>
+          <Text>let's show the KNN users!</Text>
+        </View>
+      )}
     </View>
   );
 

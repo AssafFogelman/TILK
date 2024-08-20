@@ -16,7 +16,7 @@ type ReqType = {
 export const getKnn = async (c: Context) => {
   try {
     const { userId } = c.get("tokenPayload");
-    const { limit = 20, latitude, longitude } = (await c.req.json()) as ReqType;
+    const { latitude, longitude, limit = 20 } = (await c.req.json()) as ReqType;
 
     if (limit < 1 || !Number.isInteger(limit) || limit > 200)
       throw { message: "invalid limit value" };
@@ -27,9 +27,10 @@ export const getKnn = async (c: Context) => {
           SET user_location=ST_MakePoint(${longitude},${latitude})
           WHERE user_id='${userId}';`),
     );
-
+    //currently_connected
     // finding KNN
-    const knnQuery = `   SELECT 
+    const knnQuery = `
+            SELECT 
                 user_id, 
                 nickname, 
                 original_avatars, 
@@ -55,7 +56,11 @@ export const getKnn = async (c: Context) => {
                     FROM connection_requests 
                     WHERE sender_id = users.user_id AND recipient_id = '${userId}'
                 ) AS request_sender,
-                 (SELECT unread FROM connection_requests WHERE sender_id = users.user_id AND recipient_id = '${userId}') AS unread,
+                (
+                 SELECT unread 
+                 FROM connection_requests 
+                 WHERE sender_id = users.user_id AND recipient_id = '${userId}'
+                 ) AS unread,
                 ARRAY(
                     SELECT tag_content 
                     FROM tags 
@@ -63,19 +68,41 @@ export const getKnn = async (c: Context) => {
                     WHERE tags_users.user_id = users.user_id
                 ) AS tags
             FROM users
-            WHERE user_id <> '${userId}'
-            AND active_user = TRUE
-            AND (off_grid = FALSE OR connected IS TRUE OR request_sender IS TRUE)
-            AND user_id NOT IN (
-                SELECT blocked_user_id 
-                FROM blocks 
-                WHERE blocking_user_id = '${userId}'
-            )
-            AND user_location <-> ST_MakePoint(${longitude}, ${latitude}) < 10000
+            WHERE 
+                user_id <> '${userId}'
+                AND active_user = TRUE
+                AND (
+                    off_grid = FALSE 
+                    OR 
+                    EXISTS (
+                        SELECT 1 
+                        FROM connections 
+                        WHERE (connected_user1 = '${userId}' AND connected_user2 = users.user_id) 
+                        OR (connected_user2 = '${userId}' AND connected_user1 = users.user_id)
+                    )
+                    OR 
+                    EXISTS (
+                        SELECT 1 
+                        FROM connection_requests 
+                        WHERE sender_id = users.user_id AND recipient_id = '${userId}'
+                    )
+                )
+                AND user_id NOT IN (
+                    SELECT blocked_user_id 
+                    FROM blocks 
+                    WHERE blocking_user_id = '${userId}'
+                )
+               AND user_id NOT IN (
+                    SELECT blocking_user_id
+                    FROM blocks
+                    WHERE blocked_user_id = '${userId}'
+                )
+                AND user_location <-> ST_MakePoint(${longitude}, ${latitude}) < 10000
             ORDER BY distance
             LIMIT ${limit};
     `;
     const knn = await db.execute(sql.raw(knnQuery));
+    console.log("knn: ", knn);
     return c.json({ knn }, 200);
   } catch (error) {
     console.log("error retrieving nearest neighbor user data: ", error);
