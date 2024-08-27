@@ -315,6 +315,13 @@ export const eventTypes = pgTable("event_types", {
   tableAffected: tablesEnum("table_affected").notNull(),
 });
 
+export const errorLog = pgTable("error_log", {
+  timestamp: timestamp("date").defaultNow().notNull(),
+  userId: uuid("user_id"), //sometimes we will not know what the userId is, if the user hasn't registered yet.
+  error: text("error").notNull(),
+  info: text("info").notNull(),
+});
+
 //************************************************************* */
 //************************************************************* */
 // RELATIONS

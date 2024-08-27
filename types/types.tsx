@@ -87,27 +87,27 @@ export type HomeProps = {
   startLocationTrackingInterval: () => void;
   knnDataIsLoading: boolean;
   knnDataIsError: boolean;
-  knnData: null;
+  knnData: knnDataType;
 };
 
-export type knnDataType =
-  | {
-      user_id: string;
-      nickname: string;
-      original_avatars: string[];
-      small_avatar: string;
-      gender: "man" | "woman" | "other";
-      currently_connected: boolean;
-      date_of_birth: string;
-      biography: string;
-      distance: number;
-      connected: boolean;
-      request_recipient: boolean;
-      request_sender: boolean;
-      unread: null | true | false;
-      tags: string[];
-    }[]
-  | null;
+export type knnDataItemType = {
+  user_id: string;
+  nickname: string;
+  original_avatars: string[];
+  small_avatar: string;
+  gender: "man" | "woman" | "other";
+  currently_connected: boolean;
+  date_of_birth: string;
+  biography: string;
+  distance: number;
+  connected: boolean;
+  request_recipient: boolean;
+  request_sender: boolean;
+  unread: null | true | false;
+  tags: string[];
+};
+
+export type knnDataType = knnDataItemType[] | null;
 
 export type ChatMessageType = {
   __v: string;

@@ -1,8 +1,25 @@
-import React, { useContext } from "react";
+import React from "react";
 import { View, Text, Button } from "react-native";
 import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
 import RNRestart from "react-native-restart";
-import { useAuthDispatch } from "../../AuthContext";
+import axios from "axios";
+
+export function ErrorBoundary({ children }: ErrorBoundaryProps) {
+  // const { resetState } = useAuthDispatch();
+
+  return (
+    <ReactErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onError={logError}
+      onReset={() => {
+        // restart the app
+        RNRestart.Restart();
+      }}
+    >
+      {children}
+    </ReactErrorBoundary>
+  );
+}
 
 interface ErrorFallbackProps {
   error: Error;
@@ -21,30 +38,14 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
   );
 }
 
-function logError(error: Error, info: React.ErrorInfo) {
-  // Do something with the error
-  // E.g. log to an error logging client here
-  console.error("Caught an error:", error, info);
+async function logError(error: Error, info: React.ErrorInfo) {
+  try {
+    await axios.post("/error", { error, info });
+  } catch (error) {
+    console.log("error trying to send the app's error to the server");
+  }
 }
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
-}
-
-export function ErrorBoundary({ children }: ErrorBoundaryProps) {
-  const { resetState } = useAuthDispatch();
-
-  return (
-    <ReactErrorBoundary
-      FallbackComponent={ErrorFallback}
-      onError={logError}
-      onReset={() => {
-        resetState();
-        // alternatively, restarting the app
-        // RNRestart.Restart();
-      }}
-    >
-      {children}
-    </ReactErrorBoundary>
-  );
 }

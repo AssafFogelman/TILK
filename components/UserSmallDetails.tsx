@@ -32,9 +32,9 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
     /*
     once the component loads, check whether "userData" (the user that is not us and is being shown)
     is friends with us.
-    by default the "alreadyFriends" state is set to "true" so the buttons won't show. 
+    by default the "alreadyFriends" state is set to "true" so the buttons won't show.
     A variable called "WeAreConnected" checks if that is truly the case.
-    If the "for" loop finds that we are friends, nothing happens. 
+    If the "for" loop finds that we are friends, nothing happens.
     If it does not, then we are not friends, and the state changes to "false".
     */
 
@@ -65,7 +65,7 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
 
   const sendFriendRequest = async (
     sender_userId: string,
-    recipient_userId: string
+    recipient_userId: string,
   ) => {
     try {
       const response = await fetch(
@@ -79,7 +79,7 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
             sender_userId: sender_userId,
             recipient_userId: recipient_userId,
           }),
-        }
+        },
       );
       if (response.ok) {
         setRequestSentByMe(true);
@@ -102,7 +102,7 @@ const UserSmallDetails = ({ userData }: { userData: UserDataType }) => {
     } catch (error) {
       console.log(
         "there was an error trying to accept the friend request:",
-        error
+        error,
       );
     }
   };

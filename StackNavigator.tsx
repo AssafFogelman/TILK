@@ -1,12 +1,4 @@
-import { StyleSheet, View } from "react-native";
-import React, {
-  createContext,
-  useEffect,
-  useMemo,
-  useReducer,
-  useState,
-} from "react";
-import { NavigationContainer, useNavigation } from "@react-navigation/native";
+import { StyleSheet } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
@@ -14,26 +6,15 @@ import HomeScreen from "./screens/HomeScreen";
 import FriendsScreen from "./screens/FriendsScreen";
 import ChatScreen from "./screens/ChatScreen";
 import ChatMessageScreen from "./screens/ChatMessageScreen";
-import {
-  ACTIONS,
-  AuthAction,
-  AuthState,
-  SignUpType,
-  StackParamList,
-} from "./types/types";
+import { knnDataType, StackParamList } from "./types/types";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import PhoneVerificationScreen from "./screens/PhoneVerificationScreen";
 import SelectAvatarScreen from "./screens/SelectAvatarScreen";
 import PersonalDetailsScreen from "./screens/PersonalDetailsScreen";
 import LookingToScreen from "./screens/LookingToScreen";
 import SplashScreen from "./screens/SplashScreen";
-import { theme } from "./styles/react-paper-theme";
-import { PaperProvider } from "react-native-paper";
-import { getItemAsync } from "expo-secure-store";
-import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
-import { useAuthDispatch, useAuthState } from "./AuthContext";
+import { useAuthState } from "./AuthContext";
 import { useScreenOrder } from "./hooks/useScreenOrder";
-import * as Location from "expo-location";
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -42,7 +23,7 @@ type StackNavigatorProps = {
   startLocationTrackingInterval: () => void;
   knnDataIsLoading: boolean;
   knnDataIsError: boolean;
-  knnData: null;
+  knnData: knnDataType;
 };
 
 const StackNavigator = (props: StackNavigatorProps) => {

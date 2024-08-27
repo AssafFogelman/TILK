@@ -126,6 +126,7 @@ function gracefulShutdown() {
 }
 */
 
+//if address is already in use (last session did not close properly), restart the session
 server.on("error", (e) => {
   if (e.code === "EADDRINUSE") {
     console.log("Address in use, retrying...");

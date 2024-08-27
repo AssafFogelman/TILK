@@ -13,8 +13,8 @@ import { socket } from "./socket.js";
 
 import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { PaperProvider } from "react-native-paper";
-import { theme } from "./styles/react-paper-theme";
+import { adaptNavigationTheme, PaperProvider } from "react-native-paper";
+import { useSetTheme } from "./styles/set-react-paper-theme";
 import { AuthProvider } from "./AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
 import Toast from "react-native-toast-message";
@@ -38,30 +38,32 @@ export default function App() {
     knnData,
   } = useTrackLocation();
 
+  //set theme
+  const theme = useSetTheme();
+
   return (
-    <>
+    <ErrorBoundary>
+      {/* I don't see how this is needed since we are not using reanimated or not-native stack navigator */}
+      {/*<GestureHandlerRootView style={{ flex: 1 }}> */}
       <Text>
         user is {isConnected ? "connected" : "disconnected"} to websocket
       </Text>
       <AuthProvider>
-        <ErrorBoundary>
-          <PaperProvider theme={theme}>
-            <GestureHandlerRootView>
-              <NavigationContainer>
-                <StackNavigator
-                  startDeviceMotionTracking={startDeviceMotionTracking}
-                  startLocationTrackingInterval={startLocationTrackingInterval}
-                  knnDataIsLoading={knnDataIsLoading}
-                  knnDataIsError={knnDataIsError}
-                  knnData={knnData}
-                />
-              </NavigationContainer>
-            </GestureHandlerRootView>
-          </PaperProvider>
-        </ErrorBoundary>
+        <PaperProvider theme={theme}>
+          <NavigationContainer theme={theme}>
+            <StackNavigator
+              startDeviceMotionTracking={startDeviceMotionTracking}
+              startLocationTrackingInterval={startLocationTrackingInterval}
+              knnDataIsLoading={knnDataIsLoading}
+              knnDataIsError={knnDataIsError}
+              knnData={knnData}
+            />
+          </NavigationContainer>
+        </PaperProvider>
       </AuthProvider>
       <Toast />
-    </>
+      {/*</GestureHandlerRootView>*/}
+    </ErrorBoundary>
   );
 }
 

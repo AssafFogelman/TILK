@@ -1,5 +1,11 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -15,11 +21,21 @@ import {
   HomeProps,
   HomeScreenNavigationProp,
   HomeScreenRouteProp,
+  knnDataItemType,
   PhoneVerificationScreenRouteProp,
 } from "../types/types";
 import * as Location from "expo-location";
-import { ActivityIndicator, MD2Colors } from "react-native-paper";
-import { theme } from "../styles/react-paper-theme";
+import {
+  ActivityIndicator,
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Chip,
+  Text,
+} from "react-native-paper";
+import { useTheme } from "react-native-paper";
+import { FlashList } from "@shopify/flash-list";
 
 /* TODO
 
@@ -30,6 +46,8 @@ import { theme } from "../styles/react-paper-theme";
 const HomeScreen = (props: HomeProps) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { userId } = useAuthState();
+  const theme = useTheme();
+
   const {
     startDeviceMotionTracking,
     startLocationTrackingInterval,
@@ -51,17 +69,63 @@ const HomeScreen = (props: HomeProps) => {
   //when minimizing and returning to app - check if location is enabled. FIXME is this at all necessary?
   // useHandleAppStateChange();
 
+  //knn user card
+  const LeftContent = (props: { size: number; small_avatar: string }) => {
+    const { small_avatar, ...otherProps } = props;
+    return (
+      <Avatar.Image
+        {...otherProps}
+        source={{
+          uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + "/" + small_avatar,
+        }}
+      ></Avatar.Image>
+    );
+  };
+
+  function age(dateOfBirth: Date) {
+    const diff_ms = Date.now() - dateOfBirth.getTime();
+    const age_dt = new Date(diff_ms);
+
+    return Math.abs(age_dt.getUTCFullYear() - 1970) + "";
+  }
+
+  const userCard = useCallback(
+    ({ item }: { item: knnDataItemType }) => (
+      <Card>
+        <Card.Title
+          title={item.nickname}
+          subtitle={item.gender + ", " + age(new Date(item.date_of_birth))}
+          left={(props) =>
+            LeftContent({ ...props, small_avatar: item.small_avatar })
+          }
+        />
+        <Card.Content>
+          <FlatList
+            data={item.tags}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <Chip style={{ marginRight: 2 }}>{item}</Chip>
+            )}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          />
+        </Card.Content>
+        <Card.Actions>
+          <Button>Cancel</Button>
+          <Button>Ok</Button>
+        </Card.Actions>
+      </Card>
+    ),
+    [],
+  );
+
   return (
     <View style={{ flex: 1 }}>
       {knnDataIsLoading ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <ActivityIndicator
-            animating={true}
-            color={theme.colors.primary}
-            size={"large"}
-          />
+          <ActivityIndicator animating={true} size={"large"} />
         </View>
       ) : knnDataIsError ? (
         <View
@@ -70,8 +134,14 @@ const HomeScreen = (props: HomeProps) => {
           <Text>Could not load nearby users...</Text>
         </View>
       ) : (
-        <View style={{ padding: 10 }}>
-          <Text>let's show the KNN users!</Text>
+        <View style={{ padding: 10, flex: 1 }}>
+          <FlashList
+            data={knnData}
+            renderItem={userCard}
+            //seperator of distance
+            estimatedItemSize={59}
+            keyExtractor={(item) => item.user_id}
+          />
         </View>
       )}
     </View>

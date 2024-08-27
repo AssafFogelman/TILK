@@ -97,8 +97,7 @@ export function useTrackLocation() {
         " time- ",
         location.timestamp,
       );
-      console.log("this location was going to be sent to the server. fix it");
-      const knn = await axios
+      const { knn } = await axios
         .post("/location", {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
@@ -106,10 +105,11 @@ export function useTrackLocation() {
         })
         .then((response) => response.data);
       console.log("an example of the knn type is: ", knn);
-      setKnnDataIsLoading(false);
       setKnnData(knn);
+      setKnnDataIsLoading(false);
     } catch (error) {
       setKnnDataIsError(true);
+      setKnnDataIsLoading(false);
       console.error("Error sending location to server:", error);
     }
   }
