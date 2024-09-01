@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
 import React, {
   useCallback,
   useContext,
@@ -32,10 +32,13 @@ import {
   Button,
   Card,
   Chip,
+  Portal,
   Text,
+  Modal,
 } from "react-native-paper";
 import { useTheme } from "react-native-paper";
 import { FlashList } from "@shopify/flash-list";
+import { log } from "expo/build/devtools/logger";
 
 /* TODO
 
@@ -47,7 +50,10 @@ const HomeScreen = (props: HomeProps) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { userId } = useAuthState();
   const theme = useTheme();
-
+  const [modalUserInfo, setModalUserInfo] = useState<knnDataItemType | null>(
+    null,
+  );
+  const [showModal, setShowModal] = useState(false);
   const {
     startDeviceMotionTracking,
     startLocationTrackingInterval,
@@ -68,36 +74,37 @@ const HomeScreen = (props: HomeProps) => {
 
   //when minimizing and returning to app - check if location is enabled. FIXME is this at all necessary?
   // useHandleAppStateChange();
+  type leftContentPropsType = knnDataItemType & {
+    size: number;
+  };
 
-  //knn user card
-  const LeftContent = (props: { size: number; small_avatar: string }) => {
+  const LeftContent = (props: leftContentPropsType) => {
     const { small_avatar, ...otherProps } = props;
     return (
-      <Avatar.Image
-        {...otherProps}
-        source={{
-          uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + "/" + small_avatar,
+      <Pressable
+        onPress={() => {
+          setModalUserInfo(props);
+          setShowModal(true);
         }}
-      ></Avatar.Image>
+      >
+        <Avatar.Image
+          {...otherProps}
+          source={{
+            uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + small_avatar,
+          }}
+        ></Avatar.Image>
+      </Pressable>
     );
   };
 
-  function age(dateOfBirth: Date) {
-    const diff_ms = Date.now() - dateOfBirth.getTime();
-    const age_dt = new Date(diff_ms);
-
-    return Math.abs(age_dt.getUTCFullYear() - 1970) + "";
-  }
-
+  //user card
   const userCard = useCallback(
     ({ item }: { item: knnDataItemType }) => (
       <Card>
         <Card.Title
           title={item.nickname}
           subtitle={item.gender + ", " + age(new Date(item.date_of_birth))}
-          left={(props) =>
-            LeftContent({ ...props, small_avatar: item.small_avatar })
-          }
+          left={(props) => LeftContent({ ...props, ...item })}
         />
         <Card.Content>
           <FlatList
@@ -133,8 +140,44 @@ const HomeScreen = (props: HomeProps) => {
         >
           <Text>Could not load nearby users...</Text>
         </View>
+      ) : !knnData || knnData.length === 0 ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text>Could not find any nearby users...</Text>
+        </View>
       ) : (
         <View style={{ padding: 10, flex: 1 }}>
+          <Portal>
+            <Modal
+              visible={showModal}
+              onDismiss={() => {
+                setShowModal(false);
+              }}
+              style={{ flex: 1 }}
+              contentContainerStyle={{
+                backgroundColor: "white",
+                padding: 20,
+                // height: 100,
+              }}
+            >
+              {modalUserInfo !== null && (
+                <View>
+                  <Image
+                    style={{ width: "100%", height: 500 }}
+                    resizeMode="center"
+                    source={{
+                      uri:
+                        process.env.EXPO_PUBLIC_SERVER_ADDRESS +
+                        modalUserInfo.original_avatars[0],
+                    }}
+                  />
+                  <Text>Bio:</Text>
+                  <Text>{modalUserInfo.biography}</Text>
+                </View>
+              )}
+            </Modal>
+          </Portal>
           <FlashList
             data={knnData}
             renderItem={userCard}
@@ -146,6 +189,13 @@ const HomeScreen = (props: HomeProps) => {
       )}
     </View>
   );
+
+  function age(dateOfBirth: Date) {
+    const diff_ms = Date.now() - dateOfBirth.getTime();
+    const age_dt = new Date(diff_ms);
+
+    return Math.abs(age_dt.getUTCFullYear() - 1970) + "";
+  }
 
   function useLocationTracking() {
     useEffect(() => {

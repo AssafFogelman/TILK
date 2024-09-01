@@ -1,6 +1,7 @@
 import { Context } from "hono";
 import { db } from "../drizzle/db";
 import { sql } from "drizzle-orm";
+import { user } from "../routes/user/user";
 
 type ReqType = {
   limit: number;
@@ -20,13 +21,50 @@ export const getKnn = async (c: Context) => {
 
     if (limit < 1 || !Number.isInteger(limit) || limit > 200)
       throw { message: "invalid limit value" };
-    //* enter user's location to DB
-    await db.execute(
-      sql.raw(`
+
+    if (isNaN(latitude) || isNaN(longitude))
+      throw { message: "invalid coordinates" };
+
+    // the GPS in Israel is weird. It may put users in Jordan Or Lebanon. So for now all users have fixed locations.
+    //FIXME
+    if (userId === "6a128622-f8aa-48cb-94f8-1d2edd8cdd2a") {
+      //if it's Yonatan, set his location to Jerusalem 13, Haifa
+      await db.execute(
+        sql.raw(`
+          UPDATE users
+          SET user_location=ST_MakePoint(32.80895713046889, 34.998082571165114)
+          WHERE user_id='${userId}';`),
+      );
+    } else {
+      if (userId === "a8d8bbc4-6ae9-4f0c-87ca-2cb4da6a210c") {
+        //if it's Assaf, set his location to Kvish Hasholom 25, Yagur
+        await db.execute(
+          sql.raw(`
+          UPDATE users
+          SET user_location=ST_MakePoint(32.74185604627125, 35.07593527465838)
+          WHERE user_id='${userId}';`),
+        );
+      } else {
+        if (userId === "a95297c4-ac21-4bae-b0ec-2615d2732bf4") {
+          //if it's Mirpaa, set his location to kolbo, Yagur
+          await db.execute(
+            sql.raw(`
+          UPDATE users
+          SET user_location=ST_MakePoint(32.73975972061658, 35.07946220253626)
+          WHERE user_id='${userId}';`),
+          );
+        } else {
+          //* enter user's location to DB
+          await db.execute(
+            sql.raw(`
           UPDATE users
           SET user_location=ST_MakePoint(${longitude},${latitude})
           WHERE user_id='${userId}';`),
-    );
+          );
+        }
+      }
+    }
+
     //currently_connected
     // finding KNN
     const knnQuery = `

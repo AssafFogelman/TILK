@@ -32,7 +32,7 @@ user.get("/user-data", validateToken, userData);
 user.get("/avatar-links", validateToken, avatarLinks);
 
 /*
-1. gets the files from the form data
+1. gets the files from the app
 2. coverts to webp and saves only full image cells
 3. saves a small version of the first photo (which is the chosen avatar)
 4. uploads the paths to the database
