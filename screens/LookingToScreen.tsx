@@ -141,9 +141,8 @@ const LookingToScreen = () => {
       tagsWereChosen();
       const previousScreen =
         navigation.getState().routes[navigation.getState().index - 1].name;
-      console.log("previousScreen: ", previousScreen);
-      if (previousScreen != "Home" && chosenAvatar && chosenBio) {
-        //if the user came to the lookingTo screen not from the home screen
+      if (previousScreen != "Tabs" && chosenAvatar && chosenBio) {
+        //if the user came to the lookingTo screen not from the home screen (aka the "Tabs" screen since it is a Tab Navigator
         //and has already chosen an avatar and bio, this means we should now activate him
         await axios.post("/user/activate-user");
 
@@ -153,13 +152,13 @@ const LookingToScreen = () => {
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{ name: "Home" }],
+            routes: [{ name: "Tabs" }],
           }),
         );
       }
       // else, navigate to "Home" and don't let the user return to this specific screen
       // (he may return to other screens in the navigation stack)
-      navigation.replace("Home");
+      navigation.replace("Tabs", { screen: "Home" });
     } catch (error) {
       console.log(
         "error trying to save the chosen tags to the server: ",

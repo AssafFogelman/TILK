@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 // import { UserContext } from "../UserContext";
 import UserChat from "../components/UserChat";
 
-const ChatScreen = () => {
+const ChatsScreen = () => {
   const [friendsList, setFriendsList] = useState([]);
   // const { userId, setUserId } = useContext(UserContext);
 
@@ -23,7 +23,7 @@ const ChatScreen = () => {
       } catch (error) {
         console.log(
           "error happened while trying to get the users friends list:",
-          error
+          error,
         );
       }
     };
@@ -41,6 +41,6 @@ const ChatScreen = () => {
   );
 };
 
-export default ChatScreen;
+export default ChatsScreen;
 
 const styles = StyleSheet.create({});

@@ -3,6 +3,6 @@ import { Hono } from "hono";
 import { validateToken } from "../../models/authSchemas";
 import { logError } from "../../controllers/log-error";
 
-export const errorLog = new Hono().basePath("/error-log");
+export const errors = new Hono().basePath("/errors");
 
-errorLog.post("/", logError);
+errors.post("/", logError);

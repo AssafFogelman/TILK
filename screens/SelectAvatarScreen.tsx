@@ -216,7 +216,7 @@ const SelectAvatarScreen = () => {
       if (!chosenBio || !chosenTags) {
         navigation.navigate("LookingTo");
       } else {
-        navigation.navigate("Home");
+        navigation.navigate("Tabs", { screen: "Home" });
       }
     } catch (error: unknown) {
       console.log("Error posting avatars:", error);

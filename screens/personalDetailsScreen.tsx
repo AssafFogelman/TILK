@@ -167,7 +167,7 @@ const PersonalDetailsScreen = () => {
       if (!chosenAvatar || !chosenTags) {
         navigation.navigate("SelectAvatar");
       } else {
-        navigation.navigate("Home");
+        navigation.navigate("Tabs", { screen: "Home" });
       }
     } catch (error) {
       console.log(

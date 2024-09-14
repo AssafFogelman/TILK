@@ -1,7 +1,19 @@
-import { RouteProp } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import {
+  CompositeNavigationProp,
+  CompositeScreenProps,
+  NavigatorScreenParams,
+  RouteProp,
+} from "@react-navigation/native";
+import {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from "@react-navigation/native-stack";
 import * as Location from "expo-location";
 import React from "react";
+import {
+  BottomTabNavigationProp,
+  BottomTabScreenProps,
+} from "@react-navigation/bottom-tabs";
 
 //change this if you want to add "initialParams" to certain screens:
 export type StackParamList = {
@@ -9,13 +21,17 @@ export type StackParamList = {
   PhoneVerification: { userCountry: string | null }; //we are sending data to this screen
   Login: undefined; //there are no params that are sent to this screen
   Register: undefined; //there are no params that are sent to this screen
-  Home: undefined; //there are no params that are sent to this screen
-  Friends: undefined; //there are no params that are sent to this screen
-  Chats: undefined; //there are no params that are sent to this screen
+  Tabs: NavigatorScreenParams<TabParamList>; //there are no params that are sent to this screen
   Messages: { friendId: string }; //this screen will receive a param named "friendID" of type string */;
   SelectAvatar: undefined; //there are no params that are sent to this screen
   PersonalDetails: undefined; //there are no params that are sent to this screen
   LookingTo: undefined; //there are no params that are sent to this screen
+};
+
+export type TabParamList = {
+  Home: undefined;
+  Chats: undefined;
+  Connections: undefined;
 };
 
 //this is the type for the useRoute() in "Welcome" Screen
@@ -55,9 +71,9 @@ export type PersonalDetailsScreenNavigationProp = NativeStackNavigationProp<
 >;
 
 //this is the type for the useNavigation() in "Home" Screen
-export type HomeScreenNavigationProp = NativeStackNavigationProp<
-  StackParamList,
-  "Home"
+export type HomeScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, "Home">,
+  NativeStackNavigationProp<StackParamList>
 >;
 
 //this is the type for the useNavigation() in "Welcome" Screen
@@ -72,23 +88,11 @@ export type PhoneVerificationScreenRouteProp = RouteProp<
   "PhoneVerification"
 >;
 
-//this is the type for the useRoute() in "Home" Screen
-export type HomeScreenRouteProp = RouteProp<StackParamList, "Home">;
-
 //this is the type for the useNavigation() in "Register" Screen
 export type RegisterScreenNavigationProp = NativeStackNavigationProp<
   StackParamList,
   "Register"
 >;
-
-//props of "Home" screen
-export type HomeProps = {
-  startDeviceMotionTracking: () => {};
-  startLocationTrackingInterval: () => void;
-  knnDataIsLoading: boolean;
-  knnDataIsError: boolean;
-  knnData: knnDataType;
-};
 
 export type knnDataItemType = {
   user_id: string;

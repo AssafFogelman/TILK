@@ -5,8 +5,6 @@ import axios from "axios";
 import { reloadAsync } from "expo-updates";
 
 export function ErrorBoundary({ children }: ErrorBoundaryProps) {
-  // const { resetState } = useAuthDispatch();
-
   return (
     <ReactErrorBoundary
       FallbackComponent={ErrorFallback}
@@ -45,7 +43,7 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
 //FIXME - doesn't seem to succeed. we may need to test the route with postman
 async function logError(error: Error, info: React.ErrorInfo) {
   try {
-    await axios.post("/error-log", { error, info });
+    await axios.post("/errors", { error, info });
   } catch (error: any) {
     console.log("error trying to send the app's error to the server: ", error);
     console.log("error.response: ", error.response.data);

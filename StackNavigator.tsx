@@ -4,7 +4,7 @@ import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import HomeScreen from "./screens/HomeScreen";
 import ConnectionsScreen from "./screens/ConnectionsScreen";
-import ChatScreen from "./screens/ChatScreen";
+import ChatsScreen from "./screens/ChatsScreen";
 import ChatMessageScreen from "./screens/ChatMessageScreen";
 import { knnDataType, StackParamList } from "./types/types";
 import WelcomeScreen from "./screens/WelcomeScreen";
@@ -15,18 +15,11 @@ import LookingToScreen from "./screens/LookingToScreen";
 import SplashScreen from "./screens/SplashScreen";
 import { useAuthState } from "./AuthContext";
 import { useScreenOrder } from "./hooks/useScreenOrder";
+import Tabs from "./screens/Tabs";
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
-type StackNavigatorProps = {
-  startDeviceMotionTracking: () => {};
-  startLocationTrackingInterval: () => void;
-  knnDataIsLoading: boolean;
-  knnDataIsError: boolean;
-  knnData: knnDataType;
-};
-
-const StackNavigator = (props: StackNavigatorProps) => {
+const StackNavigator = () => {
   const {
     chosenAvatar,
     chosenBio,
@@ -38,13 +31,7 @@ const StackNavigator = (props: StackNavigatorProps) => {
     userId,
   } = useAuthState();
   const initialRouteName = useScreenOrder();
-  const {
-    startDeviceMotionTracking,
-    startLocationTrackingInterval,
-    knnDataIsLoading,
-    knnDataIsError,
-    knnData,
-  } = props;
+
   if (isLoading) {
     // We haven't finished checking for the token yet
     return <SplashScreen />;
@@ -66,37 +53,13 @@ const StackNavigator = (props: StackNavigatorProps) => {
             options={{ headerShown: false }}
           />
 
+          <Stack.Screen name="LookingTo" component={LookingToScreen} />
           <Stack.Screen
-            name="LookingTo"
-            component={LookingToScreen}
+            name="Tabs"
+            component={Tabs}
             options={{ headerShown: false }}
           />
 
-          <Stack.Screen
-            name="Home"
-            // options={{ headerShown: false }}
-          >
-            {(props) => (
-              <HomeScreen
-                {...props}
-                startDeviceMotionTracking={startDeviceMotionTracking}
-                startLocationTrackingInterval={startLocationTrackingInterval}
-                knnDataIsLoading={knnDataIsLoading}
-                knnDataIsError={knnDataIsError}
-                knnData={knnData}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen
-            name="Friends"
-            component={ConnectionsScreen}
-            // options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Chats"
-            component={ChatScreen}
-            // options={{ headerShown: false }}
-          />
           <Stack.Screen
             name="Messages"
             component={ChatMessageScreen}

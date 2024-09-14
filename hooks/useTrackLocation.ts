@@ -104,7 +104,6 @@ export function useTrackLocation() {
           limit: 20,
         })
         .then((response) => response.data);
-      console.log("an example of the knn type is: ", knn);
       setKnnData(knn);
       setKnnDataIsLoading(false);
     } catch (error) {

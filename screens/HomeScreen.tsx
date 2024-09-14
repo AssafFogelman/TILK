@@ -6,7 +6,7 @@ import React, {
   useLayoutEffect,
   useState,
 } from "react";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 // import { UserContext } from "../UserContext";
@@ -17,14 +17,7 @@ import UserSmallDetails from "../components/UserSmallDetails";
 import { useHandleAppStateChange } from "../hooks/useHandleAppStateChange";
 import { socket } from "../socket";
 import { useAuthState } from "../AuthContext";
-import {
-  HomeProps,
-  HomeScreenNavigationProp,
-  HomeScreenRouteProp,
-  knnDataItemType,
-  PhoneVerificationScreenRouteProp,
-} from "../types/types";
-import * as Location from "expo-location";
+import { HomeScreenNavigationProp, knnDataItemType } from "../types/types";
 import {
   ActivityIndicator,
   Avatar,
@@ -40,18 +33,15 @@ import { useTheme } from "react-native-paper";
 import { FlashList } from "@shopify/flash-list";
 import { log } from "expo/build/devtools/logger";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import ChatScreen from "./ChatScreen";
-import ConnectionsScreen from "./ConnectionsScreen";
+import { useLocation } from "../LocationContext";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+
 //between which distances should there be a separator between cards
 const distances = [50, 100, 200, 500, 1000, 5000, 10000];
-/* TODO
-
- * add "bottom sheet" from RN Paper
- */
 
 const Tab = createBottomTabNavigator();
 
-const HomeScreen = (props: HomeProps) => {
+const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { userId } = useAuthState();
   const theme = useTheme();
@@ -65,7 +55,7 @@ const HomeScreen = (props: HomeProps) => {
     knnDataIsLoading,
     knnDataIsError,
     knnData,
-  } = props;
+  } = useLocation();
 
   //start location tracking
   useLocationTracking();
@@ -349,7 +339,7 @@ const HomeScreen = (props: HomeProps) => {
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <Ionicons
               onPress={() => {
-                navigation.navigate("Chats");
+                navigation.navigate("Tabs", { screen: "Chats" });
               }}
               name="chatbox-ellipses-outline"
               size={24}
@@ -358,11 +348,20 @@ const HomeScreen = (props: HomeProps) => {
 
             <MaterialIcons
               onPress={() => {
-                navigation.navigate("Friends");
+                navigation.navigate("Tabs", { screen: "Connections" });
               }}
               name="people-outline"
               size={24}
               color="black"
+            />
+
+            <FontAwesome
+              name="search-plus"
+              size={24}
+              color="black"
+              onPress={() => {
+                navigation.navigate("LookingTo");
+              }}
             />
           </View>
         ),

@@ -21,48 +21,37 @@ import Toast from "react-native-toast-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { useTrackLocation } from "./hooks/useTrackLocation";
+import { LocationProvider } from "./LocationContext";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 
 export default function App() {
-  //load websocket events and cleanup
+  //load websocket listeners and cleanup
   useWebSocketEventsAndDisconnect();
   //is websocket connected
   const isConnected = useIsWebSocketConnected();
-  const {
-    startDeviceMotionTracking,
-    startLocationTrackingInterval,
-    knnDataIsLoading,
-    knnDataIsError,
-    knnData,
-  } = useTrackLocation();
 
   //set theme
   const theme = useSetTheme();
 
   return (
     <ErrorBoundary>
-      {/* I don't see how this is needed since we are not using reanimated or not-native stack navigator */}
-      {/*<GestureHandlerRootView style={{ flex: 1 }}> */}
-      <Text>
-        user is {isConnected ? "connected" : "disconnected"} to websocket
-      </Text>
-      <AuthProvider>
-        <PaperProvider theme={theme}>
-          <NavigationContainer theme={theme}>
-            <StackNavigator
-              startDeviceMotionTracking={startDeviceMotionTracking}
-              startLocationTrackingInterval={startLocationTrackingInterval}
-              knnDataIsLoading={knnDataIsLoading}
-              knnDataIsError={knnDataIsError}
-              knnData={knnData}
-            />
-          </NavigationContainer>
-        </PaperProvider>
-      </AuthProvider>
-      <Toast />
-      {/*</GestureHandlerRootView>*/}
+      <GestureHandlerRootView>
+        <Text>
+          user is {isConnected ? "connected" : "disconnected"} to websocket
+        </Text>
+        <AuthProvider>
+          <LocationProvider>
+            <PaperProvider theme={theme}>
+              <NavigationContainer theme={theme}>
+                <StackNavigator />
+              </NavigationContainer>
+            </PaperProvider>
+          </LocationProvider>
+        </AuthProvider>
+        <Toast />
+      </GestureHandlerRootView>
     </ErrorBoundary>
   );
 }
