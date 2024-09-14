@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, Button } from "react-native";
 import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
-import RNRestart from "react-native-restart";
 import axios from "axios";
+import { reloadAsync } from "expo-updates";
 
 export function ErrorBoundary({ children }: ErrorBoundaryProps) {
   // const { resetState } = useAuthDispatch();
@@ -11,9 +11,13 @@ export function ErrorBoundary({ children }: ErrorBoundaryProps) {
     <ReactErrorBoundary
       FallbackComponent={ErrorFallback}
       onError={logError}
-      onReset={() => {
-        // restart the app
-        RNRestart.Restart();
+      onReset={async () => {
+        try {
+          // restart the app
+          await reloadAsync();
+        } catch (error) {
+          console.log("could not reload: ", error);
+        }
       }}
     >
       {children}
@@ -38,11 +42,13 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
   );
 }
 
+//FIXME - doesn't seem to succeed. we may need to test the route with postman
 async function logError(error: Error, info: React.ErrorInfo) {
   try {
-    await axios.post("/error", { error, info });
-  } catch (error) {
-    console.log("error trying to send the app's error to the server");
+    await axios.post("/error-log", { error, info });
+  } catch (error: any) {
+    console.log("error trying to send the app's error to the server: ", error);
+    console.log("error.response: ", error.response.data);
   }
 }
 

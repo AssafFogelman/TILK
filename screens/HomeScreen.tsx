@@ -39,12 +39,17 @@ import {
 import { useTheme } from "react-native-paper";
 import { FlashList } from "@shopify/flash-list";
 import { log } from "expo/build/devtools/logger";
-
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import ChatScreen from "./ChatScreen";
+import ConnectionsScreen from "./ConnectionsScreen";
+//between which distances should there be a separator between cards
+const distances = [50, 100, 200, 500, 1000, 5000, 10000];
 /* TODO
 
  * add "bottom sheet" from RN Paper
- * add cards
  */
+
+const Tab = createBottomTabNavigator();
 
 const HomeScreen = (props: HomeProps) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -105,6 +110,19 @@ const HomeScreen = (props: HomeProps) => {
           title={item.nickname}
           subtitle={item.gender + ", " + age(new Date(item.date_of_birth))}
           left={(props) => LeftContent({ ...props, ...item })}
+          right={(props) =>
+            item.currently_connected ? (
+              <Badge
+                size={15}
+                style={{
+                  backgroundColor: "chartreuse",
+                  marginEnd: 20,
+                  borderWidth: 1,
+                  borderColor: "whitesmoke",
+                }}
+              ></Badge>
+            ) : undefined
+          }
         />
         <Card.Content>
           <FlatList
@@ -125,6 +143,30 @@ const HomeScreen = (props: HomeProps) => {
     ),
     [],
   );
+
+  // the separator
+  function Separator({
+    leadingItem,
+    trailingItem,
+  }: {
+    leadingItem: knnDataItemType;
+    trailingItem: knnDataItemType;
+  }) {
+    return (
+      <View style={{ flex: 1, alignSelf: "center", marginVertical: 5 }}>
+        <Chip
+          textStyle={{
+            fontSize: 11,
+            marginVertical: 2,
+            color: theme.colors.onSurfaceVariant,
+          }}
+          style={{ backgroundColor: theme.colors.surfaceVariant }}
+        >
+          {distanceMessage(leadingItem.distance, trailingItem.distance)}
+        </Chip>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -148,47 +190,126 @@ const HomeScreen = (props: HomeProps) => {
         </View>
       ) : (
         <View style={{ padding: 10, flex: 1 }}>
-          <Portal>
-            <Modal
-              visible={showModal}
-              onDismiss={() => {
-                setShowModal(false);
-              }}
-              style={{ flex: 1 }}
-              contentContainerStyle={{
-                backgroundColor: "white",
-                padding: 20,
-                // height: 100,
-              }}
-            >
-              {modalUserInfo !== null && (
-                <View>
-                  <Image
-                    style={{ width: "100%", height: 500 }}
-                    resizeMode="center"
-                    source={{
-                      uri:
-                        process.env.EXPO_PUBLIC_SERVER_ADDRESS +
-                        modalUserInfo.original_avatars[0],
-                    }}
-                  />
-                  <Text>Bio:</Text>
-                  <Text>{modalUserInfo.biography}</Text>
-                </View>
-              )}
-            </Modal>
-          </Portal>
           <FlashList
             data={knnData}
             renderItem={userCard}
-            //seperator of distance
             estimatedItemSize={59}
             keyExtractor={(item) => item.user_id}
+            ItemSeparatorComponent={Separator}
+            ListHeaderComponent={ListHeader}
           />
         </View>
       )}
+      <Portal>
+        <Modal
+          visible={showModal}
+          onDismiss={() => {
+            setShowModal(false);
+          }}
+          contentContainerStyle={{
+            marginHorizontal: 10,
+            backgroundColor: theme.colors.surface,
+            padding: 20,
+            maxHeight: "80%",
+            borderRadius: 25,
+          }}
+        >
+          {modalUserInfo !== null && (
+            <View style={{ gap: 10 }}>
+              <Image
+                style={{
+                  width: "100%",
+                  aspectRatio: 1,
+                }}
+                resizeMode="cover"
+                source={{
+                  uri:
+                    process.env.EXPO_PUBLIC_SERVER_ADDRESS +
+                    modalUserInfo.original_avatars[0],
+                }}
+              />
+              <Text variant="titleMedium">Bio:</Text>
+              <Text>{modalUserInfo.biography}</Text>
+            </View>
+          )}
+        </Modal>
+      </Portal>
     </View>
   );
+
+  function distanceMessage(
+    leadingItemDistance: number | undefined,
+    trailingItemDistance: number,
+  ) {
+    let leadingItemDistanceIsSmallerThanCellNo = 0;
+    let trailingItemDistanceIsSmallerThanCellNo = 0;
+
+    const properDistance = (distance: number) => {
+      //convert precise distance into meters or KM
+      if (distance >= 1000) return Math.trunc(distance / 1000) + " KM";
+      return Math.trunc(distance) + " Meters";
+    };
+
+    for (let i = 0; i < distances.length; i++) {
+      //go over all the distance categories.
+      //find between which distance categories do the trailing and/or leading cell lay
+
+      if (leadingItemDistance !== undefined) {
+        //if this is the header separator, then we only care about the trailing Item
+
+        if (leadingItemDistance > distances[i]) {
+          //if the distance is greater than a certain cell, it assumes that the distance is smaller than the next cell
+          //if we reach the end of the array, and still the distance is greater than the last cell, it will get the value of array.length
+          leadingItemDistanceIsSmallerThanCellNo = i + 1;
+        }
+      }
+      if (trailingItemDistance > distances[i]) {
+        //if the distance is greater than a certain cell, it assumes that the distance is smaller than the next cell
+        //if we reach the end of the array, and still the distance is greater than the last cell, it will get the value of array.length
+        trailingItemDistanceIsSmallerThanCellNo = i + 1;
+      }
+    }
+
+    //if this is the header separator
+    if (leadingItemDistance === undefined) {
+      return properDistance(distances[trailingItemDistanceIsSmallerThanCellNo]);
+    }
+
+    //if both items are in the same distance category, return null
+    if (
+      leadingItemDistanceIsSmallerThanCellNo ===
+      trailingItemDistanceIsSmallerThanCellNo
+    ) {
+      return null;
+    }
+
+    //if the distance is greater than any of the distance categories, write that
+    if (trailingItemDistanceIsSmallerThanCellNo === distances.length) {
+      return `more than ${properDistance(distances[distances.length - 1])}`;
+    }
+    //return "less than" the next cell
+    return properDistance(distances[trailingItemDistanceIsSmallerThanCellNo]);
+  }
+
+  function ListHeader() {
+    return (
+      knnData !== null &&
+      knnData.length !== 0 && (
+        <View style={{ flex: 1, alignSelf: "center", marginBottom: 5 }}>
+          <Chip
+            textStyle={{
+              fontSize: 11,
+              marginVertical: 2,
+              color: theme.colors.onSurfaceVariant,
+            }}
+            style={{ backgroundColor: theme.colors.surfaceVariant }}
+          >
+            {distanceMessage(undefined, knnData[0].distance)}
+          </Chip>
+        </View>
+      )
+    );
+  }
 
   function age(dateOfBirth: Date) {
     const diff_ms = Date.now() - dateOfBirth.getTime();

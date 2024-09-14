@@ -100,12 +100,9 @@ function useWebSocketEventsAndDisconnect() {
       console.log("websocket connected!");
     }
 
-    function onDisconnect() {
-      console.log(
-        "testing testing - websocket successfully disconnected! delete me!",
-      );
-      /*TODO - the user needs to send his location and receive data.*/
-    }
+    // function onDisconnect() {
+    //something that should happen if the server goes down
+    // }
 
     // function onFooEvent(value) {
     //   setFooEvents(previous => [...previous, value]);
@@ -113,12 +110,12 @@ function useWebSocketEventsAndDisconnect() {
 
     //listen to events and run functions accordingly
     socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    // socket.on("disconnect", onDisconnect);
     //    socket.on('foo', onFooEvent);
 
     return () => {
       socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
+      // socket.off("disconnect", onDisconnect);
       // socket.off('foo', onFooEvent);
     };
   }, []);

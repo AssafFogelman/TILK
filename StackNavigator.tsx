@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import HomeScreen from "./screens/HomeScreen";
-import FriendsScreen from "./screens/FriendsScreen";
+import ConnectionsScreen from "./screens/ConnectionsScreen";
 import ChatScreen from "./screens/ChatScreen";
 import ChatMessageScreen from "./screens/ChatMessageScreen";
 import { knnDataType, StackParamList } from "./types/types";
@@ -89,7 +89,7 @@ const StackNavigator = (props: StackNavigatorProps) => {
           </Stack.Screen>
           <Stack.Screen
             name="Friends"
-            component={FriendsScreen}
+            component={ConnectionsScreen}
             // options={{ headerShown: false }}
           />
           <Stack.Screen

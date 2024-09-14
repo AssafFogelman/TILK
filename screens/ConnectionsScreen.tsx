@@ -11,7 +11,7 @@ type FriendRequestType = {
   email: string;
 };
 
-const FriendsScreen = () => {
+const ConnectionsScreen = () => {
   const [friendRequestsData, setFriendRequestsData] = useState<
     FriendRequestType[]
   >([]);
@@ -44,7 +44,7 @@ const FriendsScreen = () => {
     } catch (error) {
       console.log(
         "error while receiving friend requests from the server:",
-        error
+        error,
       );
     }
   };
@@ -64,6 +64,6 @@ const FriendsScreen = () => {
   );
 };
 
-export default FriendsScreen;
+export default ConnectionsScreen;
 
 const styles = StyleSheet.create({});

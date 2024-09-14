@@ -12,6 +12,8 @@ import "dotenv/config";
 import { db } from "./drizzle/db";
 import { users } from "./drizzle/schema";
 import { eq } from "drizzle-orm";
+import { err } from "drizzle-kit/cli/views";
+import * as os from "node:os";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -26,7 +28,7 @@ app.use(prettyJSON());
 //conflicts with poweredBy() middleware (adds a header: "X-Powered-By": "Hono").
 //But I frankly don't care
 app.use(secureHeaders());
-//logger
+//logger - console logs all the actions
 app.use("*", logger());
 
 //enable cors if we are not in production mode
@@ -46,6 +48,7 @@ app.use("/public/*", serveStatic({ root: "./" }));
 
 //setting up the server listener to the port
 const port = 5000;
+const serverIP = getServerIP();
 
 const server = serve(
   {
@@ -53,7 +56,7 @@ const server = serve(
     port,
   },
   (info) => {
-    console.log(`Server is running on: http://${info.address}:${info.port}`);
+    console.log(`Server is running on: http://${serverIP}:${info.port}`);
   },
 );
 
@@ -93,11 +96,11 @@ io.on("connection", (socket) => {
     try {
       console.log(`user ${socket.id} disconnected for ${reason}`);
 
+      //set the user that disconnected as not "currently connected" in the DB
       await db
         .update(users)
         .set({ socketId: null, currentlyConnected: false })
         .where(eq(users.socketId, socket.id));
-      //delete the specific socket Id from the DB TODO
     } catch (error) {
       console.log("error trying to delete socket Id for the user: ", error);
     }
@@ -136,3 +139,33 @@ server.on("error", (e) => {
     }, 1000);
   }
 });
+
+//at server startup, we want to make sure that no user is set to "currently connected"
+setNoUserIsCurrentlyConnected();
+
+//at server startup, we want to make sure that no user is set to "currently connected"
+async function setNoUserIsCurrentlyConnected() {
+  try {
+    await db.update(users).set({ socketId: null, currentlyConnected: false });
+  } catch (error) {
+    console.log(
+      "an error occurred while trying to reset the currently connected and socketId fields of all the users: ",
+    );
+    console.log(error);
+  }
+}
+
+//get the server's IP address
+function getServerIP() {
+  const networkInterfaces = os.networkInterfaces();
+  for (const interfaceName in networkInterfaces) {
+    const someInterface = networkInterfaces[interfaceName];
+    if (someInterface === undefined) break;
+    for (const entry of someInterface) {
+      if (entry.family === "IPv4" && !entry.internal) {
+        return entry.address;
+      }
+    }
+  }
+  return "127.0.0.1"; // Fallback to localhost if no suitable IP is found
+}
