@@ -22,6 +22,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { useTrackLocation } from "./hooks/useTrackLocation";
 import { LocationProvider } from "./LocationContext";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
@@ -36,23 +37,27 @@ export default function App() {
   const theme = useSetTheme();
 
   return (
-    <ErrorBoundary>
-      <GestureHandlerRootView>
-        <Text>
-          user is {isConnected ? "connected" : "disconnected"} to websocket
-        </Text>
-        <AuthProvider>
-          <LocationProvider>
-            <PaperProvider theme={theme}>
-              <NavigationContainer theme={theme}>
-                <StackNavigator />
-              </NavigationContainer>
-            </PaperProvider>
-          </LocationProvider>
-        </AuthProvider>
-        <Toast />
-      </GestureHandlerRootView>
-    </ErrorBoundary>
+    <SafeAreaProvider>
+      <ErrorBoundary>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SafeAreaView style={{ flex: 1 }}>
+            <Text>
+              user is {isConnected ? "connected" : "disconnected"} to websocket
+            </Text>
+            <AuthProvider>
+              <LocationProvider>
+                <PaperProvider theme={theme}>
+                  <NavigationContainer theme={theme}>
+                    <StackNavigator />
+                  </NavigationContainer>
+                </PaperProvider>
+              </LocationProvider>
+            </AuthProvider>
+          </SafeAreaView>
+          <Toast />
+        </GestureHandlerRootView>
+      </ErrorBoundary>
+    </SafeAreaProvider>
   );
 }
 

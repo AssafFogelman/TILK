@@ -98,7 +98,7 @@ export const tagsUsers = pgTable(
     return {
       pk: primaryKey({ columns: [table.tagId, table.userId] }), //composite primary key
     };
-  },
+  }
 );
 
 //tags  ex. "sea", "JavaScript", "basketball"
@@ -122,7 +122,7 @@ export const tagsTagCats = pgTable(
     return {
       pk: primaryKey({ columns: [table.tagCategoryId, table.tagId] }), //composite primary key
     };
-  },
+  }
 );
 
 //tag template categories ex. "sports", "computer science", "90's kid"
@@ -159,7 +159,7 @@ export const connections = pgTable(
     That ensures that there's only one way to represent a connection between two users in the database
      */
     };
-  },
+  }
 );
 
 // connection requests
@@ -187,7 +187,7 @@ export const connectionRequests = pgTable(
       That ensures that there's only one way to represent a connection request between two users in the database
        */
     };
-  },
+  }
 );
 
 //blocks
@@ -256,7 +256,7 @@ export const chatMessages = pgTable(
       */
       chatMessageIndex: uniqueIndex("chat_message_index").on(table.chatId),
     };
-  },
+  }
 );
 
 //notification templates
@@ -316,6 +316,7 @@ export const eventTypes = pgTable("event_types", {
 });
 
 export const errorLog = pgTable("error_log", {
+  errorId: uuid("error_id").primaryKey().defaultRandom().notNull().unique(),
   timestamp: timestamp("date").defaultNow().notNull(),
   userId: uuid("user_id"), //sometimes we will not know what the userId is, if the user hasn't registered yet.
   error: text("error").notNull(),
@@ -389,7 +390,7 @@ export const connectionRequestRelations = relations(
       fields: [connectionRequests.recipientId],
       references: [users.userId],
     }),
-  }),
+  })
 );
 
 export const blocksRelations = relations(blocks, ({ one }) => ({

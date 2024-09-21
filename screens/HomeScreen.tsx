@@ -46,7 +46,7 @@ const HomeScreen = () => {
   const { userId } = useAuthState();
   const theme = useTheme();
   const [modalUserInfo, setModalUserInfo] = useState<knnDataItemType | null>(
-    null,
+    null
   );
   const [showModal, setShowModal] = useState(false);
   const {
@@ -131,7 +131,105 @@ const HomeScreen = () => {
         </Card.Actions>
       </Card>
     ),
-    [],
+    []
+  );
+
+  return (
+    <View style={{ flex: 1 }}>
+      {
+        //  if loading
+        knnDataIsLoading ? (
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <ActivityIndicator animating={true} size={"large"} />
+          </View>
+        ) : //  if error
+        knnDataIsError ? (
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text>Could not load nearby users...</Text>
+          </View>
+        ) : //  if no data
+        !knnData || knnData.length === 0 ? (
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text>Could not find any nearby users...</Text>
+          </View>
+        ) : (
+          //  if data
+          <View style={{ padding: 10, flex: 1 }}>
+            <FlashList
+              data={knnData}
+              renderItem={userCard}
+              estimatedItemSize={59}
+              keyExtractor={(item) => item.user_id}
+              ItemSeparatorComponent={Separator}
+              ListHeaderComponent={ListHeader}
+            />
+          </View>
+        )
+      }
+      <Portal>
+        <Modal
+          visible={showModal}
+          onDismiss={() => {
+            setShowModal(false);
+          }}
+          contentContainerStyle={{
+            marginHorizontal: 20,
+            backgroundColor: theme.colors.surface,
+            padding: 20,
+            maxHeight: "80%",
+            borderRadius: 25,
+            elevation: 5,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }}
+        >
+          {modalUserInfo !== null && (
+            <View style={{ gap: 15 }}>
+              <Image
+                style={{
+                  width: "100%",
+                  aspectRatio: 1,
+                  borderRadius: 15,
+                }}
+                resizeMode="cover"
+                source={{
+                  uri:
+                    process.env.EXPO_PUBLIC_SERVER_ADDRESS +
+                    modalUserInfo.original_avatars[0],
+                }}
+              />
+              <Text variant="headlineSmall" style={{ fontWeight: "bold" }}>
+                {modalUserInfo.nickname}
+              </Text>
+              <Text
+                variant="titleMedium"
+                style={{ color: theme.colors.primary }}
+              >
+                Bio:
+              </Text>
+              <Text variant="bodyMedium" style={{ lineHeight: 22 }}>
+                {modalUserInfo.biography}
+              </Text>
+              <Button
+                mode="contained"
+                onPress={() => setShowModal(false)}
+                style={{ marginTop: 10 }}
+              >
+                Close
+              </Button>
+            </View>
+          )}
+        </Modal>
+      </Portal>
+    </View>
   );
 
   // the separator
@@ -158,78 +256,9 @@ const HomeScreen = () => {
     );
   }
 
-  return (
-    <View style={{ flex: 1 }}>
-      {knnDataIsLoading ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator animating={true} size={"large"} />
-        </View>
-      ) : knnDataIsError ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text>Could not load nearby users...</Text>
-        </View>
-      ) : !knnData || knnData.length === 0 ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text>Could not find any nearby users...</Text>
-        </View>
-      ) : (
-        <View style={{ padding: 10, flex: 1 }}>
-          <FlashList
-            data={knnData}
-            renderItem={userCard}
-            estimatedItemSize={59}
-            keyExtractor={(item) => item.user_id}
-            ItemSeparatorComponent={Separator}
-            ListHeaderComponent={ListHeader}
-          />
-        </View>
-      )}
-      <Portal>
-        <Modal
-          visible={showModal}
-          onDismiss={() => {
-            setShowModal(false);
-          }}
-          contentContainerStyle={{
-            marginHorizontal: 10,
-            backgroundColor: theme.colors.surface,
-            padding: 20,
-            maxHeight: "80%",
-            borderRadius: 25,
-          }}
-        >
-          {modalUserInfo !== null && (
-            <View style={{ gap: 10 }}>
-              <Image
-                style={{
-                  width: "100%",
-                  aspectRatio: 1,
-                }}
-                resizeMode="cover"
-                source={{
-                  uri:
-                    process.env.EXPO_PUBLIC_SERVER_ADDRESS +
-                    modalUserInfo.original_avatars[0],
-                }}
-              />
-              <Text variant="titleMedium">Bio:</Text>
-              <Text>{modalUserInfo.biography}</Text>
-            </View>
-          )}
-        </Modal>
-      </Portal>
-    </View>
-  );
-
   function distanceMessage(
     leadingItemDistance: number | undefined,
-    trailingItemDistance: number,
+    trailingItemDistance: number
   ) {
     let leadingItemDistanceIsSmallerThanCellNo = 0;
     let trailingItemDistanceIsSmallerThanCellNo = 0;

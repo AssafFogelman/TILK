@@ -9,15 +9,15 @@ type ErrorType = {
   info: React.ErrorInfo;
 };
 /*
-  log an error record once Error boundary is set
+  log an error record
  */
 export const logError = async (c: Context, next: Next) => {
   try {
     const token = c.req.header("TILK-token");
 
     let payload;
-    // there might not be a token since the error might arise before the user has
-    // a token and axios took the token and put it in the request header.
+    // there might not be a token since the error might arise before the user registered.
+    // in that case there will not bea token in the request header.
     if (token) {
       payload = (await verifyToken(token)) as { userId: string };
     }
@@ -35,14 +35,14 @@ export const logError = async (c: Context, next: Next) => {
   } catch (error) {
     console.log(
       "error occurred when trying to log the error to the DB: ",
-      error,
+      error
     );
     return c.json(
       {
         message: "error occurred when trying to log the error to the DB: ",
         error,
       },
-      401,
+      401
     );
   }
 };
