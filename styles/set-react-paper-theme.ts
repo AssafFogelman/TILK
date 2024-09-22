@@ -13,7 +13,6 @@ import {
   DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
 } from "@react-navigation/native";
-import merge from "deepmerge";
 
 //dark-light mode depending on system preferences
 // + an integration with react navigation themes

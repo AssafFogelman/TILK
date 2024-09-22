@@ -16,7 +16,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { adaptNavigationTheme, PaperProvider } from "react-native-paper";
 import { useSetTheme } from "./styles/set-react-paper-theme";
 import { AuthProvider } from "./AuthContext";
-import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
+import { ErrorBoundary } from "./components/error-boundary/ErrorBoundary";
 import Toast from "react-native-toast-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
@@ -108,7 +108,12 @@ function useWebSocketEventsAndDisconnect() {
     //    socket.on('foo', onFooEvent);
 
     return () => {
+      //close the event listener "connect"
       socket.off("connect", onConnect);
+
+      //when the component unmounts (the app closes), disconnect the socket
+      socket.disconnect();
+
       // socket.off("disconnect", onDisconnect);
       // socket.off('foo', onFooEvent);
     };

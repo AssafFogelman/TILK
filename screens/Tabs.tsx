@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { BottomNavigation } from "react-native-paper";
+import { BottomNavigation, useTheme } from "react-native-paper";
 import HomeScreen from "./HomeScreen";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import ChatsScreen from "./ChatsScreen";
@@ -8,6 +8,9 @@ import ConnectionsScreen from "./ConnectionsScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TabParamList } from "../types/types";
 import React, { useState } from "react";
+import { getHeaderTitle } from "@react-navigation/elements";
+import TabHeader from "../components/home-screen-components/TabHeader";
+import { Alert } from "react-native";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -52,6 +55,7 @@ const initialTabState = {
 
 const Tabs = () => {
   const [tabState, setTabState] = useState(initialTabState);
+  const theme = useTheme();
 
   const renderIcon = (route: Route, focused: boolean, color: string) => {
     const iconName = focused ? route.focusedIcon : route.unfocusedIcon;
@@ -70,6 +74,10 @@ const Tabs = () => {
       default:
         return null;
     }
+  };
+
+  const handleMenuPress = () => {
+    Alert.alert("Menu", "You pressed the menu button!");
   };
 
   return (
@@ -95,12 +103,20 @@ const Tabs = () => {
           }}
           renderIcon={({ route, focused, color }) => {
             const currentRoute = tabState.routes.find(
-              (r) => r.key === route.key,
+              (r) => r.key === route.key
             ) as Route;
             return renderIcon(currentRoute, focused, color);
           }}
+          theme={theme}
         />
       )}
+      screenOptions={({ route }) => ({
+        header: ({ navigation, options }) => {
+          const title = getHeaderTitle(options, route.name);
+
+          return <TabHeader title={title} onMenuPress={handleMenuPress} />;
+        },
+      })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Chats" component={ChatsScreen} />

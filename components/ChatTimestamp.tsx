@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ChatMessageType } from "../types/types";
-import { formatDate2 } from "../services/formatDate";
+import { formatDate2 } from "../utils/dateUtils";
 
 const ChatTimestamp = ({
   chatMessage,

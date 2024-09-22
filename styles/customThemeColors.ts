@@ -30,7 +30,7 @@ export const customLightModeColors = {
     // inverseOnSurface: "rgb(245, 239, 244)",
     // inversePrimary: "rgb(220, 184, 255)",
     // elevation: {
-    //   level0: "transparent",
+    // level0: "transparent",
     //   level1: "rgb(248, 242, 251)",
     //   level2: "rgb(244, 236, 248)",
     //   level3: "rgb(240, 231, 246)",

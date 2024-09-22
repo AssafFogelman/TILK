@@ -1,3 +1,10 @@
+export const age = (dateOfBirth: Date) => {
+  const diff_ms = Date.now() - dateOfBirth.getTime();
+  const age_dt = new Date(diff_ms);
+
+  return Math.abs(age_dt.getUTCFullYear() - 1970) + "";
+};
+
 /* the function receives a date and returns the time passed from now */
 //formatDate shows the hours since, if the timestamp is in the current day
 //formDate2 only writes "today", if the timestamp is in the current day
