@@ -8,6 +8,7 @@ import { postBio } from "../../controllers/post-bio";
 import { getTags } from "../../controllers/get-tags";
 import { postTags } from "../../controllers/post-tags";
 import { activateUser } from "../../controllers/activate-user";
+import { getConnectionsList } from "../../controllers/get-connections-list";
 
 export const user = new Hono().basePath("/user");
 
@@ -33,7 +34,7 @@ user.get("/avatar-links", validateToken, avatarLinks);
 
 /*
 1. gets the files from the app
-2. coverts to webp and saves only full image cells
+2. converts to webp and saves only full image cells
 3. saves a small version of the first photo (which is the chosen avatar)
 4. uploads the paths to the database
 6. returns "success" of "failure"
@@ -50,7 +51,11 @@ user.post("/post-bio", validateToken, postBio);
 //get all the tags
 user.get("/get-tags", validateToken, getTags);
 
+//post tags
 user.post("/post-tags", validateToken, postTags);
 
 //activate user in DB after he completes registration
 user.post("/activate-user", validateToken, activateUser);
+
+//get connections list
+user.get("/get-connections-list", /*validateToken,*/ getConnectionsList);

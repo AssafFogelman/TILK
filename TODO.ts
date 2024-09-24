@@ -17,4 +17,14 @@
     * check why when we get to the ErrorBoundary, the Error log  request fails due to invalid token
     * consider using tanStack query for api calls
 
+    TagsScreen:
+    * when you come from HomeScreen, I want the selected tags to be selected in the list.
+
+    * development build
+    * data fetching for user connections
+    * data fetching for user chats
+    * buttons for userCards in "HomeScreen"
+    * menu in "HomeScreen"
+    * FAB in "HomeScreen"
+    * see when a tab is unmounted
     */

@@ -61,7 +61,7 @@ export type SelectAvatarScreenNavigationProp = NativeStackNavigationProp<
 //this is the type for the useNavigation() in "PhoneVerificationScreen" Screen
 export type PhoneVerificationScreenNavigationProp = NativeStackNavigationProp<
   StackParamList,
-  "SelectAvatar"
+  "PhoneVerification"
 >;
 
 //this is the type for the useNavigation() in "PersonalDetailsScreen" Screen

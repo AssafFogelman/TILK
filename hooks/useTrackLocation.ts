@@ -8,7 +8,7 @@ export function useTrackLocation() {
   const [isIntervalActive, setIsIntervalActive] = useState(false);
   const intervalRef = useRef<null | NodeJS.Timeout>(null);
   const locationSubscription = useRef<null | Location.LocationSubscription>(
-    null,
+    null
   );
   const [knnDataIsLoading, setKnnDataIsLoading] = useState(true);
   const [knnDataIsError, setKnnDataIsError] = useState(false);
@@ -55,7 +55,7 @@ export function useTrackLocation() {
           //If you want to check that it works without having to move 50 meters, change distanceInterval to 0 (update regardless of location change)
           timeInterval: 1000 * 30, //update location if the device moved more than 50 meters, and no more that an update every 30 seconds
         },
-        handleNewLocation,
+        handleNewLocation
       );
     } catch (error) {
       console.log("error in startDeviceMotionTracking function: ", error);
@@ -67,13 +67,11 @@ export function useTrackLocation() {
     if (!isIntervalActive) {
       intervalRef.current = setInterval(
         () => {
-          console.log("the interval is active");
           if (locationRef.current) {
-            console.log("location is not null");
             sendLocationToServer(locationRef.current);
           }
         },
-        2 * 60 * 1000,
+        2 * 60 * 1000
       ); // 2 minutes in milliseconds. executes for the first time only after 2 min.
       setIsIntervalActive(true);
     }
@@ -84,7 +82,7 @@ export function useTrackLocation() {
       locationRef.current = newLocation;
       sendLocationToServer(newLocation);
     },
-    [],
+    []
   );
 
   async function sendLocationToServer(location: Location.LocationObject) {
@@ -95,7 +93,7 @@ export function useTrackLocation() {
         " lon- ",
         location.coords.longitude,
         " time- ",
-        location.timestamp,
+        location.timestamp
       );
       const { knn } = await axios
         .post("/location", {

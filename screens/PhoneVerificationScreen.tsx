@@ -13,6 +13,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   PhoneVerificationScreenNavigationProp,
   PhoneVerificationScreenRouteProp,
+  StackParamList,
 } from "../types/types";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { countryCodes, CountryPicker } from "react-native-country-codes-picker";
@@ -134,7 +135,7 @@ const PhoneVerificationScreen = () => {
         case "iOS":
         case "iPadOS":
           uniqueOSCode = await getIosIdForVendorAsync().then((Id) =>
-            Id ? Id : "no identifier",
+            Id ? Id : "no identifier"
           );
           break;
         case "Android":
@@ -164,12 +165,12 @@ const PhoneVerificationScreen = () => {
         // that falls out of the range of 2xx
         console.log(
           "error while trying to send code:",
-          error.response.data.message,
+          error.response.data.message
         );
       } else {
         console.log(
           "error trying to send the phone number and get a code: ",
-          error,
+          error
         );
       }
     }
@@ -178,7 +179,7 @@ const PhoneVerificationScreen = () => {
   function useGetCountryData() {
     useEffect(() => {
       let countryData = countryCodes.find(
-        (country) => country.name.en === userCountry,
+        (country) => country.name.en === userCountry
       );
       if (countryData === undefined) {
         setCountryCode("+1");
@@ -256,27 +257,22 @@ const PhoneVerificationScreen = () => {
       //for the stackNavigator to not throw us to a wrong screen, we will navigate manually
       //if the user has already chosen bio, avatar and tags, navigate to "home" screen
 
-      const navigateTo = chosenBio
-        ? chosenAvatar
-          ? chosenTags
-            ? "Home"
-            : "LookingTo"
-          : "SelectAvatar"
-        : "PersonalDetails";
-
-      navigation.navigate(navigateTo);
+      if (!chosenBio) navigation.navigate("PersonalDetails");
+      if (!chosenAvatar) navigation.navigate("SelectAvatar");
+      if (!chosenTags) navigation.navigate("LookingTo");
+      navigation.navigate("Tabs", { screen: "Home" });
     } catch (error: any) {
       if (error.response) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
         console.log(
           "error while trying to verify the code and create a token:",
-          error.response.data.message,
+          error.response.data.message
         );
       } else {
         console.log(
           "error trying to verify the code and create a token:",
-          error,
+          error
         );
       }
     }

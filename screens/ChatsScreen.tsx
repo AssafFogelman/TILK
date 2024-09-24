@@ -1,43 +1,72 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 // import { UserContext } from "../UserContext";
 import UserChat from "../components/UserChat";
+import { useAuthState } from "../AuthContext";
+import { useFocusEffect } from "@react-navigation/native";
+import axios from "axios";
+import { FlashList } from "@shopify/flash-list";
+import { UserCard } from "../components/home-screen-components/UserCard";
 
 const ChatsScreen = () => {
-  const [friendsList, setFriendsList] = useState([]);
-  // const { userId, setUserId } = useContext(UserContext);
+  const [friendsList, setFriendsList] = useState<ConnectedUserType[]>([]);
+  const { userId } = useAuthState();
 
-  useEffect(() => {
-    //get friends data
-    const getFriendsList = async () => {
-      try {
-        // const response = await fetch(
-        //   `http://192.168.1.116:8000/chat/${userId}`
-        // );
-        // //response is of type "Response", meaning, you need to do something with it. it has a method called ".json()" that extrapolates the data out.
-        // //this must be done in "fetch". It isn't axios sadly. Mind you.
-        // if (response.ok) {
-        //   const tempFriendsList = await response.json();
-        //   setFriendsList(tempFriendsList);
-        // }
-      } catch (error) {
-        console.log(
-          "error happened while trying to get the users friends list:",
-          error,
-        );
-      }
-    };
-    getFriendsList();
-  }, []);
+  type ConnectedUserType = {
+    userId: string;
+    smallAvatar: string | null;
+    biography: string | null;
+    dateOfBirth: string | null;
+    gender: "man" | "woman" | "other" | null;
+    nickname: string | null;
+    currentlyConnected: boolean | null;
+  };
 
+  const getFriendsList = async () => {
+    try {
+      const { connectedUsers } = (await axios
+        .get(`/user/get-connections-list`)
+        .then((res) => res.data)) as { connectedUsers: ConnectedUserType[] };
+      setFriendsList(connectedUsers);
+    } catch (error) {
+      console.log(
+        "error happened while trying to get the users connections list:",
+        error
+      );
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      getFriendsList();
+    }, [])
+  );
+  const renderUserCard = useCallback(
+    ({ item }: { item: ConnectedUserType }) => (
+      <View>
+        <Text>{item.userId}</Text>
+        <Text>{item.smallAvatar}</Text>
+        <Text>{item.biography}</Text>
+        <Text>{item.dateOfBirth}</Text>
+        <Text>{item.gender}</Text>
+        <Text>{item.nickname}</Text>
+        <Text>{item.currentlyConnected}</Text>
+      </View>
+      // <UserCard user={item} onAvatarPress={handleOpenModal} />
+    ),
+    []
+  );
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <Pressable>
-        {/* {friendsList.map((friend, index) => (
-          <UserChat key={index} friend={friend}></UserChat>
-        ))} */}
-      </Pressable>
-    </ScrollView>
+    <View style={{ flex: 1 }}>
+      <View style={{ padding: 10, flex: 1 }}>
+        <FlashList
+          data={friendsList}
+          renderItem={renderUserCard}
+          estimatedItemSize={100}
+          keyExtractor={(item) => item.userId}
+        />
+      </View>
+    </View>
   );
 };
 

@@ -72,7 +72,7 @@ export const UserCard = React.memo(
         </Card.Content>
         <Card.Actions>
           <Button>Cancel</Button>
-          {connectionIcon()}
+          {/* {connectionIcon()} */}
           <Button>Ok</Button>
         </Card.Actions>
       </Card>

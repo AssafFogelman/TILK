@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from "react";
-import { View } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { FlashList } from "@shopify/flash-list";
+import { FAB } from "react-native-paper";
 import { useLocation } from "../LocationContext";
-import { knnDataItemType } from "../types/types";
+import { HomeScreenNavigationProp, knnDataItemType } from "../types/types";
 import { UserCard } from "../components/home-screen-components/UserCard";
 import { UserInfoModal } from "../components/home-screen-components/UserInfoModal";
 import { ListHeader } from "../components/home-screen-components/ListHeader";
@@ -14,6 +15,8 @@ import {
 } from "../components/home-screen-components/StatusViews";
 import { useStartLocationTracking } from "../hooks/home-screen-hooks/useStartLocationTracking";
 import { useSetCurrentlyConnected } from "../hooks/home-screen-hooks/useSetCurrentlyConnected";
+import { useNavigation } from "@react-navigation/native";
+import Entypo from "@expo/vector-icons/Entypo";
 
 const HomeScreen = () => {
   const [modalUserInfo, setModalUserInfo] = useState<knnDataItemType | null>(
@@ -21,7 +24,7 @@ const HomeScreen = () => {
   );
   const [showModal, setShowModal] = useState(false);
   const { knnDataIsLoading, knnDataIsError, knnData } = useLocation();
-
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   useStartLocationTracking();
   useSetCurrentlyConnected();
 
@@ -57,6 +60,12 @@ const HomeScreen = () => {
           ListHeaderComponent={(props) => ListHeader({ ...props, knnData })}
         />
       </View>
+      <FAB
+        icon={() => <Entypo name="megaphone" size={24} color="black" />}
+        style={styles.fab}
+        size={"medium"}
+        onPress={() => navigation.navigate("LookingTo")}
+      />
       <UserInfoModal
         visible={showModal}
         onDismiss={handleCloseModal}
@@ -65,5 +74,14 @@ const HomeScreen = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  fab: {
+    position: "absolute",
+    margin: 50,
+    right: 0,
+    bottom: 0,
+  },
+});
 
 export default HomeScreen;
