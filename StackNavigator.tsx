@@ -10,7 +10,7 @@ import { knnDataType, StackParamList } from "./types/types";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import PhoneVerificationScreen from "./screens/PhoneVerificationScreen";
 import SelectAvatarScreen from "./screens/SelectAvatarScreen";
-import PersonalDetailsScreen from "./screens/PersonalDetailsScreen";
+import PersonalDetailsScreen from "./screens/personalDetailsScreen";
 import LookingToScreen from "./screens/LookingToScreen";
 import SplashScreen from "./screens/SplashScreen";
 import { useAuthState } from "./AuthContext";
@@ -53,7 +53,11 @@ const StackNavigator = () => {
             options={{ headerShown: false }}
           />
 
-          <Stack.Screen name="LookingTo" component={LookingToScreen} />
+          <Stack.Screen
+            name="LookingTo"
+            component={LookingToScreen}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="Tabs"
             component={Tabs}

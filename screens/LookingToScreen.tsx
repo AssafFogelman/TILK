@@ -10,7 +10,7 @@ import { LookingToScreenNavigationProp } from "../types/types";
 
 type TagItem = {
   categoryName: string;
-  tags: { tagContent: string }[];
+  tags: { tagName: string }[];
 };
 type TagList = TagItem[];
 
@@ -36,7 +36,7 @@ const LookingToScreen = () => {
       } catch (error) {
         console.log(
           "Error trying to retrieve tags and tag categories: ",
-          error,
+          error
         );
       }
     })();
@@ -51,27 +51,25 @@ const LookingToScreen = () => {
           <View style={styles.chipsContainer}>
             {item.tags.map((tag) => (
               <Chip
-                key={item.categoryName + "-" + tag.tagContent}
+                key={item.categoryName + "-" + tag.tagName}
                 style={[
                   styles.tag,
                   //if the tag is equal to a tag in the selected tags, style it as a selected tag
                   selectedTags.some(
                     (selectedTagItem) =>
-                      selectedTagItem.tags[0].tagContent.toLowerCase() ===
-                      tag.tagContent.toLowerCase(),
+                      selectedTagItem.tags[0].tagName.toLowerCase() ===
+                      tag.tagName.toLowerCase()
                   ) && styles.selectedTag,
                 ]}
-                onPress={() =>
-                  handleTagPress(item.categoryName, tag.tagContent)
-                }
+                onPress={() => handleTagPress(item.categoryName, tag.tagName)}
               >
-                {tag.tagContent}
+                {tag.tagName}
               </Chip>
             ))}
           </View>
         </View>
       ) : null,
-    [selectedTags],
+    [selectedTags]
   );
 
   return (
@@ -95,16 +93,16 @@ const LookingToScreen = () => {
         <FlatList
           data={selectedTags}
           keyExtractor={(item) =>
-            item.categoryName + "-" + item.tags[0].tagContent
+            item.categoryName + "-" + item.tags[0].tagName
           }
           renderItem={({ item }) => (
             <Chip
               style={styles.selectedTag}
               onClose={() =>
-                handleTagPress(item.categoryName, item.tags[0].tagContent)
+                handleTagPress(item.categoryName, item.tags[0].tagName)
               }
             >
-              {item.tags[0].tagContent}
+              {item.tags[0].tagName}
             </Chip>
           )}
           horizontal
@@ -153,7 +151,7 @@ const LookingToScreen = () => {
           CommonActions.reset({
             index: 0,
             routes: [{ name: "Tabs" }],
-          }),
+          })
         );
       }
       // else, navigate to "Home" and don't let the user return to this specific screen
@@ -162,15 +160,15 @@ const LookingToScreen = () => {
     } catch (error) {
       console.log(
         "error trying to save the chosen tags to the server: ",
-        error,
+        error
       );
     }
   }
 
   // Extracted method for filtering tag based on content
-  function filterTagsByContent(tags: { tagContent: string }[], text: string) {
+  function filterTagsByContent(tags: { tagName: string }[], text: string) {
     return tags.filter((tag) =>
-      tag.tagContent.toLowerCase().includes(text.toLowerCase()),
+      tag.tagName.toLowerCase().includes(text.toLowerCase())
     );
   }
 
@@ -181,34 +179,33 @@ const LookingToScreen = () => {
       staticTagList.map((tagItem) => ({
         categoryName: tagItem.categoryName,
         tags: filterTagsByContent(tagItem.tags, text),
-      })),
+      }))
     );
   }
 
-  function handleTagPress(tagCategory: string, tagContent: string) {
+  function handleTagPress(tagCategory: string, tagName: string) {
     //if the tag (in the right category) is already selected
     if (
       selectedTags.some(
         (selectedTagItem) =>
           selectedTagItem.categoryName === tagCategory &&
           selectedTagItem.tags.some(
-            (selectedTag) => selectedTag.tagContent === tagContent,
-          ),
+            (selectedTag) => selectedTag.tagName === tagName
+          )
       )
     ) {
       //get the tag out of the "selected tag" array
       setSelectedTags(
         selectedTags.filter(
-          (selectedTagItem) =>
-            selectedTagItem.tags[0].tagContent !== tagContent,
-        ),
+          (selectedTagItem) => selectedTagItem.tags[0].tagName !== tagName
+        )
       );
     } else {
       if (selectedTags.length < 5) {
         //add the tag to the "selected tag" array
         setSelectedTags((current) => [
           ...current,
-          { categoryName: tagCategory, tags: [{ tagContent: tagContent }] },
+          { categoryName: tagCategory, tags: [{ tagName: tagName }] },
         ]);
       }
     }

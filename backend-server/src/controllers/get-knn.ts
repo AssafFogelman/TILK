@@ -48,7 +48,7 @@ export const getKnn = async (c: Context) => {
       sql.raw(`
           UPDATE users
           SET user_location=ST_MakePoint(${longitude},${latitude})
-          WHERE user_id='${userId}';`),
+          WHERE user_id='${userId}';`)
     );
     //currently_connected
     // finding KNN
@@ -85,9 +85,8 @@ export const getKnn = async (c: Context) => {
                  WHERE sender_id = users.user_id AND recipient_id = '${userId}'
                  ) AS unread,
                 ARRAY(
-                    SELECT tag_content 
-                    FROM tags 
-                    INNER JOIN tags_users ON tags.tag_id = tags_users.tag_id 
+                    SELECT tag_name 
+                    FROM tags_users 
                     WHERE tags_users.user_id = users.user_id
                 ) AS tags
             FROM users
@@ -131,7 +130,7 @@ export const getKnn = async (c: Context) => {
     console.log("error retrieving nearest neighbor user data: ", error);
     return c.json(
       { message: "error retrieving nearest neighbor user data: ", error },
-      401,
+      401
     );
   }
 };

@@ -1,7 +1,7 @@
 {
   "expo": {
     "jsEngine": "hermes",
-    "name": "chat-app",
+    "name": "tilk",
     "slug": "chat-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#12021a"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "config": {
@@ -25,7 +23,14 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/tilk_icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA"
+      ],
+      "package": "il.co.elobby.tilk"
     },
     "web": {
       "favicon": "./assets/tilk_icon.png"

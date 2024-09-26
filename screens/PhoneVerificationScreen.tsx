@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  I18nManager,
 } from "react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import {
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   phoneNumberContainer: {
-    flexDirection: "row",
+    flexDirection: I18nManager.isRTL ? "row-reverse" : "row",
     gap: 20,
     justifyContent: "center",
     // borderWidth: 1,

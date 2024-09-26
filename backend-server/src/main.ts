@@ -186,7 +186,7 @@ async function main() {
     const tagsWithCategoriesAndUsers = await db
       .select({
         tagId: tags.tagId,
-        tagContent: tags.tagContent,
+        tagContent: tags.tagName,
         categories: sql<
           string[]
         >`array_agg(distinct ${tagCategories.categoryName})`,
@@ -196,11 +196,11 @@ async function main() {
       .leftJoin(tagsTagCats, eq(tags.tagId, tagsTagCats.tagId))
       .leftJoin(
         tagCategories,
-        eq(tagsTagCats.tagCategoryId, tagCategories.tagCategoryId),
+        eq(tagsTagCats.tagCategoryId, tagCategories.tagCategoryId)
       )
       .leftJoin(tagsUsers, eq(tags.tagId, tagsUsers.tagId))
       .leftJoin(users, eq(tagsUsers.userId, users.userId))
-      .groupBy(tags.tagId, tags.tagContent);
+      .groupBy(tags.tagId, tags.tagName);
 
     console.log("tagsWithCategoriesAndUsers:", tagsWithCategoriesAndUsers);
 

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { I18nManager, StyleSheet, Text, TextInput, View } from "react-native";
 import React, { useEffect, useRef } from "react";
 
 /*
@@ -25,7 +25,10 @@ const OTP = ({
     <View>
       <View style={styles.digitsContainer}>
         {digitsArray.map((digit, index) => (
-          <View key={index} style={{ flexDirection: "row" }}>
+          <View
+            key={index}
+            style={{ flexDirection: I18nManager.isRTL ? "row-reverse" : "row" }}
+          >
             {separatorIndexes.includes(index) && (
               <Text style={[styles.input, styles.plainText]}>-</Text>
             )}
@@ -93,7 +96,7 @@ export default OTP;
 
 const styles = StyleSheet.create({
   digitsContainer: {
-    flexDirection: "row",
+    flexDirection: I18nManager.isRTL ? "row-reverse" : "row",
     justifyContent: "center",
     marginBottom: 5,
   },

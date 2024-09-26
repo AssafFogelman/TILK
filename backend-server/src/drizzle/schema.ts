@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { relations, SQL, sql } from "drizzle-orm";
 import {
   pgTable,
   uuid,
@@ -12,6 +12,8 @@ import {
   real,
   doublePrecision,
   primaryKey,
+  check,
+  AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 //declaring an enum
@@ -87,40 +89,49 @@ mind you that you need to create the index BEFORE inserting data.
 export const tagsUsers = pgTable(
   "tags_users",
   {
-    tagId: uuid("tag_id")
+    tagName: text("tag_name")
       .notNull()
-      .references(() => tags.tagId), //add a reference to tagTemplate table
+      .references(() => tags.tagName), //add a reference to tagTemplate table
     userId: uuid("user_id")
       .notNull()
       .references(() => users.userId),
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.tagId, table.userId] }), //composite primary key
+      pk: primaryKey({ columns: [table.tagName, table.userId] }), //composite primary key
     };
   }
 );
 
 //tags  ex. "sea", "JavaScript", "basketball"
-export const tags = pgTable("tags", {
-  tagId: uuid("tag_id").primaryKey().notNull().unique().defaultRandom(),
-  tagContent: text("tag_content").notNull(), //tag_content should not be unique, since there might be similar tags of different categories.
-});
+export const tags = pgTable(
+  "tags",
+  {
+    //tag_content should be unique and lowercased, in order to make sure the user does not have two tags with the same name.
+    tagName: text("tag_name").notNull().primaryKey().unique(),
+  },
+  (table) => ({
+    lowercaseCheck: check(
+      "lowercase_check",
+      sql`${table.tagName} = lower(${table.tagName})`
+    ),
+  })
+);
 
 //joint table of tag templates and tag categories
 export const tagsTagCats = pgTable(
   "tags_tag_cats",
   {
-    tagId: uuid("tag_id")
+    tagName: text("tag_name")
       .notNull()
-      .references(() => tags.tagId),
+      .references(() => tags.tagName),
     tagCategoryId: uuid("tag_category_id")
       .notNull()
       .references(() => tagCategories.tagCategoryId),
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.tagCategoryId, table.tagId] }), //composite primary key
+      pk: primaryKey({ columns: [table.tagCategoryId, table.tagName] }), //composite primary key
     };
   }
 );
@@ -342,9 +353,9 @@ export const tagsUsersRelations = relations(tagsUsers, ({ one }) => ({
     fields: [tagsUsers.userId],
     references: [users.userId],
   }),
-  tag: one(tags, {
-    fields: [tagsUsers.tagId],
-    references: [tags.tagId],
+  tagName: one(tags, {
+    fields: [tagsUsers.tagName],
+    references: [tags.tagName],
   }),
 }));
 
@@ -354,9 +365,9 @@ export const tagsRelations = relations(tags, ({ many }) => ({
 }));
 
 export const tagOnTagCatRelations = relations(tagsTagCats, ({ one }) => ({
-  tag: one(tags, {
-    fields: [tagsTagCats.tagId],
-    references: [tags.tagId],
+  tagName: one(tags, {
+    fields: [tagsTagCats.tagName],
+    references: [tags.tagName],
   }),
   tagCategory: one(tagCategories, {
     fields: [tagsTagCats.tagCategoryId],

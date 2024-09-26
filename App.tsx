@@ -37,13 +37,13 @@ export default function App() {
   const theme = useSetTheme();
 
   return (
-    <SafeAreaProvider>
-      <ErrorBoundary>
-        <GestureHandlerRootView style={{ flex: 1 }}>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
           <SafeAreaView style={{ flex: 1 }}>
-            <Text>
+            {/* <Text>
               user is {isConnected ? "connected" : "disconnected"} to websocket
-            </Text>
+            </Text> */}
             <AuthProvider>
               <LocationProvider>
                 <PaperProvider theme={theme}>
@@ -54,10 +54,10 @@ export default function App() {
               </LocationProvider>
             </AuthProvider>
           </SafeAreaView>
-          <Toast />
-        </GestureHandlerRootView>
-      </ErrorBoundary>
-    </SafeAreaProvider>
+        </SafeAreaProvider>
+        <Toast />
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
 

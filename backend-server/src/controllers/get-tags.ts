@@ -11,7 +11,7 @@ get all tags in this format:
         "categoryName": "play sports",
         "tags": [
             {
-                "tagContent": "soccer"
+                "tagName": "soccer"
             },
             ],
      }
@@ -25,15 +25,15 @@ export const getTags = async (c: Context) => {
       .select({
         categoryName: tagCategories.categoryName,
         tags: sql<
-          { tagContent: string }[]
-        >`json_agg(json_build_object('tagContent', ${tags.tagContent}))`,
+          { tagName: string }[]
+        >`json_agg(json_build_object('tagName', ${tags.tagName}))`,
       })
       .from(tagCategories)
       .leftJoin(
         tagsTagCats,
-        eq(tagCategories.tagCategoryId, tagsTagCats.tagCategoryId),
+        eq(tagCategories.tagCategoryId, tagsTagCats.tagCategoryId)
       )
-      .leftJoin(tags, eq(tagsTagCats.tagId, tags.tagId))
+      .leftJoin(tags, eq(tagsTagCats.tagName, tags.tagName))
       .groupBy(tagCategories.categoryName)
       .execute();
     return c.json({ categoryAndTagList: result }, 200);

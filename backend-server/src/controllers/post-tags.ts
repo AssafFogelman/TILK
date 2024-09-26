@@ -11,18 +11,19 @@ post tags in this format:
         "categoryName": "play sports",
         "tags": [
             {
-                "tagContent": "soccer"
+                "tagName": "soccer"
             },
             ],
      }
      ]
 }
+
  */
 
 //post tags
 type TagItem = {
   categoryName: string;
-  tags: { tagContent: string }[];
+  tags: { tagName: string }[];
   //where "tags" array has only one cell
 };
 type TagList = TagItem[];
@@ -33,51 +34,70 @@ export const postTags = async (c: Context) => {
 
     const tagsArray = (await c.req.json()) as TagList;
 
-    // First find IDs of each tag in each category
-    const tagIds = await Promise.all(
-      tagsArray.map(async (tagItem) => {
-        //get the category id
-        const categoryId = await db
-          .select({ id: tagCategories.tagCategoryId })
-          .from(tagCategories)
-          .where(eq(tagCategories.categoryName, tagItem.categoryName))
-          .then((result) => result[0]?.id);
+    //do the tags and categories exist in the database?
 
-        if (!categoryId) {
-          throw { message: `Category not found: ${tagItem.categoryName}` };
-        }
-
-        const tagContents = tagItem.tags[0].tagContent;
-
-        //get the tag id
-        return await db
-          .select({ id: tags.tagId })
-          .from(tags)
-          .innerJoin(tagsTagCats, eq(tags.tagId, tagsTagCats.tagId))
-          .where(
-            and(
-              //the category is the category we previously found
-              eq(tagsTagCats.tagCategoryId, categoryId),
-              //the tag has the same name as the tag we are posting
-              eq(tags.tagContent, tagContents),
-            ),
+    // Check if all categories and tags exist in the database
+    //the only reason we check for categories is to know that there aren't tags who have no category. It's probably redundant. FIXME
+    const existingCategoriesAndTags = await db
+      .select({
+        categoryName: tagCategories.categoryName,
+        tagName: tags.tagName,
+      })
+      .from(tagCategories)
+      .innerJoin(
+        tagsTagCats,
+        eq(tagCategories.tagCategoryId, tagsTagCats.tagCategoryId)
+      )
+      .innerJoin(tags, eq(tagsTagCats.tagName, tags.tagName))
+      .where(
+        and(
+          inArray(
+            tagCategories.categoryName,
+            tagsArray.map((item) => item.categoryName)
+          ),
+          inArray(
+            tags.tagName,
+            tagsArray.flatMap((item) => item.tags.map((tag) => tag.tagName))
           )
-          .then((results) => results.map((result) => result.id));
-      }),
+        )
+      )
+      .execute();
+
+    // Create sets for efficient lookup
+    const existingCategories = new Set(
+      existingCategoriesAndTags.map((item) => item.categoryName)
+    );
+    const existingTags = new Set(
+      existingCategoriesAndTags.map((item) => item.tagName)
     );
 
-    const allTagIds = tagIds.flat();
+    // Check if all categories and tags exist
+    const missingCategories = tagsArray.filter(
+      (item) => !existingCategories.has(item.categoryName)
+    );
+    const missingTags = tagsArray.flatMap((item) =>
+      item.tags.filter((tag) => !existingTags.has(tag.tagName))
+    );
+
+    if (missingCategories.length > 0 || missingTags.length > 0) {
+      throw {
+        message: "Some categories or tags do not exist in the database",
+        missingCategories: missingCategories.map((item) => item.categoryName),
+        missingTags: missingTags.map((tag) => tag.tagName),
+      };
+    }
 
     //Erase existing entries
     await db.delete(tagsUsers).where(eq(tagsUsers.userId, userId));
 
     //Insert new entries
-    if (allTagIds.length > 0) {
+    const existingTagsArray = Array.from(existingTags);
+    if (existingTagsArray.length > 0) {
       await db.insert(tagsUsers).values(
-        allTagIds.map((tagId) => ({
+        existingTagsArray.map((tagName) => ({
           userId: userId,
-          tagId: tagId,
-        })),
+          tagName: tagName,
+        }))
       );
     }
 

@@ -1,8 +1,7 @@
 /*
-    StackNavigator:
-    * set initial screens
-    * set the navigation to "home"/"chats" in other screens
 
+
+    
     Tabs Screen:
     *    make the tab icons outlined when not selected
     * change the color of the icons from black to "on primary"
