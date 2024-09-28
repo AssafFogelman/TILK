@@ -87,7 +87,7 @@ export const getKnn = async (c: Context) => {
                 ARRAY(
                     SELECT tag_name 
                     FROM tags_users 
-                    WHERE tags_users.user_id = users.user_id
+                    WHERE tags_users.user_id = '${userId}'
                 ) AS tags
             FROM users
             WHERE 

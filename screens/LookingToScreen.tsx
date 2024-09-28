@@ -16,7 +16,7 @@ type TagList = TagItem[];
 
 const LookingToScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTags, setSelectedTags] = useState<TagList>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [filteredTags, setFilteredTags] = useState<TagList>([]);
   const [staticTagList, setStaticTagList] = useState<TagList>([]);
   const { tagsWereChosen } = useAuthDispatch();
@@ -26,13 +26,20 @@ const LookingToScreen = () => {
   useEffect(() => {
     (async () => {
       try {
+        //get all the tags and categories that are relevant to this user
         const { categoryAndTagList } = await axios
           .get("/user/get-tags")
+          .then((response) => response.data);
+        //get the tags that the user has chosen in the past
+        const { userTags } = await axios
+          .get("/user/user-selected-tags")
           .then((response) => response.data);
         //update staticTagList
         setStaticTagList(categoryAndTagList);
         //update filteredTags
         setFilteredTags(categoryAndTagList);
+        //update selectedTags
+        setSelectedTags(userTags);
       } catch (error) {
         console.log(
           "Error trying to retrieve tags and tag categories: ",
@@ -57,11 +64,11 @@ const LookingToScreen = () => {
                   //if the tag is equal to a tag in the selected tags, style it as a selected tag
                   selectedTags.some(
                     (selectedTagItem) =>
-                      selectedTagItem.tags[0].tagName.toLowerCase() ===
+                      selectedTagItem.toLowerCase() ===
                       tag.tagName.toLowerCase()
                   ) && styles.selectedTag,
                 ]}
-                onPress={() => handleTagPress(item.categoryName, tag.tagName)}
+                onPress={() => handleTagPress(tag.tagName)}
               >
                 {tag.tagName}
               </Chip>
@@ -92,17 +99,13 @@ const LookingToScreen = () => {
       <View style={styles.selectedTagsContainer}>
         <FlatList
           data={selectedTags}
-          keyExtractor={(item) =>
-            item.categoryName + "-" + item.tags[0].tagName
-          }
+          keyExtractor={(item) => item}
           renderItem={({ item }) => (
             <Chip
               style={styles.selectedTag}
-              onClose={() =>
-                handleTagPress(item.categoryName, item.tags[0].tagName)
-              }
+              onClose={() => handleTagPress(item)}
             >
-              {item.tags[0].tagName}
+              {item}
             </Chip>
           )}
           horizontal
@@ -137,25 +140,38 @@ const LookingToScreen = () => {
     try {
       await axios.post("/user/post-tags", selectedTags);
       tagsWereChosen();
+
+      //navigation from this page
       const previousScreen =
         navigation.getState().routes[navigation.getState().index - 1].name;
-      if (previousScreen != "Tabs" && chosenAvatar && chosenBio) {
-        //if the user came to the lookingTo screen not from the home screen (aka the "Tabs" screen since it is a Tab Navigator
-        //and has already chosen an avatar and bio, this means we should now activate him
-        await axios.post("/user/activate-user");
+      if (previousScreen === "Tabs" && chosenAvatar && chosenBio) {
+        //if the user came to the lookingTo screen from the home screen (aka the "Tabs" screen since it is a Tab Navigator)
+        //and has already chosen an avatar and bio, go to home.
 
-        //also, we don't want the user to be able to return to the registration screens once
-        // he navigates to the "Home" screen
-        //removing the navigation history
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: "Tabs" }],
-          })
-        );
+        navigation.replace("Tabs", { screen: "Home" });
       }
-      // else, navigate to "Home" and don't let the user return to this specific screen
-      // (he may return to other screens in the navigation stack)
+      if (!chosenAvatar) {
+        navigation.navigate("SelectAvatar");
+      }
+      if (!chosenBio) {
+        navigation.navigate("PersonalDetails");
+      }
+
+      //the user has filled all the registration screens and should:
+      // - be set as currently connected
+      // - go to HomeScreen without a way to go back.
+
+      //this means we should set the user as "currently connected":
+      await axios.post("/user/activate-user");
+
+      //removing the navigation history
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "Tabs" }],
+        })
+      );
+
       navigation.replace("Tabs", { screen: "Home" });
     } catch (error) {
       console.log(
@@ -183,30 +199,17 @@ const LookingToScreen = () => {
     );
   }
 
-  function handleTagPress(tagCategory: string, tagName: string) {
-    //if the tag (in the right category) is already selected
-    if (
-      selectedTags.some(
-        (selectedTagItem) =>
-          selectedTagItem.categoryName === tagCategory &&
-          selectedTagItem.tags.some(
-            (selectedTag) => selectedTag.tagName === tagName
-          )
-      )
-    ) {
+  function handleTagPress(tagName: string) {
+    //if the tag is already selected
+    if (selectedTags.some((selectedTagItem) => selectedTagItem === tagName)) {
       //get the tag out of the "selected tag" array
       setSelectedTags(
-        selectedTags.filter(
-          (selectedTagItem) => selectedTagItem.tags[0].tagName !== tagName
-        )
+        selectedTags.filter((selectedTagItem) => selectedTagItem !== tagName)
       );
     } else {
       if (selectedTags.length < 5) {
         //add the tag to the "selected tag" array
-        setSelectedTags((current) => [
-          ...current,
-          { categoryName: tagCategory, tags: [{ tagName: tagName }] },
-        ]);
+        setSelectedTags((current) => [...current, tagName]);
       }
     }
   }
