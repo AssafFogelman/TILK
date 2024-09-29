@@ -5,16 +5,16 @@ import { tagsUsers } from "../drizzle/schema";
 
 export async function userSelectedTags(c: Context) {
   try {
-    const userId = c.get("jwtPayload").userId;
+    const { userId } = c.get("tokenPayload");
 
     const userSelectedTags = await db
-      .select({
-        tagName: tagsUsers.tagName,
-      })
+      .select({ tagName: tagsUsers.tagName })
       .from(tagsUsers)
       .where(eq(tagsUsers.userId, userId));
 
-    return c.json({ userTags: userSelectedTags }, 200);
+    const userTags = userSelectedTags.map((tag) => tag.tagName);
+
+    return c.json({ userTags }, 200);
   } catch (error) {
     console.error("Error fetching user selected tags:", error);
     return c.json(

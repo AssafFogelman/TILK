@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View, FlatList } from "react-native";
-import { Searchbar, Chip, Text } from "react-native-paper";
-import axios from "axios";
+import { StyleSheet, View, FlatList, I18nManager } from "react-native";
+import { Searchbar, Chip, Text, useTheme } from "react-native-paper";
+import axios, { AxiosError } from "axios";
 import { FlashList } from "@shopify/flash-list";
 import { FAB } from "react-native-paper";
 import { useAuthDispatch, useAuthState } from "../AuthContext";
@@ -22,16 +22,16 @@ const LookingToScreen = () => {
   const { tagsWereChosen } = useAuthDispatch();
   const { chosenBio, chosenAvatar } = useAuthState();
   const navigation = useNavigation<LookingToScreenNavigationProp>();
+  const theme = useTheme();
   //get the categories and the tags
   useEffect(() => {
     (async () => {
       try {
         //get all the tags and categories that are relevant to this user
-        const { categoryAndTagList } = await axios
-          .get("/user/get-tags")
-          .then((response) => response.data);
+        const { categoryAndTagList }: { categoryAndTagList: TagList } =
+          await axios.get("/user/get-tags").then((response) => response.data);
         //get the tags that the user has chosen in the past
-        const { userTags } = await axios
+        const { userTags }: { userTags: string[] } = await axios
           .get("/user/user-selected-tags")
           .then((response) => response.data);
         //update staticTagList
@@ -41,10 +41,23 @@ const LookingToScreen = () => {
         //update selectedTags
         setSelectedTags(userTags);
       } catch (error) {
-        console.log(
-          "Error trying to retrieve tags and tag categories: ",
-          error
-        );
+        if (axios.isAxiosError(error)) {
+          if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            const axiosError = error as AxiosError;
+            console.log("axios error:", axiosError.response?.data);
+          } else if (error.request) {
+            // The request was made but no response was received
+            console.log("No response received from the server:", error.request);
+          }
+        } else {
+          //this is not an axios related error
+          console.log(
+            "Error trying to retrieve tags and tag categories: ",
+            error
+          );
+        }
       }
     })();
   }, []);
@@ -58,15 +71,10 @@ const LookingToScreen = () => {
           <View style={styles.chipsContainer}>
             {item.tags.map((tag) => (
               <Chip
-                key={item.categoryName + "-" + tag.tagName}
+                key={`${item.categoryName}-${tag.tagName}`}
                 style={[
                   styles.tag,
-                  //if the tag is equal to a tag in the selected tags, style it as a selected tag
-                  selectedTags.some(
-                    (selectedTagItem) =>
-                      selectedTagItem.toLowerCase() ===
-                      tag.tagName.toLowerCase()
-                  ) && styles.selectedTag,
+                  selectedTags.includes(tag.tagName) && styles.selectedTag,
                 ]}
                 onPress={() => handleTagPress(tag.tagName)}
               >
@@ -122,8 +130,9 @@ const LookingToScreen = () => {
         extraData={selectedTags}
       />
       <FAB
-        icon="arrow-right"
-        style={styles.fab}
+        icon={I18nManager.isRTL ? "arrow-left" : "arrow-right"}
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        color={theme.colors.onPrimary}
         size={"medium"}
         disabled={!selectedTags.length}
         onPress={handleNext}
@@ -141,43 +150,41 @@ const LookingToScreen = () => {
       await axios.post("/user/post-tags", selectedTags);
       tagsWereChosen();
 
-      //navigation from this page
+      const navigationState = navigation.getState();
       const previousScreen =
-        navigation.getState().routes[navigation.getState().index - 1].name;
+        navigationState.routes[navigationState.index - 1]?.name;
+
       if (previousScreen === "Tabs" && chosenAvatar && chosenBio) {
         //if the user came to the lookingTo screen from the home screen (aka the "Tabs" screen since it is a Tab Navigator)
         //and has already chosen an avatar and bio, go to home.
 
         navigation.replace("Tabs", { screen: "Home" });
+      } else {
+        if (!chosenAvatar) {
+          navigation.navigate("SelectAvatar");
+          return;
+        }
+        if (!chosenBio) {
+          navigation.navigate("PersonalDetails");
+          return;
+        }
+
+        // If we reach this point, all registration screens are completed
+        await axios.post("/user/activate-user");
+
+        //reset the navigation stack to the "Tabs" screen
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Tabs" }],
+          })
+        );
+
+        navigation.replace("Tabs", { screen: "Home" });
       }
-      if (!chosenAvatar) {
-        navigation.navigate("SelectAvatar");
-      }
-      if (!chosenBio) {
-        navigation.navigate("PersonalDetails");
-      }
-
-      //the user has filled all the registration screens and should:
-      // - be set as currently connected
-      // - go to HomeScreen without a way to go back.
-
-      //this means we should set the user as "currently connected":
-      await axios.post("/user/activate-user");
-
-      //removing the navigation history
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: "Tabs" }],
-        })
-      );
-
-      navigation.replace("Tabs", { screen: "Home" });
     } catch (error) {
-      console.log(
-        "error trying to save the chosen tags to the server: ",
-        error
-      );
+      console.error("Error saving chosen tags to the server:", error);
+      // TODO: Add user-friendly error handling, e.g., show an error message to the user
     }
   }
 
@@ -203,8 +210,8 @@ const LookingToScreen = () => {
     //if the tag is already selected
     if (selectedTags.some((selectedTagItem) => selectedTagItem === tagName)) {
       //get the tag out of the "selected tag" array
-      setSelectedTags(
-        selectedTags.filter((selectedTagItem) => selectedTagItem !== tagName)
+      setSelectedTags((current) =>
+        current.filter((selectedTagItem) => selectedTagItem !== tagName)
       );
     } else {
       if (selectedTags.length < 5) {

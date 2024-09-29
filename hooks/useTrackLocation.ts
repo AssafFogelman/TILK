@@ -42,12 +42,13 @@ export function useTrackLocation() {
       if (locationSubscription.current) {
         return;
       }
-
+      //request permission to access location
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         console.log("Permission to access location was denied");
         return;
       }
+      //subscribe to location services
       locationSubscription.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
@@ -79,6 +80,10 @@ export function useTrackLocation() {
 
   const handleNewLocation = useCallback(
     (newLocation: Location.LocationObject) => {
+      //if new location in null, do nothing
+      //FIXME: does this prevent the interval from working?
+      //does it solve the problem of the app crashing?
+      if (!newLocation) return;
       locationRef.current = newLocation;
       sendLocationToServer(newLocation);
     },

@@ -8,7 +8,6 @@ import {
   NativeStackNavigationProp,
   NativeStackScreenProps,
 } from "@react-navigation/native-stack";
-import * as Location from "expo-location";
 import React from "react";
 import {
   BottomTabNavigationProp,

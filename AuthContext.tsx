@@ -144,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         dispatch({ type: ACTIONS.TAGS_WERE_CHOSEN });
       },
     }),
-    [],
+    []
   );
 
   return (
@@ -197,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               // The request was made and the server responded with a status code
               // that falls out of the range of 2xx
               const axiosError = error as AxiosError;
-              console.log("token invalid:", axiosError.response?.data);
+              console.log("axios error:", axiosError.response?.data);
               try {
                 //delete the corrupt token
                 await deleteItemAsync("TILK-token");
@@ -210,14 +210,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               } catch (deleteError) {
                 console.log(
                   "problem occurred while deleting token",
-                  deleteError,
+                  deleteError
                 );
               }
             } else if (error.request) {
               // The request was made but no response was received
-              console.error(
+              console.log(
                 "No response received from the server:",
-                error.request,
+                error.request
               );
             }
           } else {

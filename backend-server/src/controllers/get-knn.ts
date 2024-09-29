@@ -33,24 +33,55 @@ export const getKnn = async (c: Context) => {
       longitude = 34.998082571165114;
     }
     if (userId === "a8d8bbc4-6ae9-4f0c-87ca-2cb4da6a210c") {
-      //if it's Assaf, set his location to Kvish Hasholom 25, Yagur
-      latitude = 32.74185604627125;
-      longitude = 35.07593527465838;
+      //if it's Assaf, set his location to Masada 27, Haifa
+      latitude = 32.809815958927544;
+      longitude = 34.99287691806259;
     }
     if (userId === "a95297c4-ac21-4bae-b0ec-2615d2732bf4") {
-      //if it's Mirpaa, set his location to kolbo, Yagur
-      latitude = 32.73975972061658;
-      longitude = 35.07946220253626;
+      //if it's Mirpaa, set his location to Histadrut 55, Haifa
+      latitude = 32.79366716529777;
+      longitude = 35.037375486756744;
     }
+    // //inserting locations for every user
+    // await db.execute(
+    //   sql.raw(`
+    //       UPDATE users
+    //       SET user_location=ST_SetSRID(ST_MakePoint(${34.998082571165114},${32.80895713046889}), 4326)::geography
+    //       WHERE user_id='6a128622-f8aa-48cb-94f8-1d2edd8cdd2a';`)
+    // ); //yonatan
+    // await db.execute(
+    //   sql.raw(`
+    //       UPDATE users
+    //       SET user_location=ST_SetSRID(ST_MakePoint(${34.99287691806259},${32.809815958927544}), 4326)::geography
+    //       WHERE user_id='a8d8bbc4-6ae9-4f0c-87ca-2cb4da6a210c';`)
+    // ); //assaf
+    // await db.execute(
+    //   sql.raw(`
+    //       UPDATE users
+    //       SET user_location=ST_SetSRID(ST_MakePoint(${35.037375486756744},${32.79366716529777}), 4326)::geography
+    //       WHERE user_id='a95297c4-ac21-4bae-b0ec-2615d2732bf4';`)
+    // ); //mirpaa
+
+    // //lets check the distance between Yonatan and the other users
+    // const distance = await db.execute(
+    //   sql.raw(
+    //     `SELECT
+    //       ST_Distance(user_location, ST_SetSRID(ST_MakePoint(34.998082571165114, 32.80895713046889), 4326)::geography) AS distance,
+    //       nickname
+    //     FROM users;`
+    //   )
+    // );
+    // console.log("distance between Yonatan and other users: ", distance);
+    //FIXME delete this shit if the route works properly.
 
     //* enter user's location to DB
     await db.execute(
       sql.raw(`
           UPDATE users
-          SET user_location=ST_MakePoint(${longitude},${latitude})
+          SET user_location=ST_SetSRID(ST_MakePoint(${longitude},${latitude}), 4326)::geography          
           WHERE user_id='${userId}';`)
     );
-    //currently_connected
+
     // finding KNN
     const knnQuery = `
             SELECT 
@@ -62,7 +93,7 @@ export const getKnn = async (c: Context) => {
                 currently_connected, 
                 date_of_birth, 
                 biography,
-                user_location <-> ST_MakePoint(${longitude}, ${latitude}) AS distance,
+                ST_Distance(user_location, ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography) AS distance,
                 EXISTS (
                     SELECT 1 
                     FROM connections 
@@ -87,7 +118,7 @@ export const getKnn = async (c: Context) => {
                 ARRAY(
                     SELECT tag_name 
                     FROM tags_users 
-                    WHERE tags_users.user_id = '${userId}'
+                    WHERE tags_users.user_id = users.user_id
                 ) AS tags
             FROM users
             WHERE 
@@ -119,7 +150,8 @@ export const getKnn = async (c: Context) => {
                     FROM blocks
                     WHERE blocked_user_id = '${userId}'
                 )
-                AND user_location <-> ST_MakePoint(${longitude}, ${latitude}) < 10000
+               AND ST_Distance(user_location, ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography) < 10000
+
             ORDER BY distance
             LIMIT ${limit};
     `;
