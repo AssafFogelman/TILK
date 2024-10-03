@@ -1,9 +1,10 @@
 /*
-    why can't I see Yonatan's profile? and why did he get an error?
+    TODO: does the useStartLocationTracking hook really rerender in HomeScreen all the time? if so, it's a problem, because it's going to be called a lot of times, and it's going to affect the performance of the app
 
     menu in "HomeScreen":
     * edit avatar
     * edit bio
+    * blocked users
     
 
     home screen:
@@ -19,7 +20,7 @@
     
     chats screen:
     it's a list of users sorted by the last time you chatted with them.
-    once you click on a user, you go to the chat screen that covers the footer of the tabs. and a different header too. (if you return is returns).
+    once you click on a user, you go to the chat screen that covers the footer of the tabs. and a different header too. (if you return it returns).
     
     profile screen:
     * edit avatar
@@ -28,28 +29,16 @@
     looking to screen:
 
 
-    Tabs Screen:
-    *    make the tab icons outlined when not selected
-    * change the color of the icons from black to "on primary"
 
 
     * the websocket needs to reconnect without losing data - take from the websocket site
-    * the buttons - connect, chat
-    * add a menu where the user can see the blocked users, change their profile
-    * add FAB of "looking to"
-    * check again whether the user list in "HomeScreen" actually update every once in a while (It should periodically)
     * change the "open cage" request to go to the server instead directly to the site to prevent key theft
-    * check why when we get to the ErrorBoundary, the Error log  request fails due to invalid token
+
     * consider using tanStack query for api calls
 
-    TagsScreen:
-    * when you come from HomeScreen, I want the selected tags to be selected in the list.
 
-    * development build
     * data fetching for user connections
     * data fetching for user chats
     * buttons for userCards in "HomeScreen"
     * menu in "HomeScreen"
-    * FAB in "HomeScreen"
-    * see when a tab is unmounted
     */

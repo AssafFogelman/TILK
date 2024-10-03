@@ -23,9 +23,16 @@ import { NavigationContainer } from "@react-navigation/native";
 import { useTrackLocation } from "./hooks/useTrackLocation";
 import { LocationProvider } from "./LocationContext";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
+
+const queryClient = new QueryClient();
 
 export default function App() {
   //load websocket listeners and cleanup

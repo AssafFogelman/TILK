@@ -13,10 +13,11 @@ import {
   ErrorView,
   NoDataView,
 } from "../components/home-screen-components/StatusViews";
-import { useStartLocationTracking } from "../hooks/home-screen-hooks/useStartLocationTracking";
+import { useStartLocationTracking } from "../zz_scraps/zz_useStartLocationTracking";
 import { useSetCurrentlyConnected } from "../hooks/home-screen-hooks/useSetCurrentlyConnected";
 import { useNavigation } from "@react-navigation/native";
 import Entypo from "@expo/vector-icons/Entypo";
+import Toast from "react-native-toast-message";
 
 const HomeScreen = () => {
   const [modalUserInfo, setModalUserInfo] = useState<knnDataItemType | null>(
