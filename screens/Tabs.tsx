@@ -119,8 +119,8 @@ const Tabs = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Chats" component={ChatsScreen} />
       <Tab.Screen name="Connections" component={ConnectionsScreen} />
+      <Tab.Screen name="Chats" component={ChatsScreen} />
     </Tab.Navigator>
   );
 };

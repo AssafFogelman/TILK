@@ -49,7 +49,7 @@ user.post("/post-avatars", validateToken, postAvatars);
  */
 user.post("/post-bio", validateToken, postBio);
 
-//get all the tags
+//get all the tags that exist in the DB
 user.get("/get-tags", validateToken, getTags);
 
 //get the tags that the user has chosen in the past
@@ -62,4 +62,4 @@ user.post("/post-tags", validateToken, postTags);
 user.post("/activate-user", validateToken, activateUser);
 
 //get connections list
-user.get("/get-connections-list", /*validateToken,*/ getConnectionsList);
+user.get("/get-connections-list", validateToken, getConnectionsList);

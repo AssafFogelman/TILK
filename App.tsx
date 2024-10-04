@@ -1,33 +1,27 @@
 // Import the crypto getRandomValues shim (**BEFORE** the shims)
 import "react-native-get-random-values";
 
-// Import the the ethers shims (**BEFORE** ethers)
+// Import  the ethers shims
 import "@ethersproject/shims";
 
 // Import the ethers library
-import { ethers } from "ethers";
+// import { ethers } from "ethers";
 
-import { Text } from "react-native";
 import StackNavigator from "./StackNavigator";
 import { socket } from "./socket.js";
 
 import axios from "axios";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { adaptNavigationTheme, PaperProvider } from "react-native-paper";
+import { useEffect, useState } from "react";
+import { PaperProvider } from "react-native-paper";
 import { useSetTheme } from "./styles/set-react-paper-theme";
 import { AuthProvider } from "./AuthContext";
 import { ErrorBoundary } from "./components/error-boundary/ErrorBoundary";
 import Toast from "react-native-toast-message";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
-import { useTrackLocation } from "./hooks/useTrackLocation";
 import { LocationProvider } from "./LocationContext";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
@@ -45,25 +39,27 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <SafeAreaView style={{ flex: 1 }}>
-            {/* <Text>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SafeAreaProvider>
+            <SafeAreaView style={{ flex: 1 }}>
+              {/* <Text>
               user is {isConnected ? "connected" : "disconnected"} to websocket
             </Text> */}
-            <AuthProvider>
-              <LocationProvider>
-                <PaperProvider theme={theme}>
-                  <NavigationContainer theme={theme}>
-                    <StackNavigator />
-                  </NavigationContainer>
-                </PaperProvider>
-              </LocationProvider>
-            </AuthProvider>
-          </SafeAreaView>
-        </SafeAreaProvider>
-        <Toast />
-      </GestureHandlerRootView>
+              <AuthProvider>
+                <LocationProvider>
+                  <PaperProvider theme={theme}>
+                    <NavigationContainer theme={theme}>
+                      <StackNavigator />
+                    </NavigationContainer>
+                  </PaperProvider>
+                </LocationProvider>
+              </AuthProvider>
+            </SafeAreaView>
+          </SafeAreaProvider>
+          <Toast />
+        </GestureHandlerRootView>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

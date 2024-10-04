@@ -202,27 +202,62 @@ export const connectionRequests = pgTable(
 );
 
 //blocks
-export const blocks = pgTable("blocks", {
-  blockId: uuid("block_id").primaryKey().defaultRandom().notNull().unique(),
-  blockingUserId: uuid("blocking_user_id")
-    .notNull()
-    .references(() => users.userId),
-  blockedUserId: uuid("blocked_user_id")
-    .notNull()
-    .references(() => users.userId),
-  blockDate: timestamp("block_date").defaultNow().notNull(),
-});
+export const blocks = pgTable(
+  "blocks",
+  {
+    blockId: uuid("block_id").primaryKey().defaultRandom().notNull().unique(),
+    blockingUserId: uuid("blocking_user_id")
+      .notNull()
+      .references(() => users.userId),
+    blockedUserId: uuid("blocked_user_id")
+      .notNull()
+      .references(() => users.userId),
+    blockDate: timestamp("block_date").defaultNow().notNull(),
+  },
+
+  (table) => {
+    return {
+      //make sure we don't have duplicate blocks
+      checkUniqueBlocks: uniqueIndex("unique_blocks").on(
+        table.blockingUserId,
+        table.blockedUserId
+      ),
+      checkDifferentUsers: sql`CHECK (${table.blockingUserId} <> ${table.blockedUserId})`,
+      //a user cannot block himself
+      //the order of the ids is not important, because if A blocks B, we want to consider that A also blocks B, and B also blocks A
+    };
+  }
+);
 
 //chats
-export const chats = pgTable("chats", {
-  chatId: uuid("chat_id").primaryKey().defaultRandom().unique().notNull(),
-  participant1: uuid("participant1")
-    .notNull()
-    .references(() => users.userId),
-  participant2: uuid("participant2")
-    .notNull()
-    .references(() => users.userId),
-});
+export const chats = pgTable(
+  "chats",
+  {
+    chatId: uuid("chat_id").primaryKey().defaultRandom().unique().notNull(),
+    participant1: uuid("participant1")
+      .notNull()
+      .references(() => users.userId),
+    participant2: uuid("participant2")
+      .notNull()
+      .references(() => users.userId),
+  },
+  (table) => {
+    return {
+      checkUniqueParticipants: uniqueIndex("unique_participants").on(
+        table.participant1,
+        table.participant2
+      ),
+      checkParticipantOrder: sql`CHECK (${table.participant1} <= ${table.participant2})`,
+      // This ensures only one record per unique pair of participants,
+      // including when a user chats with themselves
+      /*
+      If User A (ID: 123) and User B (ID: 456) start a chat, it will always be stored as (participant1: 123, participant2: 456).
+      Attempts to create another chat record with the same participants (in any order) will fail due to the unique index.
+      If User A starts a chat with themselves, it will be stored as (participant1: 123, participant2: 123), and the unique index will prevent duplicates.
+      */
+    };
+  }
+);
 
 //declaring an enum for message types
 export const messageTypeEnum = pgEnum("message_type_enum", ["image", "text"]);
