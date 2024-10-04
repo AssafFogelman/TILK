@@ -62,4 +62,4 @@ user.post("/post-tags", validateToken, postTags);
 user.post("/activate-user", validateToken, activateUser);
 
 //get connections list
-user.get("/get-connections-list", validateToken, getConnectionsList);
+user.get("/get-connections-list" /*, validateToken*/, getConnectionsList);

@@ -66,7 +66,7 @@ const result = {
       currentlyConnected: true,
       socketId: "1234567890",
       tags: ["tag1", "tag2", "tag3"],
-      unread: true,
+      unread: true, //the received request is unread
     },
   ],
   sentConnectionsRequests: [
@@ -83,4 +83,4 @@ const result = {
 
 // and we need to see only users that we haven't blocked or have blocked us (mentioned in the "blocks" table in the data base).
 // also, the list of "sentConnectionsRequests" will only include users that are not "off-grid".
-//in addition,
+//in addition, if we have chatted with a user, we need to return the last message in the chat in text. if it is an image, the last message should read "image". if the last message is unread, we need to mark it as unread.
