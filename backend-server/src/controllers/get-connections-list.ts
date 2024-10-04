@@ -1,6 +1,6 @@
 import { Context } from "hono";
 import { db } from "../drizzle/db";
-import { and, eq, or, not, inArray, desc, isNull } from "drizzle-orm";
+import { and, eq, or, not, inArray, desc, isNull, sql } from "drizzle-orm";
 import {
   connections,
   users,
@@ -21,21 +21,6 @@ export const getConnectionsList = async (c: Context) => {
     const { userId }: { userId: string } = {
       userId: "a8d8bbc4-6ae9-4f0c-87ca-2cb4da6a210c",
     }; //c.get("tokenPayload");
-
-    // Get blocked users (both directions)
-    const blockedUsers = await db
-      .select({
-        blockedUserId: blocks.blockedUserId,
-        blockingUserId: blocks.blockingUserId,
-      })
-      .from(blocks)
-      .where(
-        or(eq(blocks.blockedUserId, userId), eq(blocks.blockingUserId, userId))
-      );
-
-    const blockedUserIds = blockedUsers.map((b) =>
-      b.blockedUserId === userId ? b.blockingUserId : b.blockedUserId
-    );
 
     // Get connected users
     const connectedUsers = await db
@@ -94,11 +79,24 @@ export const getConnectionsList = async (c: Context) => {
       })
       .from(connectionRequests)
       .innerJoin(users, eq(users.userId, connectionRequests.senderId))
+      .leftJoin(
+        blocks,
+        or(
+          and(
+            eq(blocks.blockingUserId, userId),
+            eq(blocks.blockedUserId, users.userId)
+          ),
+          and(
+            eq(blocks.blockingUserId, users.userId),
+            eq(blocks.blockedUserId, userId)
+          )
+        )
+      )
       .where(
         and(
           eq(connectionRequests.recipientId, userId),
           // user isn't blocked or blocking
-          not(inArray(connectionRequests.senderId, blockedUserIds)),
+          isNull(blocks.blockId),
           // user must be active
           eq(users.activeUser, true)
         )
@@ -115,11 +113,27 @@ export const getConnectionsList = async (c: Context) => {
       })
       .from(connectionRequests)
       .innerJoin(users, eq(users.userId, connectionRequests.recipientId))
+      .leftJoin(
+        blocks,
+        or(
+          and(
+            eq(blocks.blockingUserId, userId),
+            eq(blocks.blockedUserId, users.userId)
+          ),
+          and(
+            eq(blocks.blockingUserId, users.userId),
+            eq(blocks.blockedUserId, userId)
+          )
+        )
+      )
       .where(
         and(
           eq(connectionRequests.senderId, userId),
-          not(inArray(connectionRequests.recipientId, blockedUserIds)),
+          //user isn't blocked or blocking
+          isNull(blocks.blockId),
+          //retrieve user as long as they are not off-grid
           eq(users.offGrid, false),
+          // user must be active
           eq(users.activeUser, true)
         )
       );
@@ -139,42 +153,44 @@ export const getConnectionsList = async (c: Context) => {
     // Get last messages for connected users
     const lastMessages = await db
       .select({
-        chatId: chats.chatId,
-        otherUserId: chats.participant1,
-        lastMessage: chatMessages.text,
+        otherUserId: sql`CASE 
+          WHEN ${chatMessages.sender} = ${userId} THEN ${chatMessages.recipient}
+          ELSE ${chatMessages.sender}
+        END`.as("otherUserId"),
+        lastMessage: sql`
+        CASE
+          WHEN ${chatMessages.type} = 'text' THEN ${chatMessages.text}
+          ELSE "image 🖼️"
+        END`.as("lastMessage"),
         unread: chatMessages.unread,
-        type: chatMessages.type,
       })
-      .from(chats)
-      .innerJoin(chatMessages, eq(chats.chatId, chatMessages.chatId))
+      .from(chatMessages)
       .where(
         and(
-          or(eq(chats.participant1, userId), eq(chats.participant2, userId)),
-          not(eq(chats.participant1, chats.participant2))
+          or(
+            eq(chatMessages.sender, userId),
+            eq(chatMessages.recipient, userId)
+          )
         )
       )
-      .orderBy(desc(chatMessages.date))
+      .orderBy(desc(chatMessages.date)) //get the highest value of date first
       .limit(1);
+    // a Map for quick lookup of last messages
+    const lastMessagesMap = new Map(
+      lastMessages.map((msg) => [
+        msg.otherUserId,
+        { text: msg.lastMessage, unread: msg.unread },
+      ])
+    );
 
     // Combine all data
     const result = {
-      connectedUsers: connectedUsers.map((user) => ({
-        ...user,
+      connectedUsers: connectedUsers.map((connectedUser) => ({
+        ...connectedUser,
         tags: userTags
-          .filter((t) => t.userId === user.userId)
+          .filter((t) => t.userId === connectedUser.userId)
           .map((t) => t.tagName),
-        lastMessage: lastMessages.find((m) => m.otherUserId === user.userId)
-          ? {
-              text:
-                lastMessages.find((m) => m.otherUserId === user.userId)!
-                  .type === "image"
-                  ? "image"
-                  : lastMessages.find((m) => m.otherUserId === user.userId)!
-                      .lastMessage,
-              unread: lastMessages.find((m) => m.otherUserId === user.userId)!
-                .unread,
-            }
-          : null,
+        lastMessage: lastMessagesMap.get(connectedUser.userId) || null,
       })),
       receivedConnectionsRequests: receivedRequests.map((request) => ({
         ...request,

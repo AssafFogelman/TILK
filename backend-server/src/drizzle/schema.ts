@@ -1,19 +1,16 @@
-import { relations, SQL, sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   pgTable,
   uuid,
-  integer,
   text,
   date,
   pgEnum,
   boolean,
   timestamp,
   uniqueIndex,
-  real,
   doublePrecision,
   primaryKey,
   check,
-  AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 //declaring an enum
