@@ -160,7 +160,7 @@ export const getConnectionsList = async (c: Context) => {
         lastMessage: sql`
         CASE
           WHEN ${chatMessages.type} = 'text' THEN ${chatMessages.text}
-          ELSE "image 🖼️"
+          ELSE 'image 🖼️'
         END`.as("lastMessage"),
         unread: chatMessages.unread,
       })
