@@ -103,46 +103,47 @@ export const getConnectionsList = async (c: Context) => {
       );
 
     // Get sent connection requests
-    const sentRequests = await db
-      .select({
-        userId: users.userId,
-        smallAvatar: users.smallAvatar,
-        nickname: users.nickname,
-        currentlyConnected: users.currentlyConnected,
-        socketId: users.socketId,
-      })
-      .from(connectionRequests)
-      .innerJoin(users, eq(users.userId, connectionRequests.recipientId))
-      .leftJoin(
-        blocks,
-        or(
-          and(
-            eq(blocks.blockingUserId, userId),
-            eq(blocks.blockedUserId, users.userId)
-          ),
-          and(
-            eq(blocks.blockingUserId, users.userId),
-            eq(blocks.blockedUserId, userId)
-          )
-        )
-      )
-      .where(
-        and(
-          eq(connectionRequests.senderId, userId),
-          //user isn't blocked or blocking
-          isNull(blocks.blockId),
-          //retrieve user as long as they are not off-grid
-          eq(users.offGrid, false),
-          // user must be active
-          eq(users.activeUser, true)
-        )
-      );
+    //TODO: sent requests might be redundant on should be done in a different route.
+    // const sentRequests = await db
+    //   .select({
+    //     userId: users.userId,
+    //     smallAvatar: users.smallAvatar,
+    //     nickname: users.nickname,
+    //     currentlyConnected: users.currentlyConnected,
+    //     socketId: users.socketId,
+    //   })
+    //   .from(connectionRequests)
+    //   .innerJoin(users, eq(users.userId, connectionRequests.recipientId))
+    //   .leftJoin(
+    //     blocks,
+    //     or(
+    //       and(
+    //         eq(blocks.blockingUserId, userId),
+    //         eq(blocks.blockedUserId, users.userId)
+    //       ),
+    //       and(
+    //         eq(blocks.blockingUserId, users.userId),
+    //         eq(blocks.blockedUserId, userId)
+    //       )
+    //     )
+    //   )
+    //   .where(
+    //     and(
+    //       eq(connectionRequests.senderId, userId),
+    //       //user isn't blocked or blocking
+    //       isNull(blocks.blockId),
+    //       //retrieve user as long as they are not off-grid
+    //       eq(users.offGrid, false),
+    //       // user must be active
+    //       eq(users.activeUser, true)
+    //     )
+    //   );
 
     // Get tags for all users
     const userIds = [
       ...connectedUsers,
       ...receivedRequests,
-      ...sentRequests,
+      // ...sentRequests,
     ].map((u) => u.userId);
     const userTags = await db
       .select({ userId: tagsUsers.userId, tagName: tags.tagName })
@@ -162,6 +163,7 @@ export const getConnectionsList = async (c: Context) => {
           WHEN ${chatMessages.type} = 'text' THEN ${chatMessages.text}
           ELSE 'image 🖼️'
         END`.as("lastMessage"),
+        type: chatMessages.type,
         unread: chatMessages.unread,
       })
       .from(chatMessages)
@@ -175,11 +177,12 @@ export const getConnectionsList = async (c: Context) => {
       )
       .orderBy(desc(chatMessages.date)) //get the highest value of date first
       .limit(1);
+
     // a Map for quick lookup of last messages
     const lastMessagesMap = new Map(
       lastMessages.map((msg) => [
         msg.otherUserId,
-        { text: msg.lastMessage, unread: msg.unread },
+        { text: msg.lastMessage, unread: msg.unread, type: msg.type },
       ])
     );
 
@@ -190,7 +193,7 @@ export const getConnectionsList = async (c: Context) => {
         tags: userTags
           .filter((t) => t.userId === connectedUser.userId)
           .map((t) => t.tagName),
-        lastMessage: lastMessagesMap.get(connectedUser.userId) || null,
+        lastMessage: lastMessagesMap.get(connectedUser.userId) || null, //if there is no last message, return null
       })),
       receivedConnectionsRequests: receivedRequests.map((request) => ({
         ...request,
@@ -198,12 +201,12 @@ export const getConnectionsList = async (c: Context) => {
           .filter((t) => t.userId === request.userId)
           .map((t) => t.tagName),
       })),
-      sentConnectionsRequests: sentRequests.map((request) => ({
-        ...request,
-        tags: userTags
-          .filter((t) => t.userId === request.userId)
-          .map((t) => t.tagName),
-      })),
+      // sentConnectionsRequests: sentRequests.map((request) => ({
+      //   ...request,
+      //   tags: userTags
+      //     .filter((t) => t.userId === request.userId)
+      //     .map((t) => t.tagName),
+      // })),
     };
 
     return c.json(

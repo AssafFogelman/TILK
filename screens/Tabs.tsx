@@ -1,4 +1,3 @@
-import { StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { BottomNavigation, useTheme } from "react-native-paper";
 import HomeScreen from "./HomeScreen";

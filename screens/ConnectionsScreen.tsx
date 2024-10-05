@@ -4,6 +4,28 @@ import axios from "axios";
 // import { UserContext } from "../UserContext";
 import FriendRequest from "../components/FriendRequest";
 
+type OtherUser = {
+  userId: string;
+  smallAvatar: string;
+  nickname: string;
+  currentlyConnected: boolean;
+  tags: string[];
+  lastMessage?: {
+    text: string;
+    unread: boolean;
+    type: string;
+  };
+  unread?: boolean;
+  socketId?: string | null;
+};
+
+type SeparatorItem = {
+  isSeparator: true;
+  title: string;
+};
+
+type ListItem = OtherUser | SeparatorItem;
+
 type FriendRequestType = {
   _id: string;
   name: string;
@@ -44,7 +66,7 @@ const ConnectionsScreen = () => {
     } catch (error) {
       console.log(
         "error while receiving friend requests from the server:",
-        error,
+        error
       );
     }
   };

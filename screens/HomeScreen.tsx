@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { FAB } from "react-native-paper";
@@ -17,7 +17,6 @@ import { useStartLocationTracking } from "../zz_scraps/zz_useStartLocationTracki
 import { useSetCurrentlyConnected } from "../hooks/home-screen-hooks/useSetCurrentlyConnected";
 import { useNavigation } from "@react-navigation/native";
 import Entypo from "@expo/vector-icons/Entypo";
-import Toast from "react-native-toast-message";
 
 const HomeScreen = () => {
   const [modalUserInfo, setModalUserInfo] = useState<knnDataItemType | null>(
@@ -28,22 +27,6 @@ const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   useStartLocationTracking();
   useSetCurrentlyConnected();
-
-  const handleOpenModal = useCallback((user: knnDataItemType) => {
-    setModalUserInfo(user);
-    setShowModal(true);
-  }, []);
-
-  const handleCloseModal = useCallback(() => {
-    setShowModal(false);
-  }, []);
-
-  const renderUserCard = useCallback(
-    ({ item }: { item: knnDataItemType }) => (
-      <UserCard user={item} onAvatarPress={handleOpenModal} />
-    ),
-    []
-  );
 
   if (knnDataIsLoading) return <LoadingView />;
   if (knnDataIsError) return <ErrorView />;
@@ -74,6 +57,19 @@ const HomeScreen = () => {
       />
     </View>
   );
+
+  function handleOpenModal(user: knnDataItemType) {
+    setModalUserInfo(user);
+    setShowModal(true);
+  }
+
+  function handleCloseModal() {
+    setShowModal(false);
+  }
+
+  function renderUserCard({ item }: { item: knnDataItemType }) {
+    return <UserCard user={item} onAvatarPress={handleOpenModal} />;
+  }
 };
 
 const styles = StyleSheet.create({
