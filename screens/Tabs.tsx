@@ -3,13 +3,13 @@ import { BottomNavigation, useTheme } from "react-native-paper";
 import HomeScreen from "./HomeScreen";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import ChatsScreen from "./ChatsScreen";
-import ConnectionsScreen from "./ConnectionsScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TabParamList } from "../types/types";
 import React, { useState } from "react";
 import { getHeaderTitle } from "@react-navigation/elements";
 import TabHeader from "../components/home-screen-components/TabHeader";
 import { Alert } from "react-native";
+import { ConnectionsScreen } from "./ConnectionsScreen";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 

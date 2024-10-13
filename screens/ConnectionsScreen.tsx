@@ -1,8 +1,11 @@
-import { StyleSheet, Text, View } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
-import axios from "axios";
-// import { UserContext } from "../UserContext";
-import FriendRequest from "../components/FriendRequest";
+import { Image, StyleSheet, Text, View } from "react-native";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { FlashList } from "@shopify/flash-list";
+import {
+  ErrorView,
+  LoadingView,
+  NoDataView,
+} from "../components/connections-screen-components/StatusViews";
 
 type OtherUser = {
   userId: string;
@@ -26,66 +29,108 @@ type SeparatorItem = {
 
 type ListItem = OtherUser | SeparatorItem;
 
-type FriendRequestType = {
-  _id: string;
-  name: string;
-  image: string;
-  email: string;
-};
+type ConnectionsListType = ListItem[];
 
-const ConnectionsScreen = () => {
-  const [friendRequestsData, setFriendRequestsData] = useState<
-    FriendRequestType[]
-  >([]);
+export const ConnectionsScreen = () => {
+  // const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
+  //   useQuery({
+  //     queryKey: ["connectionsList"],
+  //   });
 
-  useEffect(() => {
-    fetchFriendRequests();
-  }, []);
-
-  // const { userId, setUserId } = useContext(UserContext);
-
-  const fetchFriendRequests = async () => {
-    try {
-      // const response = await axios.get(
-      //   `http://192.168.1.116:8000/friend-requests/${userId}`
-      // );
-      // console.log("response.data of the friend requests", response.data);
-      // if (response.status === 200) {
-      //   //copy the received friend requests with their attributes to the state
-      //   setFriendRequestsData(JSON.parse(JSON.stringify(response.data)));
-      /* this is what the tutorial suggested as a copy. why? */
-      // const friendRequestsData = response.data.map(
-      //   (friendRequest: FriendRequestType) => ({
-      //     _id: friendRequest._id,
-      //     name: friendRequest.name,
-      //     email: friendRequest.email,
-      //     image: friendRequest.image,
-      //   })
-      // );
-      // }
-    } catch (error) {
-      console.log(
-        "error while receiving friend requests from the server:",
-        error
-      );
-    }
-  };
+  if (isPending) return <LoadingView />;
+  if (isError) return <ErrorView />;
+  if (!data) return <NoDataView />;
 
   return (
-    <View style={{ padding: 10, marginHorizontal: 12 }}>
-      {friendRequestsData.length > 0 && <Text>Friend Requests</Text>}
-      {friendRequestsData.map((item, index) => (
-        <FriendRequest
-          key={index}
-          item={item}
-          friendRequestsData={friendRequestsData}
-          setFriendRequestsData={setFriendRequestsData}
-        />
-      ))}
-    </View>
+    <>
+      <FlashList
+        data={data}
+        renderItem={renderItem}
+        // estimatedItemSize={50}
+        keyExtractor={(item) =>
+          "isSeparator" in item ? item.title : item.userId
+        }
+      />
+    </>
   );
+
+  function renderItem({ item }: { item: ListItem }) {
+    if ("isSeparator" in item) {
+      return (
+        <View style={styles.separator}>
+          <Text style={styles.separatorText}>{item.title}</Text>
+        </View>
+      );
+    }
+    return <UserItem user={item} />;
+  }
+
+  function UserItem({ user }: { user: OtherUser }) {
+    return (
+      <View style={styles.userItem}>
+        <Image
+          source={{
+            uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + user.smallAvatar,
+          }}
+          style={styles.avatar}
+        />
+        <View style={styles.userInfo}>
+          <Text style={styles.nickname}>{user.nickname}</Text>
+          <Text style={styles.tags}>{user.tags.join(", ")}</Text>
+        </View>
+        {user.lastMessage && (
+          <View style={styles.lastMessage}>
+            <Text style={styles.messageText}>{user.lastMessage.text}</Text>
+            {user.lastMessage.unread && <View style={styles.unreadIndicator} />}
+          </View>
+        )}
+        {user.unread && <View style={styles.unreadIndicator} />}
+      </View>
+    );
+  }
 };
 
-export default ConnectionsScreen;
-
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  separator: {
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+  },
+  separatorText: {
+    fontWeight: "bold",
+  },
+  userItem: {
+    flexDirection: "row",
+    padding: 10,
+    alignItems: "center",
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  nickname: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  tags: {
+    fontSize: 14,
+    color: "#666",
+  },
+  lastMessage: {
+    alignItems: "flex-end",
+  },
+  messageText: {
+    fontSize: 14,
+  },
+  unreadIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "blue",
+    marginLeft: 5,
+  },
+});

@@ -85,3 +85,27 @@ const result = {
 // and we need to see only users that we haven't blocked or have blocked us (mentioned in the "blocks" table in the data base).
 // also, the list of "sentConnectionsRequests" will only include users that are not "off-grid".
 //in addition, if we have chatted with a user, we need to return the last message in the chat in text. if it is an image, the last message should read "image". if the last message is unread, we need to mark it as unread.
+import React from 'react'
+import { useFocusEffect } from '@react-navigation/native'
+
+export function useQueryFocusAware(notifyOnChangeProps?: NotifyOnChangeProps) {
+  const focusedRef = React.useRef(true)
+
+  useFocusEffect(
+    React.useCallback(() => {
+      focusedRef.current = true
+
+      return () => {
+        focusedRef.current = false
+      }
+    }, []),
+  )
+
+  return () => focusedRef.current
+
+  useQuery({
+    queryKey: ['key'],
+    queryFn: () => fetch(...),
+    enabled: () => focusedRef.current,
+  })
+}

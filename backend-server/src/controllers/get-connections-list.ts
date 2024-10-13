@@ -14,7 +14,36 @@ import {
 
 /*
   get user connections, received connections requests,and sent connections requests
-*/
+
+  returned type:
+
+  
+type OtherUser = {
+  userId: string;
+  smallAvatar: string;
+  nickname: string;
+  currentlyConnected: boolean;
+  tags: string[];
+  lastMessage?: {
+    text: string;
+    unread: boolean;
+    type: string;
+  };
+  unread?: boolean;
+  socketId?: string | null;
+};
+
+type SeparatorItem = {
+  isSeparator: true;
+  title: string;
+};
+
+type ListItem = OtherUser | SeparatorItem;
+
+type ConnectionsListType = ListItem[];
+
+
+  */
 
 export const getConnectionsList = async (c: Context) => {
   try {
@@ -186,33 +215,47 @@ export const getConnectionsList = async (c: Context) => {
       ])
     );
 
+    const connectedUsersSeparator = {
+      isSeparator: true,
+      title: "Connected Users",
+    };
+    const receivedRequestsSeparator = {
+      isSeparator: true,
+      title: "Received Requests",
+    };
+
+    // const sentRequestsSeparator = {
+    //   isSeparator: true,
+    //   title: "Sent Requests",
+    // };
+
     // Combine all data
-    const result = {
-      connectedUsers: connectedUsers.map((connectedUser) => ({
+    const data = [
+      connectedUsersSeparator,
+      ...connectedUsers.map((connectedUser) => ({
         ...connectedUser,
         tags: userTags
           .filter((t) => t.userId === connectedUser.userId)
           .map((t) => t.tagName),
         lastMessage: lastMessagesMap.get(connectedUser.userId) || null, //if there is no last message, return null
       })),
-      receivedConnectionsRequests: receivedRequests.map((request) => ({
+      receivedRequestsSeparator,
+      ...receivedRequests.map((request) => ({
         ...request,
         tags: userTags
           .filter((t) => t.userId === request.userId)
           .map((t) => t.tagName),
       })),
-      // sentConnectionsRequests: sentRequests.map((request) => ({
+      // ...sentRequestsSeparator,
+      // ...sentRequests.map((request) => ({
       //   ...request,
       //   tags: userTags
       //     .filter((t) => t.userId === request.userId)
       //     .map((t) => t.tagName),
       // })),
-    };
+    ];
 
-    return c.json(
-      { message: "Here are the connections of the user", ...result },
-      200
-    );
+    return c.json(data, 200);
   } catch (error) {
     console.log('error in "get-connections-list" route:', error);
     return c.json(

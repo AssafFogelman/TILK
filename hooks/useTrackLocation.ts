@@ -1,170 +1,144 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Location from "expo-location";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { knnDataType } from "../types/types";
 import { AppState } from "react-native";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
  * useTrackLocation Hook
  *
- * This custom hook manages location tracking and nearby user data fetching for the app.
+ * manages location tracking and nearby user data (KNN - K-Nearest Neighbors) fetching for the app.
  * It provides functionality to:
- * 1. Start and stop device motion tracking using Expo's Location API.
- * 2. Manage a periodic interval for location updates and data fetching.
- * 3. Fetch nearby user data (KNN - K-Nearest Neighbors) based on the current location.
- * 4. Handle loading and error states for the KNN data fetching process.
+ * 1. device motion tracking - Start and stop.
+ * 2. periodic interval for data fetching - in case the user hasn't changed its location.
+ * 3. returns loading and error states for the KNN data fetching process.
+ * 4. returns the KNN data.
  *
- * The hook exposes methods to start and stop tracking, as well as state variables
- * for the current location, KNN data, and related loading/error states.
- *
- * sends location to the server every 30 seconds if the location changes more than 50 meters - in order to get new knn data
- * also sends location to the server every 2 minutes if the location doesn't change - in order to get new knn data
+ * sends location to the server every 30 seconds if the location changes more than 50 meters - and receives new knn data.
+ * also sends location to the server every 2 minutes if the location hasn't changed - and gets new knn data.
  */
 
+//regardless of the location changes, perform the query every LOCATION_INTERVAL
+const LOCATION_INTERVAL = 2 * 60 * 1000; // 2 minutes in milliseconds
+//if the location changes more than DISTANCE_INTERVAL, perform only after TIME_INTERVAL
+const DISTANCE_INTERVAL = 50; // 50 meters
+const TIME_INTERVAL = 30 * 1000; // 30 seconds
+
 export function useTrackLocation() {
-  const locationRef = useRef<null | Location.LocationObject>(null);
+  const queryClient = useQueryClient();
+  const locationRef = useRef<Location.LocationObject | null>(null);
   const [isIntervalActive, setIsIntervalActive] = useState(false);
-  const intervalRef = useRef<null | NodeJS.Timeout>(null);
-  const locationSubscription = useRef<null | Location.LocationSubscription>(
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const locationSubscription = useRef<Location.LocationSubscription | null>(
     null
   );
-  const [knnDataIsLoading, setKnnDataIsLoading] = useState(true);
-  const [knnDataIsError, setKnnDataIsError] = useState(false);
-  const [knnData, setKnnData] = useState<knnDataType>(null);
 
-  //cleanup
   useEffect(() => {
+    startLocationTracking();
     return () => {
       stopLocationTracking();
-      stopInterval();
+      // stopInterval();
     };
-  }, []);
+  });
 
-  return {
-    startLocationTracking,
+  const {
+    data: knnData,
+    isLoading: knnDataIsLoading,
+    isError: knnDataIsError,
+  } = useQuery({
+    //if locationRef.current changes (new location), perform the query
+    queryKey: ["knnData", locationRef.current],
+    queryFn: () => sendLocationToServer(locationRef.current),
+    //perform the query only if locationRef.current is not null
+    enabled: !!locationRef.current,
+    //refetch the query every LOCATION_INTERVAL
+    refetchInterval: LOCATION_INTERVAL,
+  });
 
-    knnDataIsLoading,
-    knnDataIsError,
-    knnData,
-  };
-  function startLocationTracking() {
-    startDeviceMotionTracking();
-    startLocationTrackingInterval();
-  }
+  // const stopInterval = () => {
+  //   if (intervalRef.current) {
+  //     clearInterval(intervalRef.current);
+  //     setIsIntervalActive(false);
+  //   }
+  // };
 
-  function stopInterval() {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      setIsIntervalActive(false);
-    }
-  }
-
-  function stopLocationTracking() {
+  const stopLocationTracking = () => {
     if (locationSubscription.current) {
       locationSubscription.current.remove();
     }
-  }
+  };
 
-  async function sendLocationToServer(
+  const sendLocationToServer = async (
     location: Location.LocationObject | null
-  ) {
+  ) => {
+    if (!location || AppState.currentState !== "active") return;
+
     try {
-      if (!location) return; // this might happen if the interval starts before the subscription starts
-
-      if (AppState.currentState !== "active") return; //if the app is not in the foreground, do nothing
-
-      console.log(
-        "location is: lat- ",
-        location.coords.latitude,
-        " lon- ",
-        location.coords.longitude,
-        " time- ",
-        location.timestamp
-      );
-      const { knn } = await axios
-        .post("/location", {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          //limit is the number of nearby users to return
-          limit: 20,
-        })
-        .then((response) => response.data);
-      setKnnData(knn);
-      setKnnDataIsLoading(false);
+      const { data } = await axios.post("/location", {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        limit: 20,
+      });
+      return data.knn;
     } catch (error) {
-      setKnnDataIsError(true);
-      setKnnDataIsLoading(false);
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.log("axios error:", error.response?.data);
-        } else if (error.request) {
-          // The request was made but no response was received
-          console.log("No response received from the server:", error.request);
-        }
-      } else {
-        //this is not an axios related error
-        console.log("Error sending location to server:", error);
-      }
+      console.error("Error sending location to server:", error);
+      throw error;
     }
-  }
+  };
 
-  //periodically send location to the server even if the location doesn't change
-  function startLocationTrackingInterval() {
-    if (!isIntervalActive) {
-      intervalRef.current = setInterval(
-        () => {
-          if (locationRef.current) {
-            sendLocationToServer(locationRef.current);
-          }
-        },
-        2 * 60 * 1000
-      ); // 2 minutes in milliseconds. executes for the first time only after 2 min.
-      setIsIntervalActive(true);
-    }
-  }
+  const handleNewLocation = (newLocation: Location.LocationObject | null) => {
+    if (!newLocation) return;
+    queryClient.invalidateQueries({ queryKey: ["knnData"] });
+    locationRef.current = newLocation;
+  };
 
-  //subscribe to location services
-  async function startDeviceMotionTracking() {
+  const startDeviceMotionTracking = async () => {
     try {
-      // if we are already subscribed to the location services, do nothing.
-      if (locationSubscription.current) {
-        return;
-      }
-      //request permission to access location
-      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (locationSubscription.current) return;
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        //TODO: show a message to the user with a button to go to the settings
+        console.error("Permission to access location was denied");
         return;
-      }
-      if (!locationSubscription.current) {
-        //if we haven't subscribed to location services yet, get the last known location (for speed's sake)
-        let lastKnownLocation = await Location.getLastKnownPositionAsync({});
-        //returns null if there is no last location
-        handleNewLocation(lastKnownLocation);
       }
 
-      //subscribe to location services
+      //for the first time, we get the last known location
+      const lastKnownLocation = await Location.getLastKnownPositionAsync({});
+      handleNewLocation(lastKnownLocation);
+
+      //then we start the location subscription for location updates
       locationSubscription.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          distanceInterval: 50,
-          //If you want to check that it works without having to move 50 meters, change distanceInterval to 0 (update regardless of location change)
-          timeInterval: 1000 * 30, //update location if the device moved more than 50 meters, and no more that an update every 30 seconds
+          distanceInterval: DISTANCE_INTERVAL,
+          timeInterval: TIME_INTERVAL,
         },
         handleNewLocation
       );
     } catch (error) {
-      console.log("error in startDeviceMotionTracking function: ", error);
+      console.error("Error in startDeviceMotionTracking:", error);
     }
-  }
+  };
 
-  function handleNewLocation(newLocation: Location.LocationObject | null) {
-    //if new location in null, do nothing
-    if (!newLocation) return;
-    locationRef.current = newLocation;
-    sendLocationToServer(newLocation);
-  }
+  const startLocationTracking = () => {
+    startDeviceMotionTracking();
+    //if in the useQuery there is the "refetch interval" option, then we don't need this
+    // if (!isIntervalActive) {
+    //   intervalRef.current = setInterval(() => {
+    //     if (locationRef.current) {
+    //       queryClient.invalidateQueries({ queryKey: ["knnData"] });
+    //       //do we need this?
+    //       // sendLocationToServer(locationRef.current);
+    //     }
+    //   }, LOCATION_INTERVAL);
+    //   setIsIntervalActive(true);
+    // }
+  };
+
+  return {
+    knnData,
+    knnDataIsLoading,
+    knnDataIsError,
+  };
 }
