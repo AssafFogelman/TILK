@@ -2,9 +2,9 @@
 import { knnDataType } from "./types/types";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import * as Location from "expo-location";
+import { AppState, AppStateStatus, Platform } from "react-native";
+import { focusManager } from "@tanstack/react-query";
 
-// regardless of the location changes, perform the query every LOCATION_INTERVAL
-const LOCATION_INTERVAL = 2 * 60 * 1000; // 2 minutes in milliseconds
 //if the location changes more than DISTANCE_INTERVAL, perform only after TIME_INTERVAL
 const DISTANCE_INTERVAL = 50; // 50 meters
 const TIME_INTERVAL = 30 * 1000; // 30 seconds
@@ -18,11 +18,10 @@ export const LocationContext = createContext<LocationContextType | undefined>(
   undefined
 );
 
+//provides location subscription and refetching of all Data on app focus
 export function LocationProvider({ children }: { children: React.ReactNode }) {
   const { subscribe, currentLocation } = useSubscribeLocation();
-  //askLocationPermissionWhenAppReturnsToForeground:
-  //in case the user gave a location permission it the phone's settings,
-  //and returns to the app, the app should ask him to whether he would like to track his location
+  useRefetchDataOnAppFocus();
   return (
     <LocationContext.Provider value={{ subscribe, currentLocation }}>
       {children}
@@ -83,6 +82,19 @@ function useSubscribeLocation() {
   }
 }
 
+function useRefetchDataOnAppFocus() {
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", onAppStateChange);
+
+    return () => subscription.remove();
+  }, []);
+
+  function onAppStateChange(status: AppStateStatus) {
+    if (Platform.OS !== "web") {
+      focusManager.setFocused(status === "active");
+    }
+  }
+}
 export function useLocation() {
   const context = useContext(LocationContext);
   if (context === undefined) {
