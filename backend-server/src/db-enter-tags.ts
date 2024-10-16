@@ -7,8 +7,6 @@ import {
 } from "./drizzle/schema.js";
 import data from "../data/categories_and_tags.json";
 import { sql } from "drizzle-orm";
-import pkg from "pg";
-const { Client } = pkg;
 /*
  * mind you that there may very well be duplicate categories and duplicate tags of different categories.
  * but there can't be duplicate tags of the same category.
@@ -16,21 +14,7 @@ const { Client } = pkg;
 
 const enterTags = async () => {
   try {
-    // Test the database connection before proceeding
-    const client = new Client({
-      host: "ep-super-union-a33byh5j.eu-central-1.aws.neon.tech",
-      port: 5432,
-      user: "assaf.fogelman",
-      password: "NndlaCD0ZF3A",
-      database: "neondb",
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    });
-
-    await client.connect();
-    console.log("Successfully connected to the database");
-    await client.end();
+    //we need to connect to the database. I've deleted the previous connection since it showed the password.
 
     //clear the current tags
     await db.delete(tagsUsers);

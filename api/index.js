@@ -22,13 +22,10 @@ app.use(passport.initialize());
 const upload = require("./upload");
 
 mongoose
-  .connect(
-    "mongodb+srv://assaffogelman:CneKcqg63RzFsphS@cluster0.mbtalng.mongodb.net/",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(`${process.env.MONGO_DB_CONNECTION_STRING}`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("connected to mongoDb");
   })
