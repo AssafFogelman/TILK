@@ -50,6 +50,7 @@ function useSubscribeLocation() {
 
   async function subscribe() {
     try {
+      //if we are already subscribed, return
       if (locationSubscription.current) return;
 
       //ask for location permission
@@ -76,7 +77,8 @@ function useSubscribeLocation() {
       console.error("Error in startDeviceMotionTracking:", error);
     }
 
-    function handleNewLocation(location: Location.LocationObject) {
+    function handleNewLocation(location: Location.LocationObject | null) {
+      if (location === null) return;
       setCurrentLocation(location);
     }
   }

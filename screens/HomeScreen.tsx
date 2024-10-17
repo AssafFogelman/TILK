@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, AppState } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { FAB } from "react-native-paper";
@@ -27,10 +27,16 @@ const HomeScreen = () => {
     null
   );
   const [showModal, setShowModal] = useState(false);
+
   const { subscribe, currentLocation } = useLocation();
   const navigation = useNavigation<HomeScreenNavigationProp>();
   //set the user as "currently connected"
   useSetCurrentlyConnected();
+
+  // Set up location subscription
+  useEffect(() => {
+    subscribe();
+  });
 
   const {
     data: knnData,
@@ -40,6 +46,7 @@ const HomeScreen = () => {
     queryKey: ["knnData", currentLocation],
     queryFn: () => sendLocationToServer(currentLocation),
     refetchInterval: LOCATION_INTERVAL,
+    enabled: !!currentLocation,
   });
 
   // Fetch connections list after knnData is loaded
@@ -50,7 +57,7 @@ const HomeScreen = () => {
   //     enabled: !knnDataIsLoading,
   //   });
   //start location subscription. I wish the fetching would have happened only after the subscription started. we''ll see how this works.
-  subscribe();
+  // subscribe();
   //wanted behavior:
   // at the start, fetch knn data
   //every set interval, refetch the knn data
@@ -116,7 +123,8 @@ const HomeScreen = () => {
   async function sendLocationToServer(
     location: Location.LocationObject | null
   ) {
-    if (!location || AppState.currentState !== "active") return;
+    // Return an empty array if there's no location or if the app is not active
+    if (!location || AppState.currentState !== "active") return [];
 
     try {
       const { data } = await axios.post("/location", {
@@ -128,6 +136,7 @@ const HomeScreen = () => {
       return data.knn;
     } catch (error) {
       console.error("Error sending location to server:", error);
+      return []; // Return an empty array in case of error
     }
   }
 };
