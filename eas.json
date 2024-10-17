@@ -9,7 +9,7 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_SERVER_ADDRESS": "http://10.100.102.103:5000",
-        "EXPO_PUBLIC_DEV_OR_PRODUCTION": "dev",
+        "EXPO_PUBLIC_NODE_ENV": "development",
         "EXPO_PUBLIC_OPEN_CAGE_API_KEY": "4f542c14e2f84621a2bcc4d5986188fc"
       }
     },

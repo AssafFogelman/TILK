@@ -34,7 +34,7 @@ app.use("*", logger());
 //enable cors if we are not in production mode
 // app.use(
 //   "*",
-//   cors({ origin: process.env.DEV_OR_PRODUCTION === "production" ? "*" : "" })
+//   cors({ origin: process.env.NODE_ENV === "production" ? "*" : "" })
 // );
 
 // app.use(cors({ origin: "*" }));
@@ -57,7 +57,7 @@ const server = serve(
   },
   (info) => {
     console.log(`Server is running on: http://${serverIP}:${info.port}`);
-  },
+  }
 );
 
 //websocket
@@ -66,13 +66,13 @@ const io = new Server(server as HttpServer, {
   path: "/ws/",
   serveClient: true,
   cors: {
-    origin: process.env.DEV_OR_PRODUCTION === "production" ? false : "*",
+    origin: process.env.NODE_ENV === "production" ? false : "*",
   },
 });
 io.on("error", (err) => console.log("error: ", err));
 io.on("connection", (socket) => {
   console.log(
-    `client connected! id: ${socket.id}, headers: ${socket.request.headers}`,
+    `client connected! id: ${socket.id}, headers: ${socket.request.headers}`
   );
   socket.on("setCurrentlyConnected", async (userId) => {
     try {
@@ -83,12 +83,12 @@ io.on("connection", (socket) => {
         .set({ socketId: socket.id, currentlyConnected: true })
         .where(eq(users.userId, userId));
       console.log(
-        "the socket id " + socket.id + " was entered into userId: " + userId,
+        "the socket id " + socket.id + " was entered into userId: " + userId
       );
     } catch (error) {
       console.log(
         "error trying to set currentlyConnected in the database: ",
-        error,
+        error
       );
     }
   });
@@ -149,7 +149,7 @@ async function setNoUserIsCurrentlyConnected() {
     await db.update(users).set({ socketId: null, currentlyConnected: false });
   } catch (error) {
     console.log(
-      "an error occurred while trying to reset the currently connected and socketId fields of all the users: ",
+      "an error occurred while trying to reset the currently connected and socketId fields of all the users: "
     );
     console.log(error);
   }
