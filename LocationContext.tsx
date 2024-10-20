@@ -78,8 +78,7 @@ function useSubscribeLocation() {
     }
 
     function handleNewLocation(location: Location.LocationObject | null) {
-      if (location === null) return;
-      setCurrentLocation(location);
+      if (location !== null) setCurrentLocation(location);
     }
   }
 }
