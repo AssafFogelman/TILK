@@ -6,36 +6,17 @@ import {
   LoadingView,
   NoDataView,
 } from "../components/connections-screen-components/StatusViews";
-
-type OtherUser = {
-  userId: string;
-  smallAvatar: string;
-  nickname: string;
-  currentlyConnected: boolean;
-  tags: string[];
-  lastMessage?: {
-    text: string;
-    unread: boolean;
-    type: string;
-  };
-  unread?: boolean;
-  socketId?: string | null;
-};
-
-type SeparatorItem = {
-  isSeparator: true;
-  title: string;
-};
-
-type ListItem = OtherUser | SeparatorItem;
-
-type ConnectionsListType = ListItem[];
+import {
+  ConnectedUser,
+  ConnectionsListItem,
+  ConnectionsListType,
+} from "../types/types";
 
 export const ConnectionsScreen = () => {
-  // const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
-  //   useQuery({
-  //     queryKey: ["connectionsList"],
-  //   });
+  const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
+    useQuery({
+      queryKey: ["connectionsList"],
+    });
 
   if (isPending) return <LoadingView />;
   if (isError) return <ErrorView />;
@@ -54,7 +35,7 @@ export const ConnectionsScreen = () => {
     </>
   );
 
-  function renderItem({ item }: { item: ListItem }) {
+  function renderItem({ item }: { item: ConnectionsListItem }) {
     if ("isSeparator" in item) {
       return (
         <View style={styles.separator}>
@@ -65,7 +46,7 @@ export const ConnectionsScreen = () => {
     return <UserItem user={item} />;
   }
 
-  function UserItem({ user }: { user: OtherUser }) {
+  function UserItem({ user }: { user: ConnectedUser }) {
     return (
       <View style={styles.userItem}>
         <Image

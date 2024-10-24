@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, AppState } from "react-native";
+import { View, StyleSheet, AppState, I18nManager } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { FAB } from "react-native-paper";
 import { useLocation } from "../LocationContext";
-import { HomeScreenNavigationProp, knnDataItemType } from "../types/types";
+import {
+  ConnectionsListType,
+  HomeScreenNavigationProp,
+  knnDataItemType,
+  knnDataType,
+} from "../types/types";
 import { UserCard } from "../components/home-screen-components/UserCard";
 import { UserInfoModal } from "../components/home-screen-components/UserInfoModal";
 import { ListHeader } from "../components/home-screen-components/ListHeader";
@@ -40,7 +45,7 @@ const HomeScreen = () => {
 
   const {
     data: knnData,
-    isLoading: knnDataIsLoading,
+    isPending: knnDataIsLoading,
     isError: knnDataIsError,
   } = useQuery({
     queryKey: ["knnData", currentLocation],
@@ -50,12 +55,12 @@ const HomeScreen = () => {
   });
 
   // Fetch connections list after knnData is loaded
-  // useQuery({
-  //     queryKey: ["connectionsList"],
-  //     queryFn: fetchConnectionsList,
-  //     //start fetching connections only when knnData is loaded
-  //     enabled: !knnDataIsLoading,
-  //   });
+  useQuery({
+    queryKey: ["connectionsList"],
+    queryFn: fetchConnectionsList,
+    //start fetching connections only when knnData is loaded
+    enabled: !knnDataIsLoading,
+  });
   //start location subscription. I wish the fetching would have happened only after the subscription started. we''ll see how this works.
   // subscribe();
   //wanted behavior:
@@ -84,7 +89,14 @@ const HomeScreen = () => {
         />
       </View>
       <FAB
-        icon={() => <Entypo name="megaphone" size={24} color="black" />}
+        icon={() => (
+          <Entypo
+            name="megaphone"
+            size={24}
+            color="black"
+            style={I18nManager.isRTL ? styles.rtlIcon : null}
+          />
+        )}
         style={styles.fab}
         size={"medium"}
         onPress={() => navigation.navigate("LookingTo")}
@@ -110,19 +122,20 @@ const HomeScreen = () => {
     return <UserCard user={item} onAvatarPress={handleOpenModal} />;
   }
 
-  async function fetchConnectionsList() {
+  async function fetchConnectionsList(): Promise<ConnectionsListType> {
     try {
-      const response = await axios.get(
-        `http://${process.env.EXPO_PUBLIC_SERVER_ADDRESS}/user/get-connections-list`
-      );
+      const response = await axios.get(`/user/get-connections-list`);
       return response.data;
     } catch (error) {
-      console.log("Error fetching connections list:", error);
+      console.error("Error fetching connections list:", error);
+
+      return []; // Return an empty array in case of error
     }
   }
+
   async function sendLocationToServer(
     location: Location.LocationObject | null
-  ) {
+  ): Promise<knnDataType> {
     // Return an empty array if there's no location or if the app is not active
     if (!location || AppState.currentState !== "active") return [];
 
@@ -147,6 +160,9 @@ const styles = StyleSheet.create({
     margin: 50,
     right: 0,
     bottom: 0,
+  },
+  rtlIcon: {
+    transform: [{ scaleX: -1 }],
   },
 });
 

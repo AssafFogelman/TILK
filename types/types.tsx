@@ -1,18 +1,10 @@
 import {
   CompositeNavigationProp,
-  CompositeScreenProps,
   NavigatorScreenParams,
   RouteProp,
 } from "@react-navigation/native";
-import {
-  NativeStackNavigationProp,
-  NativeStackScreenProps,
-} from "@react-navigation/native-stack";
-import React from "react";
-import {
-  BottomTabNavigationProp,
-  BottomTabScreenProps,
-} from "@react-navigation/bottom-tabs";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 
 //change this if you want to add "initialParams" to certain screens:
 export type StackParamList = {
@@ -167,3 +159,45 @@ export type SignUpType = {
 };
 
 export type MessageIdType = string;
+
+//connections list types
+export type ConnectedUser = {
+  userId: string;
+  smallAvatar: string;
+  nickname: string;
+  currentlyConnected: boolean;
+  tags: string[];
+  lastMessage?: {
+    text: string;
+    unread: boolean;
+    type: string;
+  };
+  unread?: boolean;
+  socketId?: string | null;
+};
+
+type SeparatorItem = {
+  isSeparator: true;
+  title: string;
+};
+
+export type ConnectionsListItem = ConnectedUser | SeparatorItem;
+
+export type ConnectionsListType = ConnectionsListItem[];
+
+//tabs types
+
+type IconName =
+  | "home"
+  | "home-outline"
+  | "chat"
+  | "chat-outline"
+  | "people"
+  | "people-outline";
+
+export type Route = {
+  key: string;
+  title: string;
+  focusedIcon: IconName;
+  unfocusedIcon: IconName;
+};

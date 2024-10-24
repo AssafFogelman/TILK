@@ -47,9 +47,8 @@ type ConnectionsListType = ListItem[];
 
 export const getConnectionsList = async (c: Context) => {
   try {
-    const { userId }: { userId: string } = {
-      userId: "a8d8bbc4-6ae9-4f0c-87ca-2cb4da6a210c",
-    }; //c.get("tokenPayload");
+    console.log("we hae reached the getConnectionsList controller");
+    const { userId }: { userId: string } = c.get("tokenPayload");
 
     // Get connected users
     const connectedUsers = await db
@@ -87,7 +86,7 @@ export const getConnectionsList = async (c: Context) => {
             eq(connections.connectedUser1, userId),
             eq(connections.connectedUser2, userId)
           ),
-          //user isn't the current user
+          //user isn't the requesting user
           not(eq(users.userId, userId)),
           // user isn't blocked or blocking
           isNull(blocks.blockId),

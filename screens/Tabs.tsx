@@ -4,7 +4,7 @@ import HomeScreen from "./HomeScreen";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import ChatsScreen from "./ChatsScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { TabParamList } from "../types/types";
+import { Route, TabParamList } from "../types/types";
 import React, { useState } from "react";
 import { getHeaderTitle } from "@react-navigation/elements";
 import TabHeader from "../components/home-screen-components/TabHeader";
@@ -12,21 +12,6 @@ import { Alert } from "react-native";
 import { ConnectionsScreen } from "./ConnectionsScreen";
 
 const Tab = createBottomTabNavigator<TabParamList>();
-
-type IconName =
-  | "home"
-  | "home-outline"
-  | "chat"
-  | "chat-outline"
-  | "people"
-  | "people-outline";
-
-type Route = {
-  key: string;
-  title: string;
-  focusedIcon: IconName;
-  unfocusedIcon: IconName;
-};
 
 const initialTabState = {
   index: 0,
@@ -37,17 +22,18 @@ const initialTabState = {
       focusedIcon: "home",
       unfocusedIcon: "home-outline",
     },
-    {
-      key: "Chats",
-      title: "Chats",
-      focusedIcon: "chat",
-      unfocusedIcon: "chat-outline",
-    },
+
     {
       key: "Connections",
       title: "Connections",
       focusedIcon: "people",
       unfocusedIcon: "people-outline",
+    },
+    {
+      key: "Chats",
+      title: "Chats",
+      focusedIcon: "chat",
+      unfocusedIcon: "chat-outline",
     },
   ] as Route[],
 };

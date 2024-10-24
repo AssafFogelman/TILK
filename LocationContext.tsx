@@ -1,5 +1,4 @@
 // import { useTrackLocation } from "./hooks/useTrackLocation";
-import { knnDataType } from "./types/types";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import * as Location from "expo-location";
 import { AppState, AppStateStatus, Platform } from "react-native";
