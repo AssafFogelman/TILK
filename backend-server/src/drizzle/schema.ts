@@ -19,15 +19,6 @@ export const genderEnum = pgEnum("gender_enum", ["man", "woman", "other"]);
 //users
 export const users = pgTable("users", {
   userId: uuid("user_id").primaryKey().unique().notNull().defaultRandom(),
-  /*using a UUID is better than using an incremental integer id, because
-    if you make branches, and add rows to each branch, once you try to merge the
-    branches, they show a problem - two different rows with the same primary key.
-
-    However. if we were to make a incremental integer primary key we would write:
-    user_id: serial("user_id").primaryKey()
-    which would have auto incremented the counter.    
-  */
-
   phoneNumber: text("phone_number").notNull().unique(),
   originalAvatars: text("original_avatars")
     .array()
@@ -41,15 +32,15 @@ export const users = pgTable("users", {
   gender: genderEnum("gender"), //it is mandatory , but it is not mandatory for the first phase of the registration
   //is the user active, a.k.a, has the application on their phone and used it once. if the user did not finish registration, he is still not considered active.
   //he is being activated only once he completes the registration. non-active users are not retrieved in the KNN queries.
-  activeUser: boolean("active_user").default(false),
+  activeUser: boolean("active_user").default(false).notNull(),
   //off-grid: the user has decided to be invisible to users he is not connected to (or requested connection)
-  offGrid: boolean("off_grid").default(false),
+  offGrid: boolean("off_grid").default(false).notNull(),
   nickname: text("nickname"), //it is mandatory , but it is not mandatory for the first phase of the registration
   //makes SQL create a timestamp once the record is created
-  created: timestamp("created").defaultNow(),
+  created: timestamp("created").defaultNow().notNull(),
   //is the user currently connected
-  currentlyConnected: boolean("currently_connected").default(false),
-  admin: boolean("admin").default(false),
+  currentlyConnected: boolean("currently_connected").default(false).notNull(),
+  admin: boolean("admin").default(false).notNull(),
   locationDate: timestamp("location_date"),
   //used to set whether the user is currently connected
   socketId: text("socket_id"),

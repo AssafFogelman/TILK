@@ -11,52 +11,75 @@ import {
   chats,
   chatMessages,
 } from "../drizzle/schema";
-
+import {
+  SeparatorItem,
+  ConnectionsListType,
+  ReceivedRequestsQueryResult,
+  ConnectedUsersQueryResult,
+  SentRequestsQueryResult,
+} from "../../../types/types";
 /*
   get user connections, received connections requests,and sent connections requests
 
-  returned type:
-
-  
-type OtherUser = {
-  userId: string;
-  smallAvatar: string;
-  nickname: string;
-  currentlyConnected: boolean;
-  tags: string[];
-  lastMessage?: {
-    text: string;
-    unread: boolean;
-    type: string;
-  };
-  unread?: boolean;
-  socketId?: string | null;
-};
-
-type SeparatorItem = {
-  isSeparator: true;
-  title: string;
-};
-
-type ListItem = OtherUser | SeparatorItem;
-
-type ConnectionsListType = ListItem[];
-
-
-  */
+*/
 
 export const getConnectionsList = async (c: Context) => {
   try {
     console.log("we hae reached the getConnectionsList controller");
     const { userId }: { userId: string } = c.get("tokenPayload");
 
-    // Get connected users
-    const connectedUsers = await db
+    // Get received connection requests
+    const receivedRequests = (await db
       .select({
         userId: users.userId,
         smallAvatar: users.smallAvatar,
         nickname: users.nickname,
         currentlyConnected: users.currentlyConnected,
+        socketId: users.socketId,
+        unread: connectionRequests.unread,
+        gender: users.gender,
+        dateOfBirth: users.dateOfBirth,
+      })
+      .from(connectionRequests)
+      .innerJoin(users, eq(users.userId, connectionRequests.senderId))
+      .leftJoin(
+        blocks,
+        or(
+          and(
+            eq(blocks.blockingUserId, userId),
+            eq(blocks.blockedUserId, users.userId)
+          ),
+          and(
+            eq(blocks.blockingUserId, users.userId),
+            eq(blocks.blockedUserId, userId)
+          )
+        )
+      )
+      .where(
+        and(
+          eq(connectionRequests.recipientId, userId),
+          // user isn't blocked or blocking
+          isNull(blocks.blockId),
+          // user must be active
+          eq(users.activeUser, true),
+          // user must have a small avatar, nickname, and gender
+          // BTW, they can't be null since they are mandatory when the user registers.
+          // so if you have performance issues, you can remove the not(isNull())s
+          not(isNull(users.smallAvatar)),
+          not(isNull(users.nickname)),
+          not(isNull(users.gender))
+        )
+      )) as ReceivedRequestsQueryResult;
+
+    // Get connected users
+    const connectedUsers = (await db
+      .select({
+        userId: users.userId,
+        smallAvatar: users.smallAvatar,
+        nickname: users.nickname,
+        currentlyConnected: users.currentlyConnected,
+        gender: users.gender,
+        dateOfBirth: users.dateOfBirth,
       })
       .from(connections)
       .innerJoin(
@@ -91,54 +114,27 @@ export const getConnectionsList = async (c: Context) => {
           // user isn't blocked or blocking
           isNull(blocks.blockId),
           // user must be active
-          eq(users.activeUser, true)
+          eq(users.activeUser, true),
+          // user must have a small avatar, nickname, and gender
+          // BTW, they can't be null since they are mandatory when the user registers.
+          // so if you have performance issues, you can remove the not(isNull())s
+          not(isNull(users.smallAvatar)),
+          not(isNull(users.nickname)),
+          not(isNull(users.gender))
         )
-      );
-
-    // Get received connection requests
-    const receivedRequests = await db
-      .select({
-        userId: users.userId,
-        smallAvatar: users.smallAvatar,
-        nickname: users.nickname,
-        currentlyConnected: users.currentlyConnected,
-        socketId: users.socketId,
-        unread: connectionRequests.unread,
-      })
-      .from(connectionRequests)
-      .innerJoin(users, eq(users.userId, connectionRequests.senderId))
-      .leftJoin(
-        blocks,
-        or(
-          and(
-            eq(blocks.blockingUserId, userId),
-            eq(blocks.blockedUserId, users.userId)
-          ),
-          and(
-            eq(blocks.blockingUserId, users.userId),
-            eq(blocks.blockedUserId, userId)
-          )
-        )
-      )
-      .where(
-        and(
-          eq(connectionRequests.recipientId, userId),
-          // user isn't blocked or blocking
-          isNull(blocks.blockId),
-          // user must be active
-          eq(users.activeUser, true)
-        )
-      );
+      )) as ConnectedUsersQueryResult;
 
     // Get sent connection requests
-    //TODO: sent requests might be redundant on should be done in a different route.
-    // const sentRequests = await db
+    //TODO: sent requests might be redundant or should be done in a different route.
+    // const sentRequests = (await db
     //   .select({
     //     userId: users.userId,
     //     smallAvatar: users.smallAvatar,
     //     nickname: users.nickname,
     //     currentlyConnected: users.currentlyConnected,
     //     socketId: users.socketId,
+    //     gender: users.gender,
+    //     dateOfBirth: users.dateOfBirth,
     //   })
     //   .from(connectionRequests)
     //   .innerJoin(users, eq(users.userId, connectionRequests.recipientId))
@@ -163,14 +159,20 @@ export const getConnectionsList = async (c: Context) => {
     //       //retrieve user as long as they are not off-grid
     //       eq(users.offGrid, false),
     //       // user must be active
-    //       eq(users.activeUser, true)
+    //       eq(users.activeUser, true),
+    //       // user must have a small avatar, nickname, and gender
+    //       // BTW, they can't be null since they are mandatory when the user registers.
+    //       // so if you have performance issues, you can remove the not(isNull())s
+    //       not(isNull(users.smallAvatar)),
+    //       not(isNull(users.nickname)),
+    //       not(isNull(users.gender))
     //     )
-    //   );
+    //   )) as SentRequestsQueryResult;
 
     // Get tags for all users
     const userIds = [
-      ...connectedUsers,
       ...receivedRequests,
+      ...connectedUsers,
       // ...sentRequests,
     ].map((u) => u.userId);
     const userTags = await db
@@ -210,15 +212,15 @@ export const getConnectionsList = async (c: Context) => {
     const lastMessagesMap = new Map(
       lastMessages.map((msg) => [
         msg.otherUserId,
-        { text: msg.lastMessage, unread: msg.unread, type: msg.type },
+        { text: String(msg.lastMessage), unread: msg.unread, type: msg.type },
       ])
     );
 
-    const connectedUsersSeparator = {
+    const connectedUsersSeparator: SeparatorItem = {
       isSeparator: true,
       title: "Connected Users",
     };
-    const receivedRequestsSeparator = {
+    const receivedRequestsSeparator: SeparatorItem = {
       isSeparator: true,
       title: "Received Requests",
     };
@@ -229,25 +231,30 @@ export const getConnectionsList = async (c: Context) => {
     // };
 
     // Combine all data
-    const data = [
+    const data: ConnectionsListType = [
+      receivedRequestsSeparator,
+      ...receivedRequests.map((request) => ({
+        ...request,
+        userType: "connectionRequest" as const,
+        tags: userTags
+          .filter((t) => t.userId === request.userId)
+          .map((t) => t.tagName),
+      })),
+
       connectedUsersSeparator,
       ...connectedUsers.map((connectedUser) => ({
         ...connectedUser,
+        userType: "connectedUser" as const,
         tags: userTags
           .filter((t) => t.userId === connectedUser.userId)
           .map((t) => t.tagName),
         lastMessage: lastMessagesMap.get(connectedUser.userId) || null, //if there is no last message, return null
       })),
-      receivedRequestsSeparator,
-      ...receivedRequests.map((request) => ({
-        ...request,
-        tags: userTags
-          .filter((t) => t.userId === request.userId)
-          .map((t) => t.tagName),
-      })),
+
       // ...sentRequestsSeparator,
       // ...sentRequests.map((request) => ({
       //   ...request,
+      //   userType: "sentRequest",
       //   tags: userTags
       //     .filter((t) => t.userId === request.userId)
       //     .map((t) => t.tagName),

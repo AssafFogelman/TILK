@@ -1,17 +1,23 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
+import { List } from "react-native-paper";
+
 import {
   ErrorView,
   LoadingView,
   NoDataView,
 } from "../components/connections-screen-components/StatusViews";
 import {
-  ConnectedUser,
   ConnectionsListItem,
   ConnectionsListType,
+  OtherUser,
 } from "../types/types";
 
+// why do we need a "connections" tab?
+// because the user needs to see who sent him a connection request.
+// in addition, if the user wants to start a chat with a connection, he can find him here.
+// TODO: we might need to add a search bar here, so the user can search for a connection by nickname.
 export const ConnectionsScreen = () => {
   const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
     useQuery({
@@ -20,7 +26,7 @@ export const ConnectionsScreen = () => {
 
   if (isPending) return <LoadingView />;
   if (isError) return <ErrorView />;
-  if (!data) return <NoDataView />;
+  if (data?.length === 0) return <NoDataView />;
 
   return (
     <>
@@ -37,16 +43,12 @@ export const ConnectionsScreen = () => {
 
   function renderItem({ item }: { item: ConnectionsListItem }) {
     if ("isSeparator" in item) {
-      return (
-        <View style={styles.separator}>
-          <Text style={styles.separatorText}>{item.title}</Text>
-        </View>
-      );
+      return <List.Subheader>{item.title}</List.Subheader>;
     }
     return <UserItem user={item} />;
   }
 
-  function UserItem({ user }: { user: ConnectedUser }) {
+  function UserItem({ user }: { user: OtherUser }) {
     return (
       <View style={styles.userItem}>
         <Image

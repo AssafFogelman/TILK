@@ -20,35 +20,29 @@ export const UserCard = ({
 }) => {
   const theme = useTheme();
 
-  const LeftContent = useCallback(
-    () => (
-      <Pressable onPress={() => onAvatarPress(user)}>
-        <Avatar.Image
-          size={40}
-          source={{
-            uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + user.small_avatar,
-          }}
-        />
-      </Pressable>
-    ),
-    [user, onAvatarPress]
+  const LeftContent = () => (
+    <Pressable onPress={() => onAvatarPress(user)}>
+      <Avatar.Image
+        size={40}
+        source={{
+          uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + user.small_avatar,
+        }}
+      />
+    </Pressable>
   );
 
-  const RightContent = useCallback(
-    () =>
-      user.currently_connected ? (
-        <Badge
-          size={15}
-          style={{
-            backgroundColor: "chartreuse",
-            marginEnd: 20,
-            borderWidth: 1,
-            borderColor: "whitesmoke",
-          }}
-        />
-      ) : null,
-    [user.currently_connected]
-  );
+  const RightContent = () =>
+    user.currently_connected ? (
+      <Badge
+        size={15}
+        style={{
+          backgroundColor: "chartreuse",
+          marginEnd: 20,
+          borderWidth: 1,
+          borderColor: "whitesmoke",
+        }}
+      />
+    ) : null;
 
   return (
     <Card>

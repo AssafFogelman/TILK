@@ -73,8 +73,8 @@ const HomeScreen = () => {
   if (currentLocation === null || knnDataIsLoading) return <LoadingView />;
   //if there's an error, show error
   if (knnDataIsError) return <ErrorView />;
-  //if there's no data, show no data
-  if (!knnData || knnData.length === 0) return <NoDataView />;
+  //if there's no data, show a no data message
+  if (knnData?.length === 0) return <NoDataView />;
 
   return (
     <View style={{ flex: 1 }}>

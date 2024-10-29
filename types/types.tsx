@@ -6,6 +6,8 @@ import {
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 
+//************************** navigation types **************************
+
 //change this if you want to add "initialParams" to certain screens:
 export type StackParamList = {
   Welcome: undefined; //there are no params that are sent to this screen
@@ -85,6 +87,8 @@ export type RegisterScreenNavigationProp = NativeStackNavigationProp<
   "Register"
 >;
 
+//************************** knn data types **************************
+
 export type knnDataItemType = {
   user_id: string;
   nickname: string;
@@ -115,7 +119,7 @@ export type ChatMessageType = {
   message: string;
 };
 
-//auth Context Types
+//************************** auth Context Types **************************
 
 export const ACTIONS = {
   RESTORE_TOKEN: "RESTORE_TOKEN",
@@ -160,8 +164,40 @@ export type SignUpType = {
 
 export type MessageIdType = string;
 
-//connections list types
-export type ConnectedUser = {
+//************************** connections list types **************************
+
+export type ReceivedRequestsQueryResult = {
+  userId: string;
+  smallAvatar: string; // removed null since we filter these out
+  nickname: string; // removed null since we filter these out
+  currentlyConnected: boolean;
+  socketId: string | null;
+  unread: boolean;
+  gender: "man" | "woman" | "other"; // removed null since we filter these out
+  dateOfBirth: string | null;
+}[];
+
+export type ConnectedUsersQueryResult = {
+  userId: string;
+  smallAvatar: string; // removed null since we filter these out
+  nickname: string; // removed null since we filter these out
+  currentlyConnected: boolean;
+  gender: "man" | "woman" | "other"; // removed null since we filter these out
+  dateOfBirth: string | null;
+}[];
+
+export type SentRequestsQueryResult = {
+  userId: string;
+  smallAvatar: string; // removed null since we filter these out
+  nickname: string; // removed null since we filter these out
+  currentlyConnected: boolean;
+  socketId: string | null;
+  gender: "man" | "woman" | "other"; // removed null since we filter these out
+  dateOfBirth: string | null;
+}[];
+
+export type OtherUser = {
+  userType: "connectionRequest" | "connectedUser" | "sentRequest";
   userId: string;
   smallAvatar: string;
   nickname: string;
@@ -171,21 +207,23 @@ export type ConnectedUser = {
     text: string;
     unread: boolean;
     type: string;
-  };
+  } | null;
   unread?: boolean;
   socketId?: string | null;
+  gender: "man" | "woman" | "other";
+  dateOfBirth: string | null;
 };
 
-type SeparatorItem = {
+export type SeparatorItem = {
   isSeparator: true;
   title: string;
 };
 
-export type ConnectionsListItem = ConnectedUser | SeparatorItem;
+export type ConnectionsListItem = OtherUser | SeparatorItem;
 
 export type ConnectionsListType = ConnectionsListItem[];
 
-//tabs types
+//************************** tabs types **************************
 
 type IconName =
   | "home"

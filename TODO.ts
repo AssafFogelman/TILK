@@ -1,5 +1,4 @@
 /*
-    TODO: does the useStartLocationTracking hook really rerender in HomeScreen all the time? if so, it's a problem, because it's going to be called a lot of times, and it's going to affect the performance of the app
 
     menu in "HomeScreen":
     * edit avatar
@@ -17,6 +16,8 @@
     * option for blocking a user
     * show only connected users and users that sent you a request
     * main menu: blocked list
+    * // TODO: we might need to add a search bar here, so the user can search for a connection by nickname.
+
     
     chats screen:
     it's a list of users sorted by the last time you chatted with them.
@@ -41,4 +42,14 @@
     * data fetching for user chats
     * buttons for userCards in "HomeScreen"
     * menu in "HomeScreen"
+    
+    * internationalization for names and date schemas
+    */
+
+/*!DONE LIST: 
+    
+    
+    
+    
+    
     */
