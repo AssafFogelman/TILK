@@ -196,7 +196,7 @@ export type SentRequestsQueryResult = {
   dateOfBirth: string | null;
 }[];
 
-export type OtherUser = {
+export type ConnectionsScreenUser = {
   userType: "connectionRequest" | "connectedUser" | "sentRequest";
   userId: string;
   smallAvatar: string;
@@ -219,7 +219,7 @@ export type SeparatorItem = {
   title: string;
 };
 
-export type ConnectionsListItem = OtherUser | SeparatorItem;
+export type ConnectionsListItem = ConnectionsScreenUser | SeparatorItem;
 
 export type ConnectionsListType = ConnectionsListItem[];
 

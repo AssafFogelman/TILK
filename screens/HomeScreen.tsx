@@ -9,7 +9,7 @@ import {
   knnDataItemType,
   knnDataType,
 } from "../types/types";
-import { UserCard } from "../components/home-screen-components/UserCard";
+import { UserCard } from "../components/home-screen-components/UserCardKNN";
 import { UserInfoModal } from "../components/home-screen-components/UserInfoModal";
 import { ListHeader } from "../components/home-screen-components/ListHeader";
 import { Separator } from "../components/home-screen-components/Separator";

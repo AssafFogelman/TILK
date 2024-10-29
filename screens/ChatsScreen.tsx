@@ -6,7 +6,7 @@ import { useAuthState } from "../AuthContext";
 import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import { FlashList } from "@shopify/flash-list";
-import { UserCard } from "../components/home-screen-components/UserCard";
+import { UserCard } from "../components/home-screen-components/UserCardKNN";
 
 const ChatsScreen = () => {
   const [friendsList, setFriendsList] = useState<ConnectedUserType[]>([]);

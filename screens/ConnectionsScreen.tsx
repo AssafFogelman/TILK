@@ -11,14 +11,19 @@ import {
 import {
   ConnectionsListItem,
   ConnectionsListType,
-  OtherUser,
+  ConnectionsScreenUser,
 } from "../types/types";
+import { UserCard } from "../components/connections-screen-components/UserCardConnections";
+import { useState } from "react";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
 // in addition, if the user wants to start a chat with a connection, he can find him here.
 // TODO: we might need to add a search bar here, so the user can search for a connection by nickname.
 export const ConnectionsScreen = () => {
+  const [modalUserInfo, setModalUserInfo] =
+    useState<ConnectionsScreenUser | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
     useQuery({
       queryKey: ["connectionsList"],
@@ -41,14 +46,23 @@ export const ConnectionsScreen = () => {
     </>
   );
 
+  function handleOpenModal(user: ConnectionsScreenUser) {
+    setModalUserInfo(user);
+    setShowModal(true);
+  }
+
+  function handleCloseModal() {
+    setShowModal(false);
+  }
+
   function renderItem({ item }: { item: ConnectionsListItem }) {
     if ("isSeparator" in item) {
       return <List.Subheader>{item.title}</List.Subheader>;
     }
-    return <UserItem user={item} />;
+    return <UserCard user={item} onAvatarPress={handleOpenModal} />;
   }
 
-  function UserItem({ user }: { user: OtherUser }) {
+  function UserItem({ user }: { user: ConnectionsScreenUser }) {
     return (
       <View style={styles.userItem}>
         <Image
