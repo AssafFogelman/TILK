@@ -1,9 +1,6 @@
-import { StyleSheet } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import LoginScreen from "./screens/LoginScreen";
-import RegisterScreen from "./screens/RegisterScreen";
 import ChatMessageScreen from "./screens/ChatMessageScreen";
-import { knnDataType, StackParamList } from "./types/types";
+import { StackParamList } from "./types/types";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import PhoneVerificationScreen from "./screens/PhoneVerificationScreen";
 import SelectAvatarScreen from "./screens/SelectAvatarScreen";
@@ -17,16 +14,7 @@ import Tabs from "./screens/Tabs";
 const Stack = createNativeStackNavigator<StackParamList>();
 
 const StackNavigator = () => {
-  const {
-    chosenAvatar,
-    chosenBio,
-    chosenTags,
-    isAdmin,
-    isSignOut,
-    isLoading,
-    userToken,
-    userId,
-  } = useAuthState();
+  const { isSignOut, isLoading, userToken } = useAuthState();
   const initialRouteName = useScreenOrder();
 
   if (isLoading) {
@@ -39,14 +27,14 @@ const StackNavigator = () => {
       {userToken ? (
         <>
           <Stack.Screen
-            name="SelectAvatar"
-            component={SelectAvatarScreen}
+            name="PersonalDetails"
+            component={PersonalDetailsScreen}
             options={{ headerShown: false }}
           />
 
           <Stack.Screen
-            name="PersonalDetails"
-            component={PersonalDetailsScreen}
+            name="SelectAvatar"
+            component={SelectAvatarScreen}
             options={{ headerShown: false }}
           />
 
@@ -84,17 +72,6 @@ const StackNavigator = () => {
             component={PhoneVerificationScreen}
             options={{ headerShown: false }}
           />
-
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Register"
-            component={RegisterScreen}
-            options={{ headerShown: false }}
-          />
         </>
       )}
     </Stack.Navigator>
@@ -102,5 +79,3 @@ const StackNavigator = () => {
 };
 
 export default StackNavigator;
-
-const styles = StyleSheet.create({});

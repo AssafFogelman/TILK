@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { View } from "react-native";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
 import { List } from "react-native-paper";
@@ -15,6 +15,7 @@ import {
 } from "../types/types";
 import { UserCard } from "../components/connections-screen-components/UserCardConnections";
 import { useState } from "react";
+import { UserInfoModal } from "../components/connections-screen-components/UserInfoModal";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
@@ -35,13 +36,21 @@ export const ConnectionsScreen = () => {
 
   return (
     <>
-      <FlashList
-        data={data}
-        renderItem={renderItem}
-        // estimatedItemSize={50}
-        keyExtractor={(item) =>
-          "isSeparator" in item ? item.title : item.userId
-        }
+      <View style={{ padding: 10, flex: 1 }}>
+        <FlashList
+          data={data}
+          renderItem={renderItem}
+          // estimatedItemSize={50}
+          keyExtractor={(item) =>
+            "isSeparator" in item ? item.title : item.userId
+          }
+        />
+      </View>
+
+      <UserInfoModal
+        visible={showModal}
+        onDismiss={handleCloseModal}
+        userInfo={modalUserInfo}
       />
     </>
   );
@@ -61,73 +70,4 @@ export const ConnectionsScreen = () => {
     }
     return <UserCard user={item} onAvatarPress={handleOpenModal} />;
   }
-
-  function UserItem({ user }: { user: ConnectionsScreenUser }) {
-    return (
-      <View style={styles.userItem}>
-        <Image
-          source={{
-            uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + user.smallAvatar,
-          }}
-          style={styles.avatar}
-        />
-        <View style={styles.userInfo}>
-          <Text style={styles.nickname}>{user.nickname}</Text>
-          <Text style={styles.tags}>{user.tags.join(", ")}</Text>
-        </View>
-        {user.lastMessage && (
-          <View style={styles.lastMessage}>
-            <Text style={styles.messageText}>{user.lastMessage.text}</Text>
-            {user.lastMessage.unread && <View style={styles.unreadIndicator} />}
-          </View>
-        )}
-        {user.unread && <View style={styles.unreadIndicator} />}
-      </View>
-    );
-  }
 };
-
-const styles = StyleSheet.create({
-  separator: {
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-  },
-  separatorText: {
-    fontWeight: "bold",
-  },
-  userItem: {
-    flexDirection: "row",
-    padding: 10,
-    alignItems: "center",
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  userInfo: {
-    flex: 1,
-  },
-  nickname: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  tags: {
-    fontSize: 14,
-    color: "#666",
-  },
-  lastMessage: {
-    alignItems: "flex-end",
-  },
-  messageText: {
-    fontSize: 14,
-  },
-  unreadIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "blue",
-    marginLeft: 5,
-  },
-});

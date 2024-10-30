@@ -33,12 +33,14 @@ export const getConnectionsList = async (c: Context) => {
       .select({
         userId: users.userId,
         smallAvatar: users.smallAvatar,
+        originalAvatar: users.originalAvatars,
         nickname: users.nickname,
         currentlyConnected: users.currentlyConnected,
         socketId: users.socketId,
         unread: connectionRequests.unread,
         gender: users.gender,
         dateOfBirth: users.dateOfBirth,
+        biography: users.biography,
       })
       .from(connectionRequests)
       .innerJoin(users, eq(users.userId, connectionRequests.senderId))
@@ -62,12 +64,13 @@ export const getConnectionsList = async (c: Context) => {
           isNull(blocks.blockId),
           // user must be active
           eq(users.activeUser, true),
-          // user must have a small avatar, nickname, and gender
+          // user must have a small avatar, nickname, biography, and gender
           // BTW, they can't be null since they are mandatory when the user registers.
           // so if you have performance issues, you can remove the not(isNull())s
           not(isNull(users.smallAvatar)),
           not(isNull(users.nickname)),
-          not(isNull(users.gender))
+          not(isNull(users.gender)),
+          not(isNull(users.biography))
         )
       )) as ReceivedRequestsQueryResult;
 
@@ -76,10 +79,12 @@ export const getConnectionsList = async (c: Context) => {
       .select({
         userId: users.userId,
         smallAvatar: users.smallAvatar,
+        originalAvatar: users.originalAvatars,
         nickname: users.nickname,
         currentlyConnected: users.currentlyConnected,
         gender: users.gender,
         dateOfBirth: users.dateOfBirth,
+        biography: users.biography,
       })
       .from(connections)
       .innerJoin(
@@ -115,12 +120,13 @@ export const getConnectionsList = async (c: Context) => {
           isNull(blocks.blockId),
           // user must be active
           eq(users.activeUser, true),
-          // user must have a small avatar, nickname, and gender
+          // user must have a small avatar, nickname, biography, and gender
           // BTW, they can't be null since they are mandatory when the user registers.
           // so if you have performance issues, you can remove the not(isNull())s
           not(isNull(users.smallAvatar)),
           not(isNull(users.nickname)),
-          not(isNull(users.gender))
+          not(isNull(users.gender)),
+          not(isNull(users.biography))
         )
       )) as ConnectedUsersQueryResult;
 
@@ -130,11 +136,13 @@ export const getConnectionsList = async (c: Context) => {
     //   .select({
     //     userId: users.userId,
     //     smallAvatar: users.smallAvatar,
+    //     originalAvatar: users.originalAvatars,
     //     nickname: users.nickname,
     //     currentlyConnected: users.currentlyConnected,
     //     socketId: users.socketId,
     //     gender: users.gender,
     //     dateOfBirth: users.dateOfBirth,
+    //     biography: users.biography,
     //   })
     //   .from(connectionRequests)
     //   .innerJoin(users, eq(users.userId, connectionRequests.recipientId))
@@ -160,12 +168,13 @@ export const getConnectionsList = async (c: Context) => {
     //       eq(users.offGrid, false),
     //       // user must be active
     //       eq(users.activeUser, true),
-    //       // user must have a small avatar, nickname, and gender
-    //       // BTW, they can't be null since they are mandatory when the user registers.
-    //       // so if you have performance issues, you can remove the not(isNull())s
-    //       not(isNull(users.smallAvatar)),
-    //       not(isNull(users.nickname)),
-    //       not(isNull(users.gender))
+    // // user must have a small avatar, nickname, biography, and gender
+    // // BTW, they can't be null since they are mandatory when the user registers.
+    // // so if you have performance issues, you can remove the not(isNull())s
+    // not(isNull(users.smallAvatar)),
+    // not(isNull(users.nickname)),
+    // not(isNull(users.gender)),
+    // not(isNull(users.biography))
     //     )
     //   )) as SentRequestsQueryResult;
 

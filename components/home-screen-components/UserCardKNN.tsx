@@ -1,13 +1,6 @@
 import React, { useCallback } from "react";
 import { Pressable, FlatList } from "react-native";
-import {
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Chip,
-  useTheme,
-} from "react-native-paper";
+import { Avatar, Badge, Button, Card, Chip } from "react-native-paper";
 import { knnDataItemType } from "../../types/types";
 import { age } from "../../utils/dateUtils";
 
@@ -18,8 +11,6 @@ export const UserCard = ({
   user: knnDataItemType;
   onAvatarPress: (user: knnDataItemType) => void;
 }) => {
-  const theme = useTheme();
-
   const LeftContent = useCallback(
     () => (
       <Pressable onPress={() => onAvatarPress(user)}>
@@ -54,7 +45,7 @@ export const UserCard = ({
     <Card>
       <Card.Title
         title={user.nickname}
-        subtitle={`${user.gender}, ${age(new Date(user.date_of_birth))}`}
+        subtitle={`${user.gender}, ${user.date_of_birth !== null && age(new Date(user.date_of_birth))}`}
         left={LeftContent}
         right={RightContent}
       />

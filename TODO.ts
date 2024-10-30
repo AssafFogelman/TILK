@@ -1,9 +1,17 @@
 /*
 
+    main app:
+    * when a new user signs in, he is sent into "Homescreen". He passes other screen, 
+     although it does look like they do load because I saw that certain requests that are in useEffects in "AvatarScreen" got triggered.
+    so check "verification screen".
+
+
     menu in "HomeScreen":
     * edit avatar
     * edit bio
     * blocked users
+    
+
     
 
     home screen:

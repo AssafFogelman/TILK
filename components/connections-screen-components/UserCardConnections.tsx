@@ -1,38 +1,31 @@
-import React, { useCallback } from "react";
 import { Pressable, FlatList } from "react-native";
+import { Avatar, Badge, Button, Card, Chip } from "react-native-paper";
 import {
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Chip,
-  useTheme,
-} from "react-native-paper";
-import { knnDataItemType } from "../../types/types";
+  ConnectionsScreenUser,
+  connectionsUserActionsStates,
+} from "../../types/types";
 import { age } from "../../utils/dateUtils";
 
 export const UserCard = ({
   user,
   onAvatarPress,
 }: {
-  user: knnDataItemType;
-  onAvatarPress: (user: knnDataItemType) => void;
+  user: ConnectionsScreenUser;
+  onAvatarPress: (user: ConnectionsScreenUser) => void;
 }) => {
-  const theme = useTheme();
-
   const LeftContent = () => (
     <Pressable onPress={() => onAvatarPress(user)}>
       <Avatar.Image
         size={40}
         source={{
-          uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + user.small_avatar,
+          uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + user.smallAvatar,
         }}
       />
     </Pressable>
   );
 
   const RightContent = () =>
-    user.currently_connected ? (
+    user.currentlyConnected ? (
       <Badge
         size={15}
         style={{
@@ -48,7 +41,7 @@ export const UserCard = ({
     <Card>
       <Card.Title
         title={user.nickname}
-        subtitle={`${user.gender}, ${age(new Date(user.date_of_birth))}`}
+        subtitle={`${user.gender}, ${user.dateOfBirth !== null && age(new Date(user.dateOfBirth))}`}
         left={LeftContent}
         right={RightContent}
       />
@@ -64,7 +57,9 @@ export const UserCard = ({
         />
       </Card.Content>
       <Card.Actions>
-        <Button>Cancel</Button>
+        {connectionsUserActionsStates[user.userType].map((action) => (
+          <Button key={action}>{action}</Button>
+        ))}
         {/* {connectionIcon()} */}
         <Button>Ok</Button>
       </Card.Actions>

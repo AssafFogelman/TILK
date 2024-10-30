@@ -35,6 +35,7 @@ const HomeScreen = () => {
 
   const { subscribe, currentLocation } = useLocation();
   const navigation = useNavigation<HomeScreenNavigationProp>();
+
   //set the user as "currently connected"
   useSetCurrentlyConnected();
 
@@ -61,13 +62,6 @@ const HomeScreen = () => {
     //start fetching connections only when knnData is loaded
     enabled: !knnDataIsLoading,
   });
-  //start location subscription. I wish the fetching would have happened only after the subscription started. we''ll see how this works.
-  // subscribe();
-  //wanted behavior:
-  // at the start, fetch knn data
-  //every set interval, refetch the knn data
-  //start a location subscription (in this screen or on the main screen?
-  // let's try on this screen)
 
   //if we can't get the location, or if we are in the fetching process, show loading
   if (currentLocation === null || knnDataIsLoading) return <LoadingView />;

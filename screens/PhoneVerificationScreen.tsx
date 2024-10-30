@@ -36,15 +36,9 @@ const PhoneVerificationScreen = () => {
   const [code, setCode] = useState(Array(5).fill(""));
 
   const [hash, setHash] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [sentCode, setSentCode] = useState("");
-  const phoneInputRefs = useRef<(TextInput | null)[]>([]);
-  const codeInputRefs = useRef<(TextInput | null)[]>([]);
-  const [hint, setHint] = React.useState<string>();
   const [modalVisible, setModalVisible] = useState(false);
   const { signUp } = useAuthDispatch();
   const navigation = useNavigation<PhoneVerificationScreenNavigationProp>();
-  const initialScreenOrder = useScreenOrder();
 
   useGetCountryData(); //get the dial code and flag of the country from "userCountry"
 
@@ -206,12 +200,13 @@ const PhoneVerificationScreen = () => {
   async function handleVerifyCode() {
     //if the code is not totally filled, do nothing
     if (!code[code.length - 1]) return;
+    //concatenate numbers into the user's phone number
     let concatenatedPhoneNumber = countryCode;
+    //if the phone number starts with "0", remove the "0";
     concatenatedPhoneNumber +=
       phoneNumber[0] === "0"
         ? phoneNumber.join("").slice(1)
         : phoneNumber.join("");
-    //if the phone number starts with "0", remove the "0";
 
     try {
       const {

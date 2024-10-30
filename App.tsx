@@ -35,6 +35,7 @@ export default function App() {
   //load websocket listeners and cleanup
   useWebSocketEventsAndDisconnect();
   //is websocket connected
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isConnected = useIsWebSocketConnected();
 
   //set theme

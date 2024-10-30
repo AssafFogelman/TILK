@@ -168,6 +168,7 @@ export type MessageIdType = string;
 
 export type ReceivedRequestsQueryResult = {
   userId: string;
+  originalAvatar: string[];
   smallAvatar: string; // removed null since we filter these out
   nickname: string; // removed null since we filter these out
   currentlyConnected: boolean;
@@ -175,30 +176,41 @@ export type ReceivedRequestsQueryResult = {
   unread: boolean;
   gender: "man" | "woman" | "other"; // removed null since we filter these out
   dateOfBirth: string | null;
+  biography: string; // removed null since we filter these out
 }[];
 
 export type ConnectedUsersQueryResult = {
   userId: string;
+  originalAvatar: string[];
   smallAvatar: string; // removed null since we filter these out
   nickname: string; // removed null since we filter these out
   currentlyConnected: boolean;
   gender: "man" | "woman" | "other"; // removed null since we filter these out
   dateOfBirth: string | null;
+  biography: string; // removed null since we filter these out
 }[];
 
 export type SentRequestsQueryResult = {
   userId: string;
+  originalAvatar: string[];
   smallAvatar: string; // removed null since we filter these out
   nickname: string; // removed null since we filter these out
   currentlyConnected: boolean;
   socketId: string | null;
   gender: "man" | "woman" | "other"; // removed null since we filter these out
   dateOfBirth: string | null;
+  biography: string; // removed null since we filter these out
 }[];
 
+export type ConnectionsScreenUserType =
+  | "connectionRequest"
+  | "connectedUser"
+  | "sentRequest";
+
 export type ConnectionsScreenUser = {
-  userType: "connectionRequest" | "connectedUser" | "sentRequest";
+  userType: ConnectionsScreenUserType;
   userId: string;
+  originalAvatar: string[];
   smallAvatar: string;
   nickname: string;
   currentlyConnected: boolean;
@@ -212,6 +224,17 @@ export type ConnectionsScreenUser = {
   socketId?: string | null;
   gender: "man" | "woman" | "other";
   dateOfBirth: string | null;
+  biography: string;
+};
+
+//the buttons that each type of user has:
+export const connectionsUserActionsStates: Record<
+  ConnectionsScreenUserType,
+  string[]
+> = {
+  connectionRequest: ["accept", "decline"],
+  connectedUser: ["chat"],
+  sentRequest: ["cancel request"],
 };
 
 export type SeparatorItem = {
