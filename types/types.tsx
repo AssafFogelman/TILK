@@ -69,6 +69,12 @@ export type HomeScreenNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<StackParamList>
 >;
 
+//this is the type for the useNavigation() in "Connections" Screen
+export type ConnectionsScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, "Connections">,
+  NativeStackNavigationProp<StackParamList>
+>;
+
 //this is the type for the useNavigation() in "Welcome" Screen
 export type WelcomeScreenNavigationProp = NativeStackNavigationProp<
   StackParamList,

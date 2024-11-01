@@ -27,7 +27,7 @@ import { useReactQueryDevTools } from "@dev-plugins/react-query";
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 export default function App() {
   //use tanstack query devtools

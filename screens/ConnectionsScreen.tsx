@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
 import { List } from "react-native-paper";
 
@@ -11,11 +11,14 @@ import {
 import {
   ConnectionsListItem,
   ConnectionsListType,
+  ConnectionsScreenNavigationProp,
   ConnectionsScreenUser,
 } from "../types/types";
 import { UserCard } from "../components/connections-screen-components/UserCardConnections";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UserInfoModal } from "../components/connections-screen-components/UserInfoModal";
+import { useNavigation } from "@react-navigation/native";
+import { queryClient } from "../App";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
@@ -29,6 +32,37 @@ export const ConnectionsScreen = () => {
     useQuery({
       queryKey: ["connectionsList"],
     });
+  // mark unread messages as read when the screen blurs
+  const navigation = useNavigation<ConnectionsScreenNavigationProp>();
+  const markAsReadMutation = useMutation({
+    mutationFn: async () => {
+      try {
+        
+      }
+      // Update the cache directly
+      // return queryClient.setQueryData<ConnectionsListType>(
+      //   ["connectionsList"],
+      //   (oldData) => {
+      //     if (!oldData) return oldData;
+      //     return oldData.map((item) => {
+      //       if ("isSeparator" in item) return item;
+      //       return {
+      //         ...item,
+      //         unread: false,
+      //       };
+      //     });
+      //   }
+      // );
+    },
+  });
+
+  useEffect(() => {
+    const markAsRead = navigation.addListener("blur", () => {
+      markAsReadMutation.mutate();
+    });
+
+    return markAsRead;
+  }, [navigation]);
 
   if (isPending) return <LoadingView />;
   if (isError) return <ErrorView />;
