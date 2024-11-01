@@ -197,9 +197,18 @@ const PhoneVerificationScreen = () => {
     setModalVisible(!modalVisible);
   }
 
+  type UserBasicStatus = {
+    token: string;
+    userId: string;
+    chosenAvatar: boolean;
+    chosenBio: boolean;
+    chosenTags: boolean;
+    isAdmin: boolean;
+    offGrid: boolean;
+  };
   async function handleVerifyCode() {
     //if the code is not totally filled, do nothing
-    if (!code[code.length - 1]) return;
+    if (!code.join("")[code.length - 1]) return;
     //concatenate numbers into the user's phone number
     let concatenatedPhoneNumber = countryCode;
     //if the phone number starts with "0", remove the "0";
@@ -216,15 +225,8 @@ const PhoneVerificationScreen = () => {
         chosenBio,
         chosenTags,
         isAdmin,
-      }: {
-        token: string;
-        userId: string;
-        chosenAvatar: boolean;
-        chosenBio: boolean;
-        chosenTags: boolean;
-        isAdmin: boolean;
-        offGrid: boolean;
-      } = await axios
+        offGrid,
+      }: UserBasicStatus = await axios
         .post("/auth/create-token", {
           phoneNumber: concatenatedPhoneNumber,
           code: code.join(""), //concatenated
@@ -241,6 +243,14 @@ const PhoneVerificationScreen = () => {
         return config;
       });
       //store user details in context
+
+      console.log("chosenAvatar:", chosenAvatar);
+      console.log("chosenTags:", chosenTags);
+      console.log("userId:", userId);
+      console.log("isAdmin:", isAdmin);
+      console.log("offGrid:", offGrid);
+      console.log("token:", token);
+
       signUp({
         userId,
         chosenAvatar,
@@ -250,13 +260,33 @@ const PhoneVerificationScreen = () => {
         userToken: token,
       });
       //since it takes time for the context to update the state,
-      //for the stackNavigator to not throw us to a wrong screen, we will navigate manually
+      //for the stackNavigator not to throw us to a wrong screen, we will navigate manually
       //if the user has already chosen bio, avatar and tags, navigate to "home" screen
 
-      if (!chosenBio) navigation.navigate("PersonalDetails");
-      if (!chosenAvatar) navigation.navigate("SelectAvatar");
-      if (!chosenTags) navigation.navigate("LookingTo");
+      console.log("chosenBio:", chosenBio);
+      console.log(
+        "and we ",
+        !chosenBio ? "should " : "shouldn't ",
+        "navigate to PersonalDetails"
+      );
+      if (!chosenBio) {
+        console.log("navigating to PersonalDetails");
+        navigation.navigate("PersonalDetails");
+        return;
+      }
+      if (!chosenAvatar) {
+        console.log("navigating to SelectAvatar");
+        navigation.navigate("SelectAvatar");
+        return;
+      }
+      if (!chosenTags) {
+        console.log("navigating to LookingTo");
+        navigation.navigate("LookingTo");
+        return;
+      }
+      console.log("navigating to Home");
       navigation.navigate("Tabs", { screen: "Home" });
+      return;
     } catch (error: any) {
       if (error.response) {
         // The request was made and the server responded with a status code

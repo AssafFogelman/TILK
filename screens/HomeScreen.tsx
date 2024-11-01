@@ -36,7 +36,7 @@ const HomeScreen = () => {
   const { subscribe, currentLocation } = useLocation();
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
-  //set the user as "currently connected"
+  //set the user as "currently connected" (activating the websocket connection)
   useSetCurrentlyConnected();
 
   // Set up location subscription

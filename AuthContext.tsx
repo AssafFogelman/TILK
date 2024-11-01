@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let user;
         let interceptorId: number | undefined;
         try {
-          userToken = await getItemAsync("TILK-token");
+          userToken = null; //await getItemAsync("TILK-token");
           if (userToken) {
             //add the token to the header in every request
             interceptorId = axios.interceptors.request.use((config) => {
@@ -184,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               chosenTags: user.tagsUsers.length ? true : false, //is it an empty array
               isAdmin: user.admin,
             };
-            //get out of the loading phase, as a singed-in user
+            //get out of the loading phase, as a signed-in user
             dispatch({ type: ACTIONS.RESTORE_TOKEN, data: data });
           } else {
             //get out of the loading phase, as a guest

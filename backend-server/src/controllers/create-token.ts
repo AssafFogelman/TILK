@@ -34,9 +34,6 @@ export const createToken = async (c: Context) => {
       hash,
     }: { phoneNumber: string; code: string; hash: string } = await c.req.json();
 
-    console.log("phoneNumber", phoneNumber);
-    console.log("code", code);
-
     //is the hash valid?
     const hashValid = await compareHash(
       phoneNumber + code + process.env.VALIDATION_KEY,
@@ -56,7 +53,7 @@ export const createToken = async (c: Context) => {
         },
       },
     });
-    console.log("existingUser:", existingUser);
+
     //if not, create user
     let newUser;
     if (!existingUser) {
@@ -70,7 +67,7 @@ export const createToken = async (c: Context) => {
     }
     const userId = newUser ? newUser[0].userId : existingUser?.userId;
     // create token
-    const token = await generateToken({ userId: userId }, "10d");
+    const token = await generateToken({ userId: userId }, "30m");
     console.log("the token:", token);
     return c.json({
       token: token,
@@ -79,6 +76,7 @@ export const createToken = async (c: Context) => {
       chosenBio: existingUser && existingUser.biography ? true : false,
       chosenTags: existingUser && existingUser.tagsUsers.length ? true : false,
       isAdmin: existingUser ? existingUser.admin : false,
+      offGrid: existingUser ? existingUser.offGrid : false,
     });
   } catch (error) {
     console.log('error in "create-token" route:', error);

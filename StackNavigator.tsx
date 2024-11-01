@@ -15,7 +15,7 @@ const Stack = createNativeStackNavigator<StackParamList>();
 
 const StackNavigator = () => {
   const { isSignOut, isLoading, userToken } = useAuthState();
-  const initialRouteName = useScreenOrder();
+  const initialRouteFunction = useScreenOrder();
 
   if (isLoading) {
     // We haven't finished checking for the token yet
@@ -23,7 +23,7 @@ const StackNavigator = () => {
   }
 
   return (
-    <Stack.Navigator initialRouteName={initialRouteName}>
+    <Stack.Navigator initialRouteName={initialRouteFunction()}>
       {userToken ? (
         <>
           <Stack.Screen

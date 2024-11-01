@@ -25,7 +25,6 @@ import {
 
 export const getConnectionsList = async (c: Context) => {
   try {
-    console.log("we hae reached the getConnectionsList controller");
     const { userId }: { userId: string } = c.get("tokenPayload");
 
     // Get received connection requests
