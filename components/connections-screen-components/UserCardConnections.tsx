@@ -1,5 +1,12 @@
 import { Pressable, FlatList } from "react-native";
-import { Avatar, Badge, Button, Card, Chip } from "react-native-paper";
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Chip,
+  useTheme,
+} from "react-native-paper";
 import {
   ConnectionsScreenUser,
   connectionsUserActionsStates,
@@ -13,6 +20,7 @@ export const UserCard = ({
   user: ConnectionsScreenUser;
   onAvatarPress: (user: ConnectionsScreenUser) => void;
 }) => {
+  const theme = useTheme();
   const LeftContent = () => (
     <Pressable onPress={() => onAvatarPress(user)}>
       <Avatar.Image
@@ -38,10 +46,17 @@ export const UserCard = ({
     ) : null;
 
   return (
-    <Card>
+    <Card
+      style={{
+        margin: 5,
+      }}
+      elevation={5}
+    >
       <Card.Title
+        titleStyle={user.unread ? { fontWeight: "bold" } : undefined}
+        subtitleStyle={user.unread ? { fontWeight: "bold" } : undefined}
         title={user.nickname}
-        subtitle={`${user.gender}, ${user.dateOfBirth !== null && age(new Date(user.dateOfBirth))}`}
+        subtitle={`${user.gender}${user.dateOfBirth !== null ? ", " + age(new Date(user.dateOfBirth)) : ""}`}
         left={LeftContent}
         right={RightContent}
       />
@@ -58,10 +73,14 @@ export const UserCard = ({
       </Card.Content>
       <Card.Actions>
         {connectionsUserActionsStates[user.userType].map((action) => (
-          <Button key={action}>{action}</Button>
+          <Button
+            key={action}
+            labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
+            style={user.unread ? { borderWidth: 2 } : undefined}
+          >
+            {action}
+          </Button>
         ))}
-        {/* {connectionIcon()} */}
-        <Button>Ok</Button>
       </Card.Actions>
     </Card>
   );

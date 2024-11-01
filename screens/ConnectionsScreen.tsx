@@ -40,7 +40,7 @@ export const ConnectionsScreen = () => {
         <FlashList
           data={data}
           renderItem={renderItem}
-          // estimatedItemSize={50}
+          // estimatedItemSize={109}
           keyExtractor={(item) =>
             "isSeparator" in item ? item.title : item.userId
           }

@@ -45,7 +45,11 @@ export const UserCard = ({
     <Card>
       <Card.Title
         title={user.nickname}
-        subtitle={`${user.gender}, ${user.date_of_birth !== null && age(new Date(user.date_of_birth))}`}
+        subtitle={`${user.gender}${
+          user.date_of_birth !== null
+            ? ", " + age(new Date(user.date_of_birth))
+            : ""
+        }`}
         left={LeftContent}
         right={RightContent}
       />
@@ -61,9 +65,7 @@ export const UserCard = ({
         />
       </Card.Content>
       <Card.Actions>
-        <Button>Cancel</Button>
-        {/* {connectionIcon()} */}
-        <Button>Ok</Button>
+        <Button>Connect</Button>
       </Card.Actions>
     </Card>
   );
