@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         let user;
         let interceptorId: number | undefined;
         try {
-          userToken = null; //await getItemAsync("TILK-token");
+          userToken = await getItemAsync("TILK-token");
           if (userToken) {
             //add the token to the header in every request
             interceptorId = axios.interceptors.request.use((config) => {
