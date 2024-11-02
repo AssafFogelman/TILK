@@ -17,6 +17,7 @@
     home screen:
     * button for "connect"/"request sent"/"connected"/"request received unread"/"request received read"
     * button for "chat" if user is connected to us
+    * menu for person - block
 
     connections screen:
     * button for "chat" if user is connected to us
@@ -25,7 +26,7 @@
     * show only connected users and users that sent you a request
     * main menu: blocked list
     * // TODO: we might need to add a search bar here, so the user can search for a connection by nickname.
-
+    * menu for person - block
     
     chats screen:
     it's a list of users sorted by the last time you chatted with them.
