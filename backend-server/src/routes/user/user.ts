@@ -10,6 +10,7 @@ import { postTags } from "../../controllers/post-tags";
 import { activateUser } from "../../controllers/activate-user";
 import { getConnectionsList } from "../../controllers/get-connections-list";
 import { userSelectedTags } from "../../controllers/user-selected-tags";
+import { markAsRead } from "../../controllers/mark-as-read";
 
 export const user = new Hono().basePath("/user");
 
@@ -63,3 +64,6 @@ user.post("/activate-user", validateToken, activateUser);
 
 //get connections list
 user.get("/get-connections-list", validateToken, getConnectionsList);
+
+//mark unread connection requests as read
+user.post("/mark-as-read", validateToken, markAsRead);

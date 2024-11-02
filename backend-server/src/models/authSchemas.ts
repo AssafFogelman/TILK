@@ -19,6 +19,9 @@ export const validatePhoneNo = validator("json", (value, c) => {
 
 export const codeSchema = z.string().regex(/^\d{5}$/); //5 digit code
 
+//used for "markAsUnread" controller
+export const uuidArraySchema = z.array(z.string().uuid());
+
 export const validateCode = validator("json", (value, c) => {
   const { code } = value;
   const result = codeSchema.safeParse(code);

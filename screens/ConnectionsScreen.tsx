@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { UserInfoModal } from "../components/connections-screen-components/UserInfoModal";
 import { useNavigation } from "@react-navigation/native";
 import { queryClient } from "../App";
+import axios, { isAxiosError } from "axios";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
@@ -34,35 +35,39 @@ export const ConnectionsScreen = () => {
     });
   // mark unread messages as read when the screen blurs
   const navigation = useNavigation<ConnectionsScreenNavigationProp>();
-  const markAsReadMutation = useMutation({
+  const { mutate: markAsReadMutation } = useMutation({
     mutationFn: async () => {
       try {
-        
+        // get the ids of the users who sent a connection request
+        const requestingUsersIds = data
+          ?.filter(
+            (item): item is ConnectionsScreenUser =>
+              "unread" in item && item.unread === true
+          )
+          .map((item) => item.userId);
+        // mark the connection requests as read
+        if (requestingUsersIds && requestingUsersIds.length > 0) {
+          await axios.post("/user/mark-as-read", requestingUsersIds);
+        }
+      } catch (error) {
+        console.error(
+          "error marking unread connection requests as read",
+          isAxiosError(error) ? error.response?.data.message : error
+        );
       }
-      // Update the cache directly
-      // return queryClient.setQueryData<ConnectionsListType>(
-      //   ["connectionsList"],
-      //   (oldData) => {
-      //     if (!oldData) return oldData;
-      //     return oldData.map((item) => {
-      //       if ("isSeparator" in item) return item;
-      //       return {
-      //         ...item,
-      //         unread: false,
-      //       };
-      //     });
-      //   }
-      // );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["connectionsList"] });
     },
   });
 
   useEffect(() => {
     const markAsRead = navigation.addListener("blur", () => {
-      markAsReadMutation.mutate();
+      markAsReadMutation();
     });
 
     return markAsRead;
-  }, [navigation]);
+  }, [navigation, markAsReadMutation]);
 
   if (isPending) return <LoadingView />;
   if (isError) return <ErrorView />;
