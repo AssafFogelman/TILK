@@ -18,8 +18,8 @@ import { UserCard } from "../components/connections-screen-components/UserCardCo
 import { useEffect, useState } from "react";
 import { UserInfoModal } from "../components/connections-screen-components/UserInfoModal";
 import { useNavigation } from "@react-navigation/native";
-import { queryClient } from "../App";
 import axios, { isAxiosError } from "axios";
+import { queryClient } from "../services/queryClient";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
@@ -79,7 +79,7 @@ export const ConnectionsScreen = () => {
         <FlashList
           data={data}
           renderItem={renderItem}
-          // estimatedItemSize={109}
+          estimatedItemSize={116}
           keyExtractor={(item) =>
             "isSeparator" in item ? item.title : item.userId
           }

@@ -21,13 +21,12 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { LocationProvider } from "./LocationContext";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { useReactQueryDevTools } from "@dev-plugins/react-query";
+import { queryClient } from "./services/queryClient";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
-
-export const queryClient = new QueryClient();
 
 export default function App() {
   //use tanstack query devtools
