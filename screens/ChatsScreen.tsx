@@ -1,75 +1,136 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import React, { useCallback, useContext, useEffect, useState } from "react";
-// import { UserContext } from "../UserContext";
-import UserChat from "../components/UserChat";
-import { useAuthState } from "../AuthContext";
-import { useFocusEffect } from "@react-navigation/native";
-import axios from "axios";
+import { View } from "react-native";
+import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
-import { UserCard } from "../components/home-screen-components/UserCardKNN";
+import { List, Searchbar } from "react-native-paper";
 
-const ChatsScreen = () => {
-  const [friendsList, setFriendsList] = useState<ConnectedUserType[]>([]);
-  const { userId } = useAuthState();
+import {
+  ErrorView,
+  LoadingView,
+  NoDataView,
+} from "../components/connections-screen-components/StatusViews";
+import {
+  ConnectionsListItem,
+  ConnectionsListType,
+  ConnectionsScreenNavigationProp,
+  ConnectionsScreenUser,
+} from "../types/types";
+import { UserCard } from "../components/connections-screen-components/UserCardConnections";
+import { useEffect, useState } from "react";
+import { UserInfoModal } from "../components/connections-screen-components/UserInfoModal";
+import { useNavigation } from "@react-navigation/native";
+import axios, { isAxiosError } from "axios";
+import { queryClient } from "../services/queryClient";
 
-  type ConnectedUserType = {
-    userId: string;
-    smallAvatar: string | null;
-    biography: string | null;
-    dateOfBirth: string | null;
-    gender: "man" | "woman" | "other" | null;
-    nickname: string | null;
-    currentlyConnected: boolean | null;
-  };
+// why do we need a "connections" tab?
+// because the user needs to see who sent him a connection request.
+// in addition, if the user wants to start a chat with a connection, he can find him here.
+// TODO: we might need to add a search bar here, so the user can search for a connection by nickname.
+export const ChatsScreen = () => {
+  const [modalUserInfo, setModalUserInfo] =
+    useState<ConnectionsScreenUser | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
+    useQuery({
+      queryKey: ["connectionsList"],
+    });
+  // mark unread messages as read when the screen blurs
+  const navigation = useNavigation<ConnectionsScreenNavigationProp>();
+  // define mutation
+  const { mutate: markAsReadMutation } = useMutation({
+    mutationFn: markAsReadFunction,
+    onSuccess: invalidateQuery,
+  });
 
-  const getFriendsList = async () => {
-    try {
-      const { connectedUsers } = (await axios
-        .get(`/user/get-connections-list`)
-        .then((res) => res.data)) as { connectedUsers: ConnectedUserType[] };
-      setFriendsList(connectedUsers);
-    } catch (error) {
-      console.log(
-        "error happened while trying to get the users connections list:",
-        error
-      );
-    }
-  };
+  // when the screen blurs, mark the unread connection requests as read
+  useSetBlurListener();
 
-  useFocusEffect(
-    useCallback(() => {
-      getFriendsList();
-    }, [])
-  );
-  const renderUserCard = useCallback(
-    ({ item }: { item: ConnectedUserType }) => (
-      <View>
-        <Text>{item.userId}</Text>
-        <Text>{item.smallAvatar}</Text>
-        <Text>{item.biography}</Text>
-        <Text>{item.dateOfBirth}</Text>
-        <Text>{item.gender}</Text>
-        <Text>{item.nickname}</Text>
-        <Text>{item.currentlyConnected}</Text>
-      </View>
-      // <UserCard user={item} onAvatarPress={handleOpenModal} />
-    ),
-    []
-  );
+  if (isPending) return <LoadingView />;
+  if (isError) return <ErrorView />;
+  if (data?.length === 0) return <NoDataView />;
+
   return (
-    <View style={{ flex: 1 }}>
+    <>
+      <Searchbar
+        placeholder="Search connections"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        style={{ marginHorizontal: 10, marginVertical: 8 }}
+      />
       <View style={{ padding: 10, flex: 1 }}>
         <FlashList
-          data={friendsList}
-          renderItem={renderUserCard}
-          estimatedItemSize={100}
-          keyExtractor={(item) => item.userId}
+          data={filteredData()}
+          renderItem={renderItem}
+          estimatedItemSize={116}
+          keyExtractor={(item) =>
+            "isSeparator" in item ? item.title : item.userId
+          }
         />
       </View>
-    </View>
+
+      <UserInfoModal
+        visible={showModal}
+        onDismiss={handleCloseModal}
+        userInfo={modalUserInfo}
+      />
+    </>
   );
+
+  function handleOpenModal(user: ConnectionsScreenUser) {
+    setModalUserInfo(user);
+    setShowModal(true);
+  }
+
+  function handleCloseModal() {
+    setShowModal(false);
+  }
+
+  function renderItem({ item }: { item: ConnectionsListItem }) {
+    if ("isSeparator" in item) {
+      return <List.Subheader>{item.title}</List.Subheader>;
+    }
+    return <UserCard user={item} onAvatarPress={handleOpenModal} />;
+  }
+
+  async function markAsReadFunction() {
+    try {
+      // get the ids of the users who sent a connection request
+      const requestingUsersIds = data
+        ?.filter(
+          (item): item is ConnectionsScreenUser =>
+            "unread" in item && item.unread === true
+        )
+        .map((item) => item.userId);
+      // mark the connection requests as read
+      if (requestingUsersIds && requestingUsersIds.length > 0) {
+        await axios.post("/user/mark-as-read", requestingUsersIds);
+      }
+    } catch (error) {
+      console.error(
+        "error marking unread connection requests as read",
+        isAxiosError(error) ? error.response?.data.message : error
+      );
+    }
+  }
+
+  function invalidateQuery() {
+    queryClient.invalidateQueries({ queryKey: ["connectionsList"] });
+  }
+
+  function useSetBlurListener() {
+    useEffect(() => {
+      const markAsRead = navigation.addListener("blur", () => {
+        markAsReadMutation();
+      });
+
+      return markAsRead;
+    });
+  }
+
+  function filteredData() {
+    return data?.filter((item) => {
+      if ("isSeparator" in item) return true;
+      return item.nickname?.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+  }
 };
-
-export default ChatsScreen;
-
-const styles = StyleSheet.create({});

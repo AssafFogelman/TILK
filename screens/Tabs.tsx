@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { BottomNavigation, useTheme } from "react-native-paper";
 import HomeScreen from "./HomeScreen";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import ChatsScreen from "./ChatsScreen";
+import { ChatsScreen } from "./ChatsScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Route, TabParamList } from "../types/types";
 import React, { useState } from "react";
