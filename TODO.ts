@@ -37,8 +37,10 @@
     * edit bio
 
     looking to screen:
+    * if the useEffect is running regardless, make this screen 'lazy'
 
-
+    select avatar screen:
+    * if the useEffect is running regardless, make this screen 'lazy'
 
 
     * the websocket needs to reconnect without losing data - take from the websocket site

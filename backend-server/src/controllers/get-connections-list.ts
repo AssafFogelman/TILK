@@ -183,11 +183,14 @@ export const getConnectionsList = async (c: Context) => {
       ...connectedUsers,
       // ...sentRequests,
     ].map((u) => u.userId);
-    const userTags = await db
-      .select({ userId: tagsUsers.userId, tagName: tags.tagName })
-      .from(tagsUsers)
-      .innerJoin(tags, eq(tags.tagName, tagsUsers.tagName))
-      .where(inArray(tagsUsers.userId, userIds));
+    const userTags =
+      userIds.length > 0
+        ? await db
+            .select({ userId: tagsUsers.userId, tagName: tags.tagName })
+            .from(tagsUsers)
+            .innerJoin(tags, eq(tags.tagName, tagsUsers.tagName))
+            .where(inArray(tagsUsers.userId, userIds))
+        : [];
 
     // Get last messages for connected users
     const lastMessages = await db

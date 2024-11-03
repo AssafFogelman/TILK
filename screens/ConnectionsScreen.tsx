@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
-import { List } from "react-native-paper";
+import { List, Searchbar } from "react-native-paper";
 
 import {
   ErrorView,
@@ -29,45 +29,21 @@ export const ConnectionsScreen = () => {
   const [modalUserInfo, setModalUserInfo] =
     useState<ConnectionsScreenUser | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
     useQuery({
       queryKey: ["connectionsList"],
     });
   // mark unread messages as read when the screen blurs
   const navigation = useNavigation<ConnectionsScreenNavigationProp>();
+  // define mutation
   const { mutate: markAsReadMutation } = useMutation({
-    mutationFn: async () => {
-      try {
-        // get the ids of the users who sent a connection request
-        const requestingUsersIds = data
-          ?.filter(
-            (item): item is ConnectionsScreenUser =>
-              "unread" in item && item.unread === true
-          )
-          .map((item) => item.userId);
-        // mark the connection requests as read
-        if (requestingUsersIds && requestingUsersIds.length > 0) {
-          await axios.post("/user/mark-as-read", requestingUsersIds);
-        }
-      } catch (error) {
-        console.error(
-          "error marking unread connection requests as read",
-          isAxiosError(error) ? error.response?.data.message : error
-        );
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["connectionsList"] });
-    },
+    mutationFn: markAsReadFunction,
+    onSuccess: invalidateQuery,
   });
 
-  useEffect(() => {
-    const markAsRead = navigation.addListener("blur", () => {
-      markAsReadMutation();
-    });
-
-    return markAsRead;
-  }, [navigation, markAsReadMutation]);
+  // when the screen blurs, mark the unread connection requests as read
+  useSetBlurListener();
 
   if (isPending) return <LoadingView />;
   if (isError) return <ErrorView />;
@@ -75,9 +51,15 @@ export const ConnectionsScreen = () => {
 
   return (
     <>
+      <Searchbar
+        placeholder="Search connections"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        style={{ marginHorizontal: 10, marginVertical: 8 }}
+      />
       <View style={{ padding: 10, flex: 1 }}>
         <FlashList
-          data={data}
+          data={filteredData()}
           renderItem={renderItem}
           estimatedItemSize={116}
           keyExtractor={(item) =>
@@ -108,5 +90,47 @@ export const ConnectionsScreen = () => {
       return <List.Subheader>{item.title}</List.Subheader>;
     }
     return <UserCard user={item} onAvatarPress={handleOpenModal} />;
+  }
+
+  async function markAsReadFunction() {
+    try {
+      // get the ids of the users who sent a connection request
+      const requestingUsersIds = data
+        ?.filter(
+          (item): item is ConnectionsScreenUser =>
+            "unread" in item && item.unread === true
+        )
+        .map((item) => item.userId);
+      // mark the connection requests as read
+      if (requestingUsersIds && requestingUsersIds.length > 0) {
+        await axios.post("/user/mark-as-read", requestingUsersIds);
+      }
+    } catch (error) {
+      console.error(
+        "error marking unread connection requests as read",
+        isAxiosError(error) ? error.response?.data.message : error
+      );
+    }
+  }
+
+  function invalidateQuery() {
+    queryClient.invalidateQueries({ queryKey: ["connectionsList"] });
+  }
+
+  function useSetBlurListener() {
+    useEffect(() => {
+      const markAsRead = navigation.addListener("blur", () => {
+        markAsReadMutation();
+      });
+
+      return markAsRead;
+    });
+  }
+
+  function filteredData() {
+    return data?.filter((item) => {
+      if ("isSeparator" in item) return true;
+      return item.nickname?.toLowerCase().includes(searchQuery.toLowerCase());
+    });
   }
 };

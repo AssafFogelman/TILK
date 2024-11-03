@@ -42,6 +42,9 @@ const SelectAvatarScreen = () => {
 
   // Fetch saved avatars from server
   useEffect(() => {
+    console.log(
+      "app is fetching avatars. does that make sense? If not, make the stack screen 'lazy'"
+    );
     (async () => {
       try {
         let { originalAvatars } = await axios
@@ -50,7 +53,7 @@ const SelectAvatarScreen = () => {
 
         originalAvatars = originalAvatars.map(
           (avatarPath: string) =>
-            process.env.EXPO_PUBLIC_SERVER_ADDRESS + avatarPath,
+            process.env.EXPO_PUBLIC_SERVER_ADDRESS + avatarPath
         );
         if (originalAvatars.length > 0) {
           setMainAvatar(originalAvatars[0]);
@@ -188,7 +191,7 @@ const SelectAvatarScreen = () => {
               encoding: FileSystem.EncodingType.Base64,
             });
           return null; //safety precaution
-        }),
+        })
       );
 
       // make the content into files
@@ -299,7 +302,7 @@ const SelectAvatarScreen = () => {
 };
 const showToast = (
   headline: string = "Enter Headline",
-  content: string = "Enter Content",
+  content: string = "Enter Content"
 ) => {
   Toast.show({
     type: "info",

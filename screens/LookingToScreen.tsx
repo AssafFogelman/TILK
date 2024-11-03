@@ -25,6 +25,9 @@ const LookingToScreen = () => {
   const theme = useTheme();
   //get the categories and the tags
   useEffect(() => {
+    console.log(
+      "app is fetching tags and categories. if this is wrong, make this screen 'lazy'"
+    );
     (async () => {
       try {
         //get all the tags and categories that are relevant to this user
