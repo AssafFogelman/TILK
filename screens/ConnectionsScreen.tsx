@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
-import { List, Searchbar } from "react-native-paper";
+import { List } from "react-native-paper";
 
 import {
   ErrorView,
@@ -12,12 +12,13 @@ import {
   ConnectionsListItem,
   ConnectionsListType,
   ConnectionsScreenNavigationProp,
+  ConnectionsScreenTabRouteProp,
   ConnectionsScreenUser,
 } from "../types/types";
 import { UserCard } from "../components/connections-screen-components/UserCardConnections";
 import { useEffect, useState } from "react";
 import { UserInfoModal } from "../components/connections-screen-components/UserInfoModal";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import axios, { isAxiosError } from "axios";
 import { queryClient } from "../services/queryClient";
 
@@ -29,7 +30,10 @@ export const ConnectionsScreen = () => {
   const [modalUserInfo, setModalUserInfo] =
     useState<ConnectionsScreenUser | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+
+  const route = useRoute<ConnectionsScreenTabRouteProp>();
+  const { searchQuery } = route.params;
+
   const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
     useQuery({
       queryKey: ["connectionsList"],
@@ -51,12 +55,6 @@ export const ConnectionsScreen = () => {
 
   return (
     <>
-      <Searchbar
-        placeholder="Search connections"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        style={{ marginHorizontal: 10, marginVertical: 8 }}
-      />
       <View style={{ padding: 10, flex: 1 }}>
         <FlashList
           data={filteredData()}

@@ -1,16 +1,13 @@
 import {
-  Alert,
-  Button,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
   Modal,
   I18nManager,
 } from "react-native";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   PhoneVerificationScreenNavigationProp,
   PhoneVerificationScreenRouteProp,

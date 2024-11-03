@@ -1,16 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, View, TouchableOpacity } from "react-native";
 import { Entypo } from "@expo/vector-icons";
-import { Text, useTheme } from "react-native-paper";
+import { Text, useTheme, Searchbar } from "react-native-paper";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
-interface TabHeaderProps {
+type TabHeaderProps = {
   title: string;
   onMenuPress: () => void;
-}
+  showSearchIcon: boolean;
+  searchQuery: string;
+  onSearchChange?: (query: string) => void;
+};
 
-const TabHeader: React.FC<TabHeaderProps> = ({ title, onMenuPress }) => {
+const TabHeader: React.FC<TabHeaderProps> = ({
+  title,
+  onMenuPress,
+  showSearchIcon = false,
+  searchQuery = "",
+  onSearchChange,
+}) => {
   const theme = useTheme();
-
+  const [showSearchBar, setShowSearchBar] = useState(false);
   return (
     <View
       style={[
@@ -18,19 +28,50 @@ const TabHeader: React.FC<TabHeaderProps> = ({ title, onMenuPress }) => {
         { backgroundColor: theme.colors.elevation.level2 },
       ]}
     >
-      <View style={styles.titleContainer}>
-        <Text style={[styles.title, { color: theme.colors.onSurface }]}>
-          {title === "Home" ? "Tilk" : title}
-        </Text>
-        <TouchableOpacity onPress={onMenuPress}>
-          <Entypo
-            name="dots-three-vertical"
-            size={20}
-            color={theme.colors.onSurface}
-            style={{ color: theme.colors.onSurface }}
+      {showSearchBar ? (
+        <View style={styles.searchContainer}>
+          <Searchbar
+            placeholder="Search connections"
+            value={searchQuery}
+            onChangeText={onSearchChange}
+            style={styles.searchBar}
+            right={() => (
+              <TouchableOpacity onPress={() => setShowSearchBar(false)}>
+                <AntDesign
+                  name="close"
+                  size={20}
+                  color={theme.colors.onSurface}
+                />
+              </TouchableOpacity>
+            )}
           />
-        </TouchableOpacity>
-      </View>
+        </View>
+      ) : (
+        <View style={styles.titleContainer}>
+          <Text style={[styles.title, { color: theme.colors.onSurface }]}>
+            {title === "Home" ? "Tilk" : title}
+          </Text>
+          <View style={styles.rightCornerContainer}>
+            {showSearchIcon ? (
+              <TouchableOpacity onPress={() => setShowSearchBar(true)}>
+                <AntDesign
+                  name="search1"
+                  size={20}
+                  color={theme.colors.onSurface}
+                />
+              </TouchableOpacity>
+            ) : null}
+            <TouchableOpacity onPress={onMenuPress}>
+              <Entypo
+                name="dots-three-vertical"
+                size={20}
+                color={theme.colors.onSurface}
+                style={{ color: theme.colors.onSurface }}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -53,8 +94,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+
+  rightCornerContainer: {
+    flexDirection: "row",
+    gap: 10,
+  },
   title: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  searchContainer: {
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  searchBar: {
+    elevation: 0,
+    backgroundColor: "transparent",
   },
 });

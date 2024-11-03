@@ -24,7 +24,7 @@ export type StackParamList = {
 export type TabParamList = {
   Home: undefined;
   Chats: undefined;
-  Connections: undefined;
+  Connections: { searchQuery: string };
 };
 
 //this is the type for the useRoute() in "Welcome" Screen
@@ -85,6 +85,12 @@ export type WelcomeScreenNavigationProp = NativeStackNavigationProp<
 export type PhoneVerificationScreenRouteProp = RouteProp<
   StackParamList,
   "PhoneVerification"
+>;
+
+// type for useRoute in Connections screen
+export type ConnectionsScreenTabRouteProp = RouteProp<
+  TabParamList,
+  "Connections"
 >;
 
 //this is the type for the useNavigation() in "Register" Screen

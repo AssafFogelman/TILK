@@ -41,6 +41,7 @@ const initialTabState = {
 const Tabs = () => {
   const [tabState, setTabState] = useState(initialTabState);
   const theme = useTheme();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const renderIcon = (route: Route, focused: boolean, color: string) => {
     const iconName = focused ? route.focusedIcon : route.unfocusedIcon;
@@ -98,13 +99,26 @@ const Tabs = () => {
       screenOptions={({ route }) => ({
         header: ({ navigation, options }) => {
           const title = getHeaderTitle(options, route.name);
+          const showSearchIcon = route.name === "Connections";
 
-          return <TabHeader title={title} onMenuPress={handleMenuPress} />;
+          return (
+            <TabHeader
+              title={title}
+              onMenuPress={handleMenuPress}
+              showSearchIcon={showSearchIcon}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+            />
+          );
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Connections" component={ConnectionsScreen} />
+      <Tab.Screen
+        name="Connections"
+        component={ConnectionsScreen}
+        initialParams={{ searchQuery }}
+      />
       <Tab.Screen name="Chats" component={ChatsScreen} />
     </Tab.Navigator>
   );
