@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { StyleSheet, View, TouchableOpacity, I18nManager } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import { Text, useTheme, Searchbar } from "react-native-paper";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -38,7 +38,7 @@ const TabHeader: React.FC<TabHeaderProps> = ({
             right={() => (
               <TouchableOpacity onPress={() => setShowSearchBar(false)}>
                 <AntDesign
-                  name="close"
+                  name={I18nManager.isRTL ? "arrowright" : "arrowleft"}
                   size={20}
                   color={theme.colors.onSurface}
                 />

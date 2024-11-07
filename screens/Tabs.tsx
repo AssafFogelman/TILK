@@ -114,11 +114,10 @@ const Tabs = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen
-        name="Connections"
-        component={ConnectionsScreen}
-        initialParams={{ searchQuery }}
-      />
+      <Tab.Screen name="Connections">
+        {(props) => <ConnectionsScreen {...props} searchQuery={searchQuery} />}
+      </Tab.Screen>
+
       <Tab.Screen name="Chats" component={ChatsScreen} />
     </Tab.Navigator>
   );

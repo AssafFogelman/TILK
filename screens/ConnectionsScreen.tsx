@@ -26,13 +26,12 @@ import { queryClient } from "../services/queryClient";
 // because the user needs to see who sent him a connection request.
 // in addition, if the user wants to start a chat with a connection, he can find him here.
 // TODO: we might need to add a search bar here, so the user can search for a connection by nickname.
-export const ConnectionsScreen = () => {
+export const ConnectionsScreen = ({ searchQuery }: { searchQuery: string }) => {
   const [modalUserInfo, setModalUserInfo] =
     useState<ConnectionsScreenUser | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const route = useRoute<ConnectionsScreenTabRouteProp>();
-  const { searchQuery } = route.params;
 
   const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
     useQuery({
