@@ -24,6 +24,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useReactQueryDevTools } from "@dev-plugins/react-query";
 import { queryClient } from "./services/queryClient";
+import { MessageIdType, MessageType } from "./types/types";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
@@ -100,6 +101,17 @@ function useWebSocketEventsAndDisconnect() {
       console.log("websocket connected!");
     }
 
+    function onIncomingMessage({
+      imageURL,
+      message,
+      unread,
+      messageType,
+      senderId,
+      recipientId,
+    }: MessageType) {
+      console.log("incoming message:", message);
+    }
+
     // function onDisconnect() {
     //something that should happen if the server goes down
     // }
@@ -111,13 +123,16 @@ function useWebSocketEventsAndDisconnect() {
     //listen to events and run functions accordingly
     socket.on("connect", onConnect);
     // socket.on("disconnect", onDisconnect);
-    //    socket.on('foo', onFooEvent);
+    socket.on("incoming-message", onIncomingMessage);
 
     return () => {
+      //when the component unmounts (the app closes), disconnect the socket and close the event listeners
+
       //close the event listener "connect"
       socket.off("connect", onConnect);
-
-      //when the component unmounts (the app closes), disconnect the socket
+      //close the event listener "incoming-message"
+      socket.off("incoming-message", onIncomingMessage);
+      //disconnect the socket
       socket.disconnect();
 
       // socket.off("disconnect", onDisconnect);

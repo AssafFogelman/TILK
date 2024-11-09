@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
-import { List, Searchbar } from "react-native-paper";
+import { List } from "react-native-paper";
 
 import {
   ErrorView,
@@ -9,31 +9,45 @@ import {
   NoDataView,
 } from "../components/connections-screen-components/StatusViews";
 import {
-  ConnectionsListItem,
-  ConnectionsListType,
+  ChatsType,
+  ChatType,
   ConnectionsScreenNavigationProp,
   ConnectionsScreenUser,
 } from "../types/types";
-import { UserCard } from "../components/connections-screen-components/UserCardConnections";
 import { useEffect, useState } from "react";
 import { UserInfoModal } from "../components/connections-screen-components/UserInfoModal";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import axios, { isAxiosError } from "axios";
 import { queryClient } from "../services/queryClient";
+import { UserCard } from "../components/chats-screen-components/UserCardChats";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
 // in addition, if the user wants to start a chat with a connection, he can find him here.
 // TODO: we might need to add a search bar here, so the user can search for a connection by nickname.
-export const ChatsScreen = () => {
+export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
   const [modalUserInfo, setModalUserInfo] =
     useState<ConnectionsScreenUser | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const { isPending, isError, data }: UseQueryResult<ConnectionsListType> =
-    useQuery({
-      queryKey: ["connectionsList"],
-    });
+
+  const {
+    data: chats,
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["chatsList"],
+    queryFn: fetchChatsList,
+  });
+  async function fetchChatsList(): Promise<ChatsType> {
+    try {
+      const { chats } = await axios.get("/chats").then((res) => res.data);
+
+      return chats;
+    } catch (error) {
+      console.error("Error sending location to server:", error);
+      return []; // Return an empty array in case of error
+    }
+  }
   // mark unread messages as read when the screen blurs
   const navigation = useNavigation<ConnectionsScreenNavigationProp>();
   // define mutation
@@ -47,16 +61,10 @@ export const ChatsScreen = () => {
 
   if (isPending) return <LoadingView />;
   if (isError) return <ErrorView />;
-  if (data?.length === 0) return <NoDataView />;
+  if (chats?.length === 0) return <NoDataView />;
 
   return (
     <>
-      <Searchbar
-        placeholder="Search connections"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        style={{ marginHorizontal: 10, marginVertical: 8 }}
-      />
       <View style={{ padding: 10, flex: 1 }}>
         <FlashList
           data={filteredData()}
@@ -85,22 +93,18 @@ export const ChatsScreen = () => {
     setShowModal(false);
   }
 
-  function renderItem({ item }: { item: ConnectionsListItem }) {
-    if ("isSeparator" in item) {
-      return <List.Subheader>{item.title}</List.Subheader>;
-    }
-    return <UserCard user={item} onAvatarPress={handleOpenModal} />;
+  function renderItem({ item }: { item: ChatType }) {
+    return <UserCard chat={item} onAvatarPress={handleOpenModal} />;
   }
 
   async function markAsReadFunction() {
     try {
       // get the ids of the users who sent a connection request
-      const requestingUsersIds = data
+      const requestingUsersIds = chats
         ?.filter(
-          (item): item is ConnectionsScreenUser =>
-            "unread" in item && item.unread === true
+          (item): item is ChatType => "unread" in item && item.unread === true
         )
-        .map((item) => item.userId);
+        .map((item) => item.otherUser.userId);
       // mark the connection requests as read
       if (requestingUsersIds && requestingUsersIds.length > 0) {
         await axios.post("/user/mark-as-read", requestingUsersIds);
@@ -128,9 +132,11 @@ export const ChatsScreen = () => {
   }
 
   function filteredData() {
-    return data?.filter((item) => {
+    return chats?.filter((item) => {
       if ("isSeparator" in item) return true;
-      return item.nickname?.toLowerCase().includes(searchQuery.toLowerCase());
+      return item.otherUser.nickname
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase());
     });
   }
 };

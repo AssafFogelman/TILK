@@ -29,6 +29,13 @@
       "when": 1730189967949,
       "tag": "0003_sudden_katie_power",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1731149818920,
+      "tag": "0004_strong_white_tiger",
+      "breakpoints": true
     }
   ]
 }

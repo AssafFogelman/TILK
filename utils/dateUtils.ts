@@ -8,6 +8,17 @@ export const age = (dateOfBirth: Date) => {
 /* the function receives a date and returns the time passed from now */
 //formatDate shows the hours since, if the timestamp is in the current day
 //formDate2 only writes "today", if the timestamp is in the current day
+//formatDate3 shows the hour, if the timestamp is in the current day
+
+const weekdays = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 const formatDate = (inputDate: string) => {
   const dateAsDate = new Date(inputDate);
@@ -32,15 +43,7 @@ const formatDate = (inputDate: string) => {
   }
   if (dayDifference <= 7 && timeDifference < 8) {
     // Weekday
-    const weekdays = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
+
     return weekdays[dateAsDate.getDay()];
   }
 
@@ -71,15 +74,7 @@ const formatDate2 = (inputDate: string) => {
   }
   if (dayDifference <= 7 && timeDifference < 8) {
     // Weekday
-    const weekdays = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
+
     return weekdays[dateAsDate.getDay()];
   }
 

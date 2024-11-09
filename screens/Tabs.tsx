@@ -99,7 +99,8 @@ const Tabs = () => {
       screenOptions={({ route }) => ({
         header: ({ navigation, options }) => {
           const title = getHeaderTitle(options, route.name);
-          const showSearchIcon = route.name === "Connections";
+          const showSearchIcon =
+            route.name === "Connections" || route.name === "Chats";
 
           return (
             <TabHeader
@@ -118,7 +119,9 @@ const Tabs = () => {
         {(props) => <ConnectionsScreen {...props} searchQuery={searchQuery} />}
       </Tab.Screen>
 
-      <Tab.Screen name="Chats" component={ChatsScreen} />
+      <Tab.Screen name="Chats">
+        {(props) => <ChatsScreen {...props} searchQuery={searchQuery} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 };

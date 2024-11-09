@@ -79,7 +79,7 @@ export const tagsUsers = pgTable(
   {
     tagName: text("tag_name")
       .notNull()
-      .references(() => tags.tagName), //add a reference to tagTemplate table
+      .references(() => tags.tagName),
     userId: uuid("user_id")
       .notNull()
       .references(() => users.userId),
@@ -268,15 +268,12 @@ export const chatMessages = pgTable(
       .notNull()
       .references(() => chats.chatId),
     date: timestamp("date").defaultNow().notNull(),
-    sender: uuid("sender")
-      .notNull()
-      .references(() => users.userId),
-    recipient: uuid("recipient")
+    senderId: uuid("sender_id")
       .notNull()
       .references(() => users.userId),
     type: messageTypeEnum("type").notNull(),
-    imageURI: text("image_URI"), //if not image, don't insert anything, and it will be null
-    text: text("text"), //if not text, don't insert anything, and it will be null
+    imageURI: text("image_URI"),
+    text: text("text"),
     unread: boolean("unread").default(true).notNull(),
     receivedSuccessfully: boolean("received_successfully")
       .default(false)
@@ -444,10 +441,10 @@ export const chatsRelations = relations(chats, ({ one, many }) => ({
     references: [users.userId],
   }),
   participant2: one(users, {
-    fields: [chats.participant1],
+    fields: [chats.participant2],
     references: [users.userId],
   }),
-  chatMessage: many(chatMessages),
+  messages: many(chatMessages),
 }));
 
 export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
@@ -458,14 +455,11 @@ export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
   //relation name
   sender: one(users, {
     //foreign key
-    fields: [chatMessages.sender],
+    fields: [chatMessages.senderId],
     //references
     references: [users.userId],
   }),
-  recipient: one(users, {
-    fields: [chatMessages.recipient],
-    references: [users.userId],
-  }),
+  
 }));
 
 export const eventsRelations = relations(events, ({ one }) => ({

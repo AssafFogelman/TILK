@@ -24,7 +24,7 @@ export type StackParamList = {
 export type TabParamList = {
   Home: undefined;
   Chats: undefined;
-  Connections: { searchQuery: string };
+  Connections: undefined;
 };
 
 //this is the type for the useRoute() in "Welcome" Screen
@@ -257,6 +257,32 @@ export type SeparatorItem = {
 export type ConnectionsListItem = ConnectionsScreenUser | SeparatorItem;
 
 export type ConnectionsListType = ConnectionsListItem[];
+
+//************************** chats types **************************
+
+export type MessageType = {
+  date: string;
+  imageURL: string;
+  message: string;
+  unread: boolean;
+  messageType: string;
+  //senderId will tell us who sent the message - the user or the other user
+  senderId: string;
+  recipientId: string;
+};
+
+export type ChatType = {
+  otherUser: UserType;
+  unread: boolean;
+  messages: MessageType[];
+};
+
+export type UserType = {
+  userId: string;
+  nickname: string;
+  smallAvatar: string;
+};
+export type ChatsType = ChatType[];
 
 //************************** tabs types **************************
 
