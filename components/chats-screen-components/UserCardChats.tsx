@@ -6,9 +6,11 @@ import formatDate from "../../utils/dateUtils";
 export const UserCard = ({
   chat,
   onAvatarPress,
+  goToChatRoom,
 }: {
   chat: ChatType;
-  onAvatarPress: (user: ChatType) => void;
+  onAvatarPress: (chat: ChatType) => void;
+  goToChatRoom: (chat: ChatType) => void;
 }) => {
   const LeftContent = () => (
     <Pressable onPress={() => onAvatarPress(chat)}>
@@ -58,26 +60,28 @@ export const UserCard = ({
   );
 
   return (
-    <Card
-      style={{
-        margin: 5,
-      }}
-    >
-      <Card.Title
-        titleStyle={chat.unread ? { fontWeight: "bold" } : undefined}
-        subtitleStyle={{ color: "#545454" }}
-        title={chat.otherUser.nickname}
-        subtitle={
-          !chat.messages[0]
-            ? ""
-            : chat.messages[0].messageType === "image"
-              ? "📷"
-              : chat.messages[0].text
-        }
-        left={LeftContent}
-        right={RightContent}
-      />
-    </Card>
+    <Pressable onPress={() => goToChatRoom(chat)}>
+      <Card
+        style={{
+          margin: 5,
+        }}
+      >
+        <Card.Title
+          titleStyle={chat.unread ? { fontWeight: "bold" } : undefined}
+          subtitleStyle={{ color: "#545454" }}
+          title={chat.otherUser.nickname}
+          subtitle={
+            !chat.messages[0]
+              ? ""
+              : chat.messages[0].messageType === "image"
+                ? "📷"
+                : chat.messages[0].text
+          }
+          left={LeftContent}
+          right={RightContent}
+        />
+      </Card>
+    </Pressable>
   );
 };
 

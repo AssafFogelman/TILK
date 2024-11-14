@@ -8,14 +8,9 @@ import {
   LoadingView,
   NoDataView,
 } from "../components/connections-screen-components/StatusViews";
-import {
-  ChatsType,
-  ChatType,
-  ConnectionsScreenNavigationProp,
-  ConnectionsScreenUser,
-} from "../types/types";
+import { ChatsScreenNavigationProp, ChatsType, ChatType } from "../types/types";
 import { useEffect, useState } from "react";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import axios, { isAxiosError } from "axios";
 import { queryClient } from "../services/queryClient";
 import { UserCard } from "../components/chats-screen-components/UserCardChats";
@@ -29,6 +24,8 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
   const [modalUserInfo, setModalUserInfo] = useState<ChatType | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  const navigation = useNavigation<ChatsScreenNavigationProp>();
+
   const {
     data: chats,
     isPending,
@@ -37,26 +34,6 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
     queryKey: ["chatsList"],
     queryFn: fetchChatsList,
   });
-  async function fetchChatsList(): Promise<ChatsType> {
-    try {
-      const { chats } = await axios.get("/chats").then((res) => res.data);
-
-      return chats;
-    } catch (error) {
-      console.error("Error sending location to server:", error);
-      return []; // Return an empty array in case of error
-    }
-  }
-  // mark unread messages as read when the screen blurs
-  const navigation = useNavigation<ConnectionsScreenNavigationProp>();
-  // define mutation
-  const { mutate: markAsReadMutation } = useMutation({
-    mutationFn: markAsReadFunction,
-    onSuccess: invalidateQuery,
-  });
-
-  // when the screen blurs, mark the unread connection requests as read
-  useSetBlurListener();
 
   if (isPending) return <LoadingView />;
   if (isError) return <ErrorView />;
@@ -81,6 +58,10 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
     </>
   );
 
+  function goToChatRoom(chat: ChatType) {
+    navigation.navigate("ChatRoom", { chat });
+  }
+
   function handleOpenModal(chat: ChatType) {
     setModalUserInfo(chat);
     setShowModal(true);
@@ -91,41 +72,24 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
   }
 
   function renderItem({ item }: { item: ChatType }) {
-    return <UserCard chat={item} onAvatarPress={handleOpenModal} />;
+    return (
+      <UserCard
+        chat={item}
+        onAvatarPress={handleOpenModal}
+        goToChatRoom={goToChatRoom}
+      />
+    );
   }
 
-  async function markAsReadFunction() {
+  async function fetchChatsList(): Promise<ChatsType> {
     try {
-      // get the ids of the users who sent a connection request
-      const requestingUsersIds = chats
-        ?.filter(
-          (item): item is ChatType => "unread" in item && item.unread === true
-        )
-        .map((item) => item.otherUser.userId);
-      // mark the connection requests as read
-      if (requestingUsersIds && requestingUsersIds.length > 0) {
-        await axios.post("/user/mark-as-read", requestingUsersIds);
-      }
+      const { chats } = await axios.get("/chats").then((res) => res.data);
+
+      return chats;
     } catch (error) {
-      console.error(
-        "error marking unread connection requests as read",
-        isAxiosError(error) ? error.response?.data.message : error
-      );
+      console.error("Error sending location to server:", error);
+      return []; // Return an empty array in case of error
     }
-  }
-
-  function invalidateQuery() {
-    queryClient.invalidateQueries({ queryKey: ["connectionsList"] });
-  }
-
-  function useSetBlurListener() {
-    useEffect(() => {
-      const markAsRead = navigation.addListener("blur", () => {
-        markAsReadMutation();
-      });
-
-      return markAsRead;
-    });
   }
 
   function filteredData() {

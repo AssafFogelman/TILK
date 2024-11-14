@@ -17,9 +17,9 @@ import EmojiSelector, { Categories } from "react-native-emoji-selector";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   ChatMessageType,
+  ChatRoomScreenRouteProp,
+  ChatRoomScreenNavigationProp,
   MessageIdType,
-  MessagesScreenNavigationProp,
-  MessagesScreenRouteProp,
 } from "../types/types";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
@@ -28,7 +28,7 @@ import ChatTimestamp from "../components/ChatTimestamp";
 
 type RecipientDataType = null | { image: string; name: string };
 
-const ChatMessageScreen = () => {
+const ChatRoomScreen = () => {
   const [textInput, setTextInput] = useState("");
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
   const [recipientData, setRecipientData] = useState<RecipientDataType>();
@@ -37,11 +37,9 @@ const ChatMessageScreen = () => {
   const [selectedMessages, setSelectedMessages] = useState<MessageIdType[]>([]);
   const scrollViewRef = useRef<null | ScrollView>(null);
 
-  // const { userId, setUserId } = useContext(UserContext);
-
-  const route = useRoute<MessagesScreenRouteProp>();
-  const navigation = useNavigation<MessagesScreenNavigationProp>();
-  const { friendId } = route.params;
+  const route = useRoute<ChatRoomScreenRouteProp>();
+  const navigation = useNavigation<ChatRoomScreenNavigationProp>();
+  const { chat } = route.params;
 
   //scroll the messages feed to the bottom at the entrance
   useEffect(() => {
@@ -53,7 +51,7 @@ const ChatMessageScreen = () => {
     const fetchRecipientData = async () => {
       try {
         const response = await fetch(
-          `http://192.168.1.116:8000/messages/${friendId}`
+          `http://192.168.1.116:8000/messages/${chat.otherUser.userId}`
         );
 
         //fetch returns a promise. a Response object with information. to resolve the promise we need to await. To extrapolate the data we need to use the json() method.
@@ -236,7 +234,7 @@ const ChatMessageScreen = () => {
 
       const formData = new FormData();
       // formData.append("senderId", userId);
-      formData.append("recipientId", friendId);
+      formData.append("recipientId", chat.otherUser.userId);
       formData.append("messageType", messageType);
       // formData.append("imagePath", imagePath);
       if (messageType === "image") {
@@ -462,4 +460,4 @@ const ChatMessageScreen = () => {
   );
 };
 
-export default ChatMessageScreen;
+export default ChatRoomScreen;

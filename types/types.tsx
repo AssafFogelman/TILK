@@ -15,7 +15,7 @@ export type StackParamList = {
   Login: undefined; //there are no params that are sent to this screen
   Register: undefined; //there are no params that are sent to this screen
   Tabs: NavigatorScreenParams<TabParamList>; //there are no params that are sent to this screen
-  Messages: { friendId: string }; //this screen will receive a param named "friendID" of type string */;
+  ChatRoom: { chat: ChatType }; //this screen will receive a param named "otherUserId" of type string */;
   SelectAvatar: undefined; //there are no params that are sent to this screen
   PersonalDetails: undefined; //there are no params that are sent to this screen
   LookingTo: undefined; //there are no params that are sent to this screen
@@ -30,13 +30,13 @@ export type TabParamList = {
 //this is the type for the useRoute() in "Welcome" Screen
 export type WelcomeScreenRouteProp = RouteProp<StackParamList, "Welcome">;
 
-//this is the type for the useRoute() in "Messages" Screen
-export type MessagesScreenRouteProp = RouteProp<StackParamList, "Messages">;
+//this is the type for the useRoute() in "ChatRoom" Screen
+export type ChatRoomScreenRouteProp = RouteProp<StackParamList, "ChatRoom">;
 
-//this is the type for the useNavigation() in "Messages" Screen
-export type MessagesScreenNavigationProp = NativeStackNavigationProp<
+//this is the type for the useNavigation() in "ChatRoom" Screen
+export type ChatRoomScreenNavigationProp = NativeStackNavigationProp<
   StackParamList,
-  "Messages"
+  "ChatRoom"
 >;
 
 //this is the type for the useNavigation() in "LookingTo" Screen
@@ -72,6 +72,12 @@ export type HomeScreenNavigationProp = CompositeNavigationProp<
 //this is the type for the useNavigation() in "Connections" Screen
 export type ConnectionsScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, "Connections">,
+  NativeStackNavigationProp<StackParamList>
+>;
+
+//this is the type for the useNavigation() in "ChatsScreen" Screen
+export type ChatsScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, "Chats">,
   NativeStackNavigationProp<StackParamList>
 >;
 

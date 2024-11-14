@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ChatMessageScreen from "./screens/ChatMessageScreen";
+import ChatRoomScreen from "./screens/ChatRoomScreen";
 import { StackParamList } from "./types/types";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import PhoneVerificationScreen from "./screens/PhoneVerificationScreen";
@@ -50,8 +50,8 @@ const StackNavigator = () => {
           />
 
           <Stack.Screen
-            name="Messages"
-            component={ChatMessageScreen}
+            name="ChatRoom"
+            component={ChatRoomScreen}
             // options={{ headerShown: false }}
           />
         </>
