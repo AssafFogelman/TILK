@@ -19,6 +19,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import axios, { isAxiosError } from "axios";
 import { queryClient } from "../services/queryClient";
 import { UserCard } from "../components/chats-screen-components/UserCardChats";
+import { UserInfoModal } from "../components/chats-screen-components/UserInfoModalChats";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.

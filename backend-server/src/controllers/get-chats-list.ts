@@ -11,6 +11,16 @@ export async function getChatsList(c: Context) {
 
     const chatsList = await db.query.chats.findMany({
       where: or(eq(chats.participant1, userId), eq(chats.participant2, userId)),
+      orderBy: (chats) => {
+        // Get the latest message date for each chat
+        const subQuery = db
+          .select({ maxDate: chatMessages.date })
+          .from(chatMessages)
+          .where(eq(chatMessages.chatId, chats.chatId))
+          .orderBy(desc(chatMessages.date))
+          .limit(1);
+        return desc(subQuery);
+      },
       with: {
         messages: {
           orderBy: [desc(chatMessages.date)],

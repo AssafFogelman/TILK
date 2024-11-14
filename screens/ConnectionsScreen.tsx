@@ -59,8 +59,8 @@ export const ConnectionsScreen = ({ searchQuery }: { searchQuery: string }) => {
           data={filteredData()}
           renderItem={renderItem}
           estimatedItemSize={116}
-          keyExtractor={(item) =>
-            "isSeparator" in item ? item.title : item.userId
+          keyExtractor={(item, index) =>
+            "isSeparator" in item ? `${item.title}` : `${item.userId}-${index}`
           }
         />
       </View>

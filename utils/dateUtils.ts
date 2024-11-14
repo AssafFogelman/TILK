@@ -1,3 +1,5 @@
+import { I18nManager } from "react-native";
+
 export const age = (dateOfBirth: Date) => {
   const diff_ms = Date.now() - dateOfBirth.getTime();
   const age_dt = new Date(diff_ms);
@@ -50,9 +52,18 @@ const formatDate = (inputDate: string) => {
   // More than 7 days ago
   const day = dateAsDate.getDate();
   const month = dateAsDate.getMonth() + 1; // Months are 0-indexed
-  return `${day.toString().padStart(2, "0")}/${month
+  if (I18nManager.isRTL) {
+    return `${day.toString().padStart(2, "0")}.${month
+      .toString()
+      .padStart(2, "0")}.${dateAsDate.getFullYear()}`;
+  }
+
+  return `${month
     .toString()
-    .padStart(2, "0")}`;
+    .padStart(
+      2,
+      "0"
+    )}.${day.toString().padStart(2, "0")}.${dateAsDate.getFullYear()}`;
 };
 
 const formatDate2 = (inputDate: string) => {

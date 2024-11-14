@@ -23,20 +23,30 @@ export const UserCard = ({
   );
 
   const RightContent = () => (
-    <View>
-      <Text>{formatDate(chat.messages[chat.messages.length - 1].date)}</Text>
+    <View
+      style={{
+        flex: 1,
+        flexDirection: "column",
+        alignItems: "flex-end",
+        marginEnd: 10,
+        paddingTop: 5,
+        paddingBottom: 10,
+        justifyContent: "space-between",
+      }}
+    >
+      <Text style={{ color: chat.unread ? "#25D366" : "#545454" }}>
+        {formatDate(chat.messages[0].date)}
+      </Text>
       {/* this difference between an unread chat and unread messages makes it 
       possible to mark a chat as unread even though all messages are read */}
       {chat.unread && (
         <Badge
-          size={10}
+          size={25}
           style={[
             {
-              backgroundColor: "chartreuse",
+              backgroundColor: "#25D366",
               borderWidth: 1,
               borderColor: "whitesmoke",
-              position: "absolute",
-              top: -2,
             },
             I18nManager.isRTL ? { left: 2 } : { right: 2 },
           ]}
@@ -55,8 +65,15 @@ export const UserCard = ({
     >
       <Card.Title
         titleStyle={chat.unread ? { fontWeight: "bold" } : undefined}
-        subtitleStyle={chat.unread ? { fontWeight: "bold" } : undefined}
+        subtitleStyle={{ color: "#545454" }}
         title={chat.otherUser.nickname}
+        subtitle={
+          !chat.messages[0]
+            ? ""
+            : chat.messages[0].messageType === "image"
+              ? "📷"
+              : chat.messages[0].text
+        }
         left={LeftContent}
         right={RightContent}
       />
