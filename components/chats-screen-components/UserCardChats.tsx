@@ -1,5 +1,5 @@
 import { Pressable, I18nManager, View } from "react-native";
-import { Avatar, Badge, Card, useTheme, Text } from "react-native-paper";
+import { Avatar, Badge, Card, Text } from "react-native-paper";
 import { ChatType, MessageType } from "../../types/types";
 import formatDate from "../../utils/dateUtils";
 

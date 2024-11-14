@@ -17,7 +17,7 @@ import {
 } from "../types/types";
 import { UserCard } from "../components/connections-screen-components/UserCardConnections";
 import { useEffect, useState } from "react";
-import { UserInfoModal } from "../components/connections-screen-components/UserInfoModal";
+import { UserInfoModal } from "../components/connections-screen-components/UserInfoModalConnections";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axios, { isAxiosError } from "axios";
 import { queryClient } from "../services/queryClient";

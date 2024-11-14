@@ -15,7 +15,6 @@ import {
   ConnectionsScreenUser,
 } from "../types/types";
 import { useEffect, useState } from "react";
-import { UserInfoModal } from "../components/connections-screen-components/UserInfoModal";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axios, { isAxiosError } from "axios";
 import { queryClient } from "../services/queryClient";
@@ -26,8 +25,7 @@ import { UserCard } from "../components/chats-screen-components/UserCardChats";
 // in addition, if the user wants to start a chat with a connection, he can find him here.
 // TODO: we might need to add a search bar here, so the user can search for a connection by nickname.
 export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
-  const [modalUserInfo, setModalUserInfo] =
-    useState<ConnectionsScreenUser | null>(null);
+  const [modalUserInfo, setModalUserInfo] = useState<ChatType | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const {
@@ -70,9 +68,7 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
           data={filteredData()}
           renderItem={renderItem}
           estimatedItemSize={116}
-          keyExtractor={(item) =>
-            "isSeparator" in item ? item.title : item.userId
-          }
+          keyExtractor={(item) => item.otherUser.userId}
         />
       </View>
 
@@ -84,8 +80,8 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
     </>
   );
 
-  function handleOpenModal(user: ConnectionsScreenUser) {
-    setModalUserInfo(user);
+  function handleOpenModal(chat: ChatType) {
+    setModalUserInfo(chat);
     setShowModal(true);
   }
 
@@ -132,9 +128,8 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
   }
 
   function filteredData() {
-    return chats?.filter((item) => {
-      if ("isSeparator" in item) return true;
-      return item.otherUser.nickname
+    return chats?.filter((chat) => {
+      return chat.otherUser.nickname
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase());
     });

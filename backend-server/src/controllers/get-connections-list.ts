@@ -196,8 +196,8 @@ export const getConnectionsList = async (c: Context) => {
     const lastMessages = await db
       .select({
         otherUserId: sql`CASE 
-          WHEN ${chatMessages.sender} = ${userId} THEN ${chatMessages.recipient}
-          ELSE ${chatMessages.sender}
+          WHEN ${chats.participant1} = ${userId} THEN ${chats.participant2}
+          ELSE ${chats.participant1}
         END`.as("otherUserId"),
         lastMessage: sql`
         CASE
@@ -207,17 +207,22 @@ export const getConnectionsList = async (c: Context) => {
         type: chatMessages.type,
         unread: chatMessages.unread,
       })
-      .from(chatMessages)
-      .where(
+      .from(chats)
+      .innerJoin(
+        chatMessages,
         and(
-          or(
-            eq(chatMessages.sender, userId),
-            eq(chatMessages.recipient, userId)
-          )
+          eq(chatMessages.chatId, chats.chatId),
+          //get the highest value of date
+          sql`${chatMessages.date} = (
+            SELECT MAX(date)
+            FROM ${chatMessages} cm2
+            WHERE cm2.chat_id = ${chats.chatId}
+          )`
         )
       )
-      .orderBy(desc(chatMessages.date)) //get the highest value of date first
-      .limit(1);
+      .where(
+        or(eq(chats.participant1, userId), eq(chats.participant2, userId))
+      );
 
     // a Map for quick lookup of last messages
     const lastMessagesMap = new Map(

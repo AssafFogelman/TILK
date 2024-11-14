@@ -272,7 +272,7 @@ export const chatMessages = pgTable(
       .notNull()
       .references(() => users.userId),
     type: messageTypeEnum("type").notNull(),
-    imageURI: text("image_URI"),
+    imageURL: text("image_url"),
     text: text("text"),
     unread: boolean("unread").default(true).notNull(),
     receivedSuccessfully: boolean("received_successfully")
@@ -459,7 +459,6 @@ export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
     //references
     references: [users.userId],
   }),
-  
 }));
 
 export const eventsRelations = relations(events, ({ one }) => ({

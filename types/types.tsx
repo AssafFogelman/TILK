@@ -262,8 +262,8 @@ export type ConnectionsListType = ConnectionsListItem[];
 
 export type MessageType = {
   date: string;
-  imageURL: string;
-  message: string;
+  imageURL: string | null;
+  text: string | null;
   unread: boolean;
   messageType: string;
   //senderId will tell us who sent the message - the user or the other user
@@ -281,6 +281,8 @@ export type UserType = {
   userId: string;
   nickname: string;
   smallAvatar: string;
+  originalAvatar: string;
+  biography: string;
 };
 export type ChatsType = ChatType[];
 
