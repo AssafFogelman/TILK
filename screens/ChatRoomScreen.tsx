@@ -25,6 +25,7 @@ import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import ChatMessage from "../components/chatMessage";
 import ChatTimestamp from "../components/ChatTimestamp";
+import { useQuery } from "@tanstack/react-query";
 
 type RecipientDataType = null | { image: string; name: string };
 
@@ -39,36 +40,29 @@ const ChatRoomScreen = () => {
 
   const route = useRoute<ChatRoomScreenRouteProp>();
   const navigation = useNavigation<ChatRoomScreenNavigationProp>();
-  const { chat } = route.params;
+  const { otherUserId } = route.params;
 
   //scroll the messages feed to the bottom at the entrance
+  //TODO
   useEffect(() => {
     scrollToBottom();
   }, []);
 
-  //fetch recipient data
-  useEffect(() => {
-    const fetchRecipientData = async () => {
-      try {
-        const response = await fetch(
-          `http://192.168.1.116:8000/messages/${chat.otherUser.userId}`
-        );
+  //fetch chat data - recipient data and chat messages
+  const {
+    data: chatData,
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["chatData", otherUserId],
+    queryFn: () => fetchChatData(otherUserId),
+    // Initialize with previous data if available
+    placeholderData: (previousData) => previousData,
+  });
 
-        //fetch returns a promise. a Response object with information. to resolve the promise we need to await. To extrapolate the data we need to use the json() method.
-        const data = await response.json();
-        setRecipientData(data);
-      } catch (error) {
-        console.log(
-          "could not fetch the recipient's data.. the error was: ",
-          error
-        );
-      }
-    };
-    fetchRecipientData();
-  }, []);
-
+  //TODO
   //fetch chat messages
-  const fetchMessages = async () => {
+  async function fetchChatData(userId: string) {
     try {
       // const response = await fetch(
       //   `http://192.168.1.116:8000/messages/getMessages/${userId}/${friendId}`
@@ -81,11 +75,7 @@ const ChatRoomScreen = () => {
         error
       );
     }
-  };
-
-  useEffect(() => {
-    fetchMessages();
-  }, []);
+  }
 
   //setting the header
   useEffect(() => {
@@ -234,7 +224,7 @@ const ChatRoomScreen = () => {
 
       const formData = new FormData();
       // formData.append("senderId", userId);
-      formData.append("recipientId", chat.otherUser.userId);
+      formData.append("recipientId", otherUserId);
       formData.append("messageType", messageType);
       // formData.append("imagePath", imagePath);
       if (messageType === "image") {

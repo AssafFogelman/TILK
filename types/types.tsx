@@ -15,7 +15,7 @@ export type StackParamList = {
   Login: undefined; //there are no params that are sent to this screen
   Register: undefined; //there are no params that are sent to this screen
   Tabs: NavigatorScreenParams<TabParamList>; //there are no params that are sent to this screen
-  ChatRoom: { chat: ChatType }; //this screen will receive a param named "otherUserId" of type string */;
+  ChatRoom: { otherUserId: string }; //this screen will receive a param named "otherUserId" of type string */;
   SelectAvatar: undefined; //there are no params that are sent to this screen
   PersonalDetails: undefined; //there are no params that are sent to this screen
   LookingTo: undefined; //there are no params that are sent to this screen

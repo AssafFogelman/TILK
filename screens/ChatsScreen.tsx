@@ -15,6 +15,7 @@ import axios, { isAxiosError } from "axios";
 import { queryClient } from "../services/queryClient";
 import { UserCard } from "../components/chats-screen-components/UserCardChats";
 import { UserInfoModal } from "../components/chats-screen-components/UserInfoModalChats";
+import { useQueryClient } from "@tanstack/react-query";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
@@ -25,6 +26,7 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
   const [showModal, setShowModal] = useState(false);
 
   const navigation = useNavigation<ChatsScreenNavigationProp>();
+  const queryClient = useQueryClient();
 
   const {
     data: chats,
@@ -59,7 +61,16 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
   );
 
   function goToChatRoom(chat: ChatType) {
-    navigation.navigate("ChatRoom", { chat });
+    // Prefetch the chat data
+    queryClient.prefetchQuery({
+      queryKey: ["chatData", chat.otherUser.userId],
+      queryFn: () => fetchChatData(chat.otherUser.userId),
+    });
+
+    // Navigate immediately with minimal data
+    navigation.navigate("ChatRoom", {
+      otherUserId: chat.otherUser.userId,
+    });
   }
 
   function handleOpenModal(chat: ChatType) {

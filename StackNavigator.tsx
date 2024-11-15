@@ -49,11 +49,7 @@ const StackNavigator = () => {
             options={{ headerShown: false }}
           />
 
-          <Stack.Screen
-            name="ChatRoom"
-            component={ChatRoomScreen}
-            // options={{ headerShown: false }}
-          />
+          <Stack.Screen name="ChatRoom" component={ChatRoomScreen} />
         </>
       ) : (
         <>
