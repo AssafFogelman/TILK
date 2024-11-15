@@ -12,8 +12,12 @@ import { getConnectionsList } from "../../controllers/get-connections-list";
 import { userSelectedTags } from "../../controllers/user-selected-tags";
 import { markAsRead } from "../../controllers/mark-as-read";
 import { getChatsList } from "../../controllers/get-chats-list";
+import { getChatMessages } from "../../controllers/get-chat-messages";
 
 export const chats = new Hono().basePath("/chats");
 
 //return all chats for the user
 chats.get("/", validateToken, getChatsList);
+
+//return all messages for a chat
+chats.get("/:otherUserId", /*validateToken,*/ getChatMessages);

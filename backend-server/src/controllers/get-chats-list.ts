@@ -1,4 +1,4 @@
-import { eq, or, desc, isNotNull, and } from "drizzle-orm";
+import { eq, or, desc, isNotNull, and, asc } from "drizzle-orm";
 import { Context } from "hono";
 import { chats, chatMessages } from "../drizzle/schema";
 import { db } from "../drizzle/db";
@@ -23,7 +23,7 @@ export async function getChatsList(c: Context) {
       },
       with: {
         messages: {
-          orderBy: [desc(chatMessages.date)],
+          orderBy: [asc(chatMessages.date)],
           columns: {
             date: true,
             imageURL: true,

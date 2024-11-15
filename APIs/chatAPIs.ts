@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MessageType } from "@/types/types";
+import { MessageType } from "../types/types";
 
 export async function fetchChatData(userId: string): Promise<MessageType[]> {
   try {

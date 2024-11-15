@@ -11,6 +11,7 @@ import {
   doublePrecision,
   primaryKey,
   check,
+  index,
 } from "drizzle-orm/pg-core";
 
 //declaring an enum
@@ -282,10 +283,10 @@ export const chatMessages = pgTable(
   (table) => {
     return {
       /** we will be looking for all the messages that two users share in a chat room.
-      So, will will search the "chat_messages" table for all the messages of that chat.
+      So, we will search the "chat_messages" table for all the messages of that chat.
       That is why we should index the "chat_Id" column.
       */
-      chatMessageIndex: uniqueIndex("chat_message_index").on(table.chatId),
+      chatMessageIndex: index("chat_message_index").on(table.chatId),
     };
   }
 );
