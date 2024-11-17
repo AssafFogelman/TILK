@@ -201,10 +201,10 @@ export const getConnectionsList = async (c: Context) => {
         END`.as("otherUserId"),
         lastMessage: sql`
         CASE
-          WHEN ${chatMessages.type} = 'text' THEN ${chatMessages.text}
+          WHEN ${chatMessages.messageType} = 'text' THEN ${chatMessages.text}
           ELSE 'image 🖼️'
         END`.as("lastMessage"),
-        type: chatMessages.type,
+        messageType: chatMessages.messageType,
         unread: chatMessages.unread,
       })
       .from(chats)
@@ -228,7 +228,11 @@ export const getConnectionsList = async (c: Context) => {
     const lastMessagesMap = new Map(
       lastMessages.map((msg) => [
         msg.otherUserId,
-        { text: String(msg.lastMessage), unread: msg.unread, type: msg.type },
+        {
+          text: String(msg.lastMessage),
+          unread: msg.unread,
+          messageType: msg.messageType,
+        },
       ])
     );
 

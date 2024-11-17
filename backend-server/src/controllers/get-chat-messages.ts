@@ -33,7 +33,7 @@ export async function getChatMessages(c: Context) {
             imageURL: true,
             text: true,
             unread: true,
-            type: true,
+            messageType: true,
             senderId: true,
             receivedSuccessfully: true,
           },
@@ -45,7 +45,13 @@ export async function getChatMessages(c: Context) {
 
     const { messages } = chat;
 
-    return c.json({ messages });
+    //convert date to ISO string for sending to the client
+    const formattedMessages: MessageType[] = messages.map((msg) => ({
+      ...msg,
+      date: msg.date.toISOString(),
+    }));
+
+    return c.json({ messages: formattedMessages });
   } catch (error) {
     console.log("error getting chat messages: ", error);
     return c.json({ message: "Error getting chat messages", error }, 401);

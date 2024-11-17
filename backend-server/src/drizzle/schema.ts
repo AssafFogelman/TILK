@@ -272,7 +272,7 @@ export const chatMessages = pgTable(
     senderId: uuid("sender_id")
       .notNull()
       .references(() => users.userId),
-    type: messageTypeEnum("type").notNull(),
+    messageType: messageTypeEnum("message_type").notNull(),
     imageURL: text("image_url"),
     text: text("text"),
     unread: boolean("unread").default(true).notNull(),

@@ -1,46 +1,100 @@
 import {
-  Image,
   KeyboardAvoidingView,
   Modal,
   Pressable,
   ScrollView,
-  Text,
   TextInput,
   View,
 } from "react-native";
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
+import React, { useEffect, useRef, useState } from "react";
+import { Entypo } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
-// import { UserContext } from "../UserContext";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   ChatMessageType,
   ChatRoomScreenRouteProp,
   ChatRoomScreenNavigationProp,
-  MessageIdType,
+  UserType,
 } from "../types/types";
 import * as ImagePicker from "expo-image-picker";
-import axios from "axios";
 import ChatMessage from "../components/chatMessage";
 import ChatTimestamp from "../components/ChatTimestamp";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ChatRoomHeader } from "../components/chat-room-components/ChatRoomHeader";
+import { socket } from "../socket";
 
 type RecipientDataType = null | { image: string; name: string };
 
 const ChatRoomScreen = () => {
   const [textInput, setTextInput] = useState("");
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
-  const [recipientData, setRecipientData] = useState<RecipientDataType>();
   const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedMessages, setSelectedMessages] = useState<MessageIdType[]>([]);
+  const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const scrollViewRef = useRef<null | ScrollView>(null);
 
   const route = useRoute<ChatRoomScreenRouteProp>();
   const navigation = useNavigation<ChatRoomScreenNavigationProp>();
-  const { otherUserId } = route.params;
+  const { otherUserData }: { otherUserData: UserType } = route.params;
+
+  const queryClient = useQueryClient();
+
+  const deleteMessagesMutation = useMutation({
+    mutationFn: (messageIdsToDelete: string[]) => {
+      return new Promise((resolve, reject) => {
+        // Emit delete event to socket
+        socket.emit(
+          "deleteMessages",
+          messageIdsToDelete,
+          (response: { success: boolean; error?: string }) => {
+            if (response.success) {
+              resolve(response);
+            } else {
+              reject(new Error(response.error || "Failed to delete messages"));
+            }
+          }
+        );
+
+        // Optional: Add timeout handling
+        const timeout = setTimeout(() => {
+          reject(new Error("Socket timeout: Delete operation took too long"));
+        }, 5000);
+
+        // Clean up timeout if operation completes
+        return () => clearTimeout(timeout);
+      });
+    },
+    onSuccess: (_, messageIdsToDelete) => {
+      queryClient.invalidateQueries({
+        queryKey: ["chatData", otherUserData.userId],
+      });
+
+      setSelectedMessages((currentArray) =>
+        currentArray.filter(
+          (messageId) => !messageIdsToDelete.includes(messageId)
+        )
+      );
+    },
+    onError: (error) => {
+      console.log("Error deleting messages:", error);
+      // Add user feedback here (e.g., toast notification)
+    },
+  });
+
+  // Listen for delete confirmations from other clients
+  useEffect(() => {
+    socket.on("messagesDeleted", (deletedMessageIds: string[]) => {
+      // Update UI when other clients delete messages
+      queryClient.invalidateQueries({
+        queryKey: ["chatData", otherUserData.userId],
+      });
+    });
+
+    return () => {
+      socket.off("messagesDeleted");
+    };
+  }, [otherUserData.userId, queryClient]);
 
   //scroll the messages feed to the bottom at the entrance
   //TODO
@@ -54,15 +108,15 @@ const ChatRoomScreen = () => {
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["chatData", otherUserId],
-    queryFn: () => fetchChatData(otherUserId),
+    queryKey: ["chatData", otherUserData.userId],
+    queryFn: () => fetchChatData(otherUserData.userId),
     // Initialize with previous data if available
     placeholderData: (previousData) => previousData,
   });
 
   //TODO
   //fetch chat messages
-  async function fetchChatData(userId: string) {
+  async function fetchChatData(otherUserId: string): Promise<void> {
     try {
       // const response = await fetch(
       //   `http://192.168.1.116:8000/messages/getMessages/${userId}/${friendId}`
@@ -77,86 +131,18 @@ const ChatRoomScreen = () => {
     }
   }
 
-  //setting the header
+  //set the header
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: "",
-      headerLeft: () => (
-        <View
-          style={{
-            flexDirection: "row-reverse",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          {/* the back arrow icon */}
-          <Ionicons
-            onPress={handleGoBack}
-            name="arrow-back"
-            size={24}
-            color="black"
-          />
-
-          {/* if there are selected messages, show their amount. if not, show chat recipient details */}
-          {selectedMessages.length > 0 ? (
-            <View>
-              <Text style={{ fontSize: 16, fontWeight: "500" }}>
-                {selectedMessages.length}
-              </Text>
-            </View>
-          ) : (
-            <View
-              style={{
-                flexDirection: "row-reverse",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              {recipientData ? (
-                recipientData.image ? (
-                  <Image
-                    style={{
-                      height: 30,
-                      width: 30,
-                      borderRadius: 15,
-                      resizeMode: "cover",
-                    }}
-                    source={{
-                      uri: recipientData.image,
-                    }}
-                  />
-                ) : null
-              ) : null}
-
-              <Text style={{ fontSize: 15, fontWeight: "500" }}>
-                {recipientData?.name}
-              </Text>
-            </View>
-          )}
-        </View>
+      header: () => (
+        <ChatRoomHeader
+          handleGoBack={handleGoBack}
+          selectedMessagesCount={selectedMessages.length}
+          otherUserData={otherUserData}
+        />
       ),
-      headerRight: () =>
-        // shows only if the user selected messages
-        selectedMessages.length > 0 ? (
-          <View
-            style={{
-              flexDirection: "row-reverse",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            <MaterialIcons
-              onPress={() => {
-                deleteSelectedMessages(selectedMessages);
-              }}
-              name="delete"
-              size={24}
-              color="black"
-            />
-          </View>
-        ) : null,
     });
-  }, [recipientData, selectedMessages]);
+  }, [otherUserData, selectedMessages, navigation, handleGoBack]);
 
   /* we have a problem that if we don't put "recipientData" as a dependency of the "useEffect", 
   it will not load besides the first time we enter the chat screen. however, this makes it much slower. 
@@ -168,31 +154,10 @@ const ChatRoomScreen = () => {
     }
   };
 
-  const handleGoBack = () => {
-    navigation.goBack();
+  const deleteSelectedMessages = (messageIdsToDelete: string[]) => {
+    deleteMessagesMutation.mutate(messageIdsToDelete);
   };
 
-  const deleteSelectedMessages = async (
-    messageIdsToDelete: MessageIdType[]
-  ) => {
-    try {
-      const response = await axios.delete("/messages", {
-        data: messageIdsToDelete,
-      });
-      //if the deletion process succeeded, reload the messages,
-      //and remove these messages from the selected messages array.
-      if (response.status === 200) {
-        fetchMessages();
-        setSelectedMessages((currentArray) =>
-          currentArray.filter(
-            (messageId) => !messageIdsToDelete.includes(messageId)
-          )
-        );
-      }
-    } catch (error) {
-      console.log("there was a problem deleting the selected messages:", error);
-    }
-  };
   const handleEmojiPress = () => {
     setShowEmojiSelector((currentState) => !currentState);
   };
@@ -224,7 +189,7 @@ const ChatRoomScreen = () => {
 
       const formData = new FormData();
       // formData.append("senderId", userId);
-      formData.append("recipientId", otherUserId);
+      formData.append("recipientId", otherUserData.userId);
       formData.append("messageType", messageType);
       // formData.append("imagePath", imagePath);
       if (messageType === "image") {
@@ -247,7 +212,7 @@ const ChatRoomScreen = () => {
         //resetting the text input field
         setTextInput("");
       }
-      fetchMessages();
+      fetchChatData(otherUserData.userId);
       //isn't this a bit wasteful? we download all the messages every time you write one message?
     } catch (error) {
       console.log("there was a problem sending the message:", error);
@@ -448,6 +413,10 @@ const ChatRoomScreen = () => {
       )}
     </>
   );
+
+  function handleGoBack() {
+    navigation.goBack();
+  }
 };
 
 export default ChatRoomScreen;

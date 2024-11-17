@@ -12,7 +12,7 @@ import { socket } from "./socket.js";
 
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { PaperProvider } from "react-native-paper";
+import { PaperProvider, Text } from "react-native-paper";
 import { useSetTheme } from "./styles/set-react-paper-theme";
 import { AuthProvider } from "./AuthContext";
 import { ErrorBoundary } from "./components/error-boundary/ErrorBoundary";
@@ -24,7 +24,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useReactQueryDevTools } from "@dev-plugins/react-query";
 import { queryClient } from "./services/queryClient";
-import { MessageIdType, MessageType } from "./types/types";
+import { MessageType } from "./types/types";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
@@ -47,9 +47,10 @@ export default function App() {
         <GestureHandlerRootView style={{ flex: 1 }}>
           <SafeAreaProvider>
             <SafeAreaView style={{ flex: 1 }}>
-              {/* <Text>
-              user is {isConnected ? "connected" : "disconnected"} to websocket
-            </Text> */}
+              <Text>
+                user is {isConnected ? "connected" : "disconnected"} to
+                websocket
+              </Text>
               <AuthProvider>
                 <LocationProvider>
                   <PaperProvider theme={theme}>
@@ -68,27 +69,6 @@ export default function App() {
   );
 }
 
-//is web socket connected?
-function useIsWebSocketConnected() {
-  //FIXME - we will remove this functionality in production
-  const [isConnected, setIsConnected] = useState(false);
-  useEffect(() => {
-    //if already connected, run connection function
-    if (socket.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      setIsConnected(true);
-    }
-    socket.on("connect", onConnect);
-    return () => {
-      socket.off("connect", onConnect);
-    };
-  }, []);
-  return isConnected;
-}
-
 function useWebSocketEventsAndDisconnect() {
   //load websocket events and cleanup
   useEffect(() => {
@@ -103,13 +83,14 @@ function useWebSocketEventsAndDisconnect() {
 
     function onIncomingMessage({
       imageURL,
-      message,
+      text,
       unread,
       messageType,
       senderId,
-      recipientId,
+      receivedSuccessfully,
+      date,
     }: MessageType) {
-      console.log("incoming message:", message);
+      console.log("incoming message:", text);
     }
 
     // function onDisconnect() {
@@ -139,4 +120,25 @@ function useWebSocketEventsAndDisconnect() {
       // socket.off('foo', onFooEvent);
     };
   }, []);
+}
+
+//is web socket connected?
+function useIsWebSocketConnected() {
+  //FIXME - we will remove this functionality in production
+  const [isConnected, setIsConnected] = useState(false);
+  useEffect(() => {
+    //if already connected, run connection function
+    if (socket.connected) {
+      onConnect();
+    }
+
+    function onConnect() {
+      setIsConnected(true);
+    }
+    socket.on("connect", onConnect);
+    return () => {
+      socket.off("connect", onConnect);
+    };
+  }, []);
+  return isConnected;
 }

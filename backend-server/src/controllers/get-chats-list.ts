@@ -29,7 +29,7 @@ export async function getChatsList(c: Context) {
             imageURL: true,
             text: true,
             unread: true,
-            type: true,
+            messageType: true,
             senderId: true,
             receivedSuccessfully: true,
           },
@@ -101,9 +101,9 @@ export async function getChatsList(c: Context) {
             imageURL: msg.imageURL,
             text: msg.text,
             unread: msg.unread,
-            messageType: msg.type,
+            messageType: msg.messageType,
             senderId: msg.senderId,
-            recipientId: msg.senderId,
+            receivedSuccessfully: msg.receivedSuccessfully,
           })
         ),
       };

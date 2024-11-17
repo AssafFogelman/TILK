@@ -16,6 +16,7 @@ import { queryClient } from "../services/queryClient";
 import { UserCard } from "../components/chats-screen-components/UserCardChats";
 import { UserInfoModal } from "../components/chats-screen-components/UserInfoModalChats";
 import { useQueryClient } from "@tanstack/react-query";
+import { fetchChatMessages } from "../APIs/chatAPIs";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
@@ -64,12 +65,12 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
     // Prefetch the chat data
     queryClient.prefetchQuery({
       queryKey: ["chatData", chat.otherUser.userId],
-      queryFn: () => fetchChatData(chat.otherUser.userId),
+      queryFn: () => fetchChatMessages(chat.otherUser.userId),
     });
 
     // Navigate immediately with minimal data
     navigation.navigate("ChatRoom", {
-      otherUserId: chat.otherUser.userId,
+      otherUserData: chat.otherUser,
     });
   }
 

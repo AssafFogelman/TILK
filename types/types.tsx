@@ -15,7 +15,7 @@ export type StackParamList = {
   Login: undefined; //there are no params that are sent to this screen
   Register: undefined; //there are no params that are sent to this screen
   Tabs: NavigatorScreenParams<TabParamList>; //there are no params that are sent to this screen
-  ChatRoom: { otherUserId: string }; //this screen will receive a param named "otherUserId" of type string */;
+  ChatRoom: { otherUserData: UserType }; //this screen will receive a param named "otherUserData" of type UserType
   SelectAvatar: undefined; //there are no params that are sent to this screen
   PersonalDetails: undefined; //there are no params that are sent to this screen
   LookingTo: undefined; //there are no params that are sent to this screen
@@ -180,8 +180,6 @@ export type SignUpType = {
   userToken: string;
 };
 
-export type MessageIdType = string;
-
 //************************** connections list types **************************
 
 export type ReceivedRequestsQueryResult = {
@@ -236,7 +234,7 @@ export type ConnectionsScreenUser = {
   lastMessage?: {
     text: string;
     unread: boolean;
-    type: string;
+    messageType: string;
   } | null;
   unread?: boolean;
   socketId?: string | null;
@@ -274,7 +272,7 @@ export type MessageType = {
   messageType: string;
   //senderId will tell us who sent the message - the user or the other user
   senderId: string;
-  recipientId: string;
+  receivedSuccessfully: boolean;
 };
 
 export type ChatType = {
@@ -290,6 +288,7 @@ export type UserType = {
   originalAvatar: string;
   biography: string;
 };
+
 export type ChatsType = ChatType[];
 
 //************************** tabs types **************************
