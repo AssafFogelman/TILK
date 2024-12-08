@@ -7,7 +7,7 @@ import {
   ErrorView,
   LoadingView,
   NoDataView,
-} from "../components/connections-screen-components/StatusViews";
+} from "../components/connections-screen-components/StatusViewsConnections";
 import {
   ConnectionsListItem,
   ConnectionsListType,

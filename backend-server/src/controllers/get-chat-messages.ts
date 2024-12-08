@@ -7,7 +7,7 @@ import { ChatType, MessageType, UserType } from "../../../types/types";
 //get the chats list
 export async function getChatMessages(c: Context) {
   try {
-    const { userId } = { userId: "a8d8bbc4-6ae9-4f0c-87ca-2cb4da6a210c" }; //c.get("tokenPayload");
+    const { userId } = c.get("tokenPayload");
     const otherUserId = c.req.param("otherUserId");
 
     //check if otherUserId is a valid user
@@ -29,6 +29,7 @@ export async function getChatMessages(c: Context) {
         messages: {
           orderBy: [asc(chatMessages.date)],
           columns: {
+            messageId: true,
             date: true,
             imageURL: true,
             text: true,
@@ -51,7 +52,7 @@ export async function getChatMessages(c: Context) {
       date: msg.date.toISOString(),
     }));
 
-    return c.json({ messages: formattedMessages });
+    return c.json(formattedMessages);
   } catch (error) {
     console.log("error getting chat messages: ", error);
     return c.json({ message: "Error getting chat messages", error }, 401);

@@ -3,11 +3,6 @@ import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
 import { List } from "react-native-paper";
 
-import {
-  ErrorView,
-  LoadingView,
-  NoDataView,
-} from "../components/connections-screen-components/StatusViews";
 import { ChatsScreenNavigationProp, ChatsType, ChatType } from "../types/types";
 import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
@@ -17,6 +12,11 @@ import { UserCard } from "../components/chats-screen-components/UserCardChats";
 import { UserInfoModal } from "../components/chats-screen-components/UserInfoModalChats";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchChatMessages } from "../APIs/chatAPIs";
+import {
+  ErrorView,
+  LoadingView,
+  NoDataView,
+} from "../components/chats-screen-components/StatusViewsChats";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
@@ -27,7 +27,6 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
   const [showModal, setShowModal] = useState(false);
 
   const navigation = useNavigation<ChatsScreenNavigationProp>();
-  const queryClient = useQueryClient();
 
   const {
     data: chats,
@@ -64,7 +63,7 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
   function goToChatRoom(chat: ChatType) {
     // Prefetch the chat data
     queryClient.prefetchQuery({
-      queryKey: ["chatData", chat.otherUser.userId],
+      queryKey: ["chatMessages", chat.otherUser.userId],
       queryFn: () => fetchChatMessages(chat.otherUser.userId),
     });
 

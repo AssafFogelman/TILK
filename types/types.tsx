@@ -126,17 +126,6 @@ export type knnDataItemType = {
 
 export type knnDataType = knnDataItemType[] | null;
 
-export type ChatMessageType = {
-  __v: string;
-  _id: string;
-  imageUrl: string;
-  messageType: string;
-  recipientId: string;
-  senderId: { _id: string; name: string };
-  timeStamp: string;
-  message: string;
-};
-
 //************************** auth Context Types **************************
 
 export const ACTIONS = {
@@ -265,6 +254,7 @@ export type ConnectionsListType = ConnectionsListItem[];
 //************************** chats types **************************
 
 export type MessageType = {
+  messageId: string;
   date: string;
   imageURL: string | null;
   text: string | null;

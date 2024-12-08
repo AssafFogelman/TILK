@@ -31,7 +31,9 @@
     chats screen:
     it's a list of users sorted by the last time you chatted with them.
     once you click on a user, you go to the chat screen that covers the footer of the tabs. and a different header too. (if you return it returns).
-    
+    * make the fetch chats to only fetch the last message and the unread count.
+
+
     profile screen:
     * edit avatar
     * edit bio

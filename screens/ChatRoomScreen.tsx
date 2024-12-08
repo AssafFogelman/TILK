@@ -12,24 +12,27 @@ import { Ionicons } from "@expo/vector-icons";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
-  ChatMessageType,
   ChatRoomScreenRouteProp,
   ChatRoomScreenNavigationProp,
   UserType,
 } from "../types/types";
 import * as ImagePicker from "expo-image-picker";
 import ChatMessage from "../components/chatMessage";
-import ChatTimestamp from "../components/ChatTimestamp";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import ChatTimestamp from "../components/chat-room-components/ChatTimestamp";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { ChatRoomHeader } from "../components/chat-room-components/ChatRoomHeader";
 import { socket } from "../socket";
-
-type RecipientDataType = null | { image: string; name: string };
+import { queryClient } from "../services/queryClient";
+import { fetchChatMessages } from "../APIs/chatAPIs";
+import {
+  ErrorView,
+  LoadingView,
+} from "../components/chat-room-components/StatusViewsChatRoom";
+import { Text } from "react-native-paper";
 
 const ChatRoomScreen = () => {
   const [textInput, setTextInput] = useState("");
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessageType[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const scrollViewRef = useRef<null | ScrollView>(null);
@@ -37,8 +40,6 @@ const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomScreenRouteProp>();
   const navigation = useNavigation<ChatRoomScreenNavigationProp>();
   const { otherUserData }: { otherUserData: UserType } = route.params;
-
-  const queryClient = useQueryClient();
 
   const deleteMessagesMutation = useMutation({
     mutationFn: (messageIdsToDelete: string[]) => {
@@ -67,7 +68,7 @@ const ChatRoomScreen = () => {
     },
     onSuccess: (_, messageIdsToDelete) => {
       queryClient.invalidateQueries({
-        queryKey: ["chatData", otherUserData.userId],
+        queryKey: ["chatMessages", otherUserData.userId],
       });
 
       setSelectedMessages((currentArray) =>
@@ -94,7 +95,7 @@ const ChatRoomScreen = () => {
     return () => {
       socket.off("messagesDeleted");
     };
-  }, [otherUserData.userId, queryClient]);
+  }, [otherUserData.userId]);
 
   //scroll the messages feed to the bottom at the entrance
   //TODO
@@ -102,34 +103,17 @@ const ChatRoomScreen = () => {
     scrollToBottom();
   }, []);
 
-  //fetch chat data - recipient data and chat messages
+  //fetch chat messages
   const {
-    data: chatData,
+    data: chatMessages = [],
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["chatData", otherUserData.userId],
-    queryFn: () => fetchChatData(otherUserData.userId),
+    queryKey: ["chatMessages", otherUserData.userId],
+    queryFn: () => fetchChatMessages(otherUserData.userId),
     // Initialize with previous data if available
     placeholderData: (previousData) => previousData,
   });
-
-  //TODO
-  //fetch chat messages
-  async function fetchChatData(otherUserId: string): Promise<void> {
-    try {
-      // const response = await fetch(
-      //   `http://192.168.1.116:8000/messages/getMessages/${userId}/${friendId}`
-      // );
-      // const data = await response.json();
-      // setChatMessages(data);
-    } catch (error) {
-      console.log(
-        "there was an error trying to fetch the chat's messages:",
-        error
-      );
-    }
-  }
 
   //set the header
   useEffect(() => {
@@ -142,17 +126,15 @@ const ChatRoomScreen = () => {
         />
       ),
     });
-  }, [otherUserData, selectedMessages, navigation, handleGoBack]);
+
+    function handleGoBack() {
+      navigation.goBack();
+    }
+  }, [otherUserData, selectedMessages, navigation]);
 
   /* we have a problem that if we don't put "recipientData" as a dependency of the "useEffect", 
   it will not load besides the first time we enter the chat screen. however, this makes it much slower. 
   there might be a faster way. try to solve this in the future. */
-
-  const scrollToBottom = () => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({ animated: false });
-    }
-  };
 
   const deleteSelectedMessages = (messageIdsToDelete: string[]) => {
     deleteMessagesMutation.mutate(messageIdsToDelete);
@@ -212,7 +194,7 @@ const ChatRoomScreen = () => {
         //resetting the text input field
         setTextInput("");
       }
-      fetchChatData(otherUserData.userId);
+      // fetchChatData(otherUserData.userId);
       //isn't this a bit wasteful? we download all the messages every time you write one message?
     } catch (error) {
       console.log("there was a problem sending the message:", error);
@@ -257,29 +239,35 @@ const ChatRoomScreen = () => {
   return (
     <>
       <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#F0F0F0" }}>
-        <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={{ flexGrow: 1 }}
-          onContentSizeChange={scrollToBottom}
-        >
-          {/* chat messages go here */}
-          {chatMessages.map((chatMessage, index) => (
-            <View key={index}>
-              <ChatTimestamp
-                chatMessage={chatMessage}
-                index={index}
-                previousMessageTimestamp={
-                  chatMessages[index ? index - 1 : 0].timeStamp
-                }
-              />
-              <ChatMessage
-                chatMessage={chatMessage}
-                selectedMessages={selectedMessages}
-                setSelectedMessages={setSelectedMessages}
-              />
-            </View>
-          ))}
-        </ScrollView>
+        {isPending || !chatMessages ? (
+          <LoadingView />
+        ) : isError ? (
+          <ErrorView />
+        ) : (
+          <ScrollView
+            ref={scrollViewRef}
+            contentContainerStyle={{ flexGrow: 1 }}
+            onContentSizeChange={scrollToBottom}
+          >
+            {/* chat messages go here */}
+            {chatMessages.map((chatMessage, index) => (
+              <View key={index} style={{ paddingTop: 10 }}>
+                <ChatTimestamp
+                  chatMessage={chatMessage}
+                  index={index}
+                  previousMessageTimestamp={
+                    chatMessages[index ? index - 1 : 0].date
+                  }
+                />
+                <ChatMessage
+                  chatMessage={chatMessage}
+                  selectedMessages={selectedMessages}
+                  setSelectedMessages={setSelectedMessages}
+                />
+              </View>
+            ))}
+          </ScrollView>
+        )}
 
         {/* Modal for taking photos and choosing photos */}
         <Modal
@@ -414,8 +402,10 @@ const ChatRoomScreen = () => {
     </>
   );
 
-  function handleGoBack() {
-    navigation.goBack();
+  function scrollToBottom() {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: false });
+    }
   }
 };
 
