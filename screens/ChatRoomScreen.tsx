@@ -1,4 +1,5 @@
 import {
+  I18nManager,
   KeyboardAvoidingView,
   Modal,
   Pressable,
@@ -15,6 +16,7 @@ import {
   ChatRoomScreenRouteProp,
   ChatRoomScreenNavigationProp,
   UserType,
+  MessageType,
 } from "../types/types";
 import * as ImagePicker from "expo-image-picker";
 import ChatMessage from "../components/chatMessage";
@@ -29,6 +31,8 @@ import {
   LoadingView,
 } from "../components/chat-room-components/StatusViewsChatRoom";
 import { Text } from "react-native-paper";
+import { useAuthState } from "../AuthContext";
+const SOCKET_TIMEOUT = 5000; // 5 seconds
 
 const ChatRoomScreen = () => {
   const [textInput, setTextInput] = useState("");
@@ -37,10 +41,10 @@ const ChatRoomScreen = () => {
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const scrollViewRef = useRef<null | ScrollView>(null);
 
-  const route = useRoute<ChatRoomScreenRouteProp>();
   const navigation = useNavigation<ChatRoomScreenNavigationProp>();
+  const route = useRoute<ChatRoomScreenRouteProp>();
   const { otherUserData }: { otherUserData: UserType } = route.params;
-
+  const { userId } = useAuthState();
   const deleteMessagesMutation = useMutation({
     mutationFn: (messageIdsToDelete: string[]) => {
       return new Promise((resolve, reject) => {
@@ -144,95 +148,88 @@ const ChatRoomScreen = () => {
     setShowEmojiSelector((currentState) => !currentState);
   };
 
-  type messageTypes = "text" | "image";
-
-  const handleSendMessageOfType = async (
-    messageType: messageTypes,
-    imageUri: string
-  ) => {
+  const handleSendMessage = async () => {
     try {
-      //upload the image file
+      const tempId = Date.now().toString();
+      const newMessage: MessageType = {
+        messageId: tempId, // Temporary ID for optimistic update
+        date: new Date().toISOString(),
+        imageURL: null,
+        text: textInput,
+        unread: false,
+        //if the message is sent by the user, and then becomes read, that means that the other user read it
+        //if the message is sent by the other user, and then becomes read, that means that the user read it
+        //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
+        messageType: "text",
+        senderId: userId,
+        receivedSuccessfully: false,
+      };
 
-      /*
-      //this is a way to upload the image not through a formData. 
-      //it works, but you then need to separately upload the other 
-      //data for the database
-      let imagePath = await FileSystem.uploadAsync(
-        "http://192.168.1.116:8000/messages/upload-image",
-        imageUri,
+      // Optimistically update the query
+      queryClient.setQueryData(
+        ["chatMessages", otherUserData.userId],
+        (oldData: typeof chatMessages = []) => [...oldData, newMessage]
+      );
+
+      let timeoutId: NodeJS.Timeout;
+
+      //send the message using websocket
+      socket.emit(
+        "sendMessage",
         {
-          httpMethod: "POST",
-          uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-          fieldName: "imageFile",
+          text: textInput,
+          recipientId: otherUserData.userId,
+          senderId: userId,
+          tempId, // Include temporary ID in emission
+        },
+        // Acknowledgment callback
+        (response: { success: boolean; messageId: string }) => {
+          clearTimeout(timeoutId);
+          if (response.success) {
+            // Update the temporary ID with the real one - important for deleting messages later
+            queryClient.setQueryData(
+              ["chatMessages", otherUserData.userId],
+              (oldData: typeof chatMessages = []) =>
+                oldData?.map((message) =>
+                  message.messageId === tempId
+                    ? {
+                        ...message,
+                        messageId: response.messageId,
+                        receivedSuccessfully: true,
+                      }
+                    : message
+                )
+            );
+          } else {
+            // Handle failure - remove the optimistic message
+            queryClient.setQueryData(
+              ["chatMessages", otherUserData.userId],
+              (oldData: typeof chatMessages = []) =>
+                oldData?.filter((message) => message.messageId !== tempId)
+            );
+            // Show error to user
+            console.error("Failed to send message");
+          }
         }
-      ).then((response) => response.body.split("*")[1].replaceAll("\\\\", "/"));
-      // example of "imagePath": files/image-1708103234814-333945908.jpeg
-      */
+      );
+      //if the message is not sent within 5 seconds, remove the optimistic message
+      timeoutId = setTimeout(() => {
+        // Remove the optimistic message if no response after timeout
+        queryClient.setQueryData(
+          ["chatMessages", otherUserData.userId],
+          (oldData: typeof chatMessages = []) =>
+            oldData?.filter((message) => message.messageId !== tempId)
+        );
+        console.log("Message send timeout");
+      }, SOCKET_TIMEOUT);
 
-      const formData = new FormData();
-      // formData.append("senderId", userId);
-      formData.append("recipientId", otherUserData.userId);
-      formData.append("messageType", messageType);
-      // formData.append("imagePath", imagePath);
-      if (messageType === "image") {
-        formData.append("imageFile", {
-          uri: imageUri,
-          name: "Image.jpg",
-          type: "image/jpeg",
-        } as unknown as Blob);
-      } else {
-        //if messageType is "text"
-        formData.append("messageText", textInput);
-      }
-
-      const response = await fetch("http://192.168.1.116:8000/messages/", {
-        method: "POST",
-        body: formData,
-      }); // senderId = the user who sent the message. recipientId = the user receiving the message
-
-      if (response.ok) {
-        //resetting the text input field
-        setTextInput("");
-      }
-      // fetchChatData(otherUserData.userId);
-      //isn't this a bit wasteful? we download all the messages every time you write one message?
+      setTextInput("");
     } catch (error) {
+      // Rollback on error
+      queryClient.invalidateQueries({
+        queryKey: ["chatMessages", otherUserData.userId],
+      });
       console.log("there was a problem sending the message:", error);
-    }
-  };
-
-  const pickPhoto = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      //videos and images
-      allowsEditing: true,
-      //allows to edit the photo/video after it is chosen
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      handleSendMessageOfType("image", result.assets[0].uri);
-      // setPhoto(result.assets[0].uri);
-    }
-  };
-
-  const takePhoto = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      //videos and images
-      allowsEditing: true,
-      //allows to edit the photo/video after it is taken
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      handleSendMessageOfType("image", result.assets[0].uri);
-
-      // setPhoto(result.assets[0].uri);
     }
   };
 
@@ -297,7 +294,6 @@ const ChatRoomScreen = () => {
               }}
               onPress={() => {
                 setModalVisible(false);
-                pickPhoto();
               }}
               name="folder-images"
               size={30}
@@ -317,7 +313,6 @@ const ChatRoomScreen = () => {
               size={30}
               onPress={() => {
                 setModalVisible(false);
-                takePhoto();
               }}
               color="white"
             />
@@ -327,7 +322,7 @@ const ChatRoomScreen = () => {
         {/* chat input line */}
         <View
           style={{
-            flexDirection: "row-reverse",
+            flexDirection: I18nManager.isRTL ? "row" : "row-reverse",
             alignItems: "center",
             paddingHorizontal: 10,
             paddingVertical: 10,
@@ -340,7 +335,7 @@ const ChatRoomScreen = () => {
         >
           <Entypo
             onPress={handleEmojiPress}
-            style={{ marginStart: 6 }}
+            style={{ marginHorizontal: 6 }}
             name={showEmojiSelector ? "circle-with-cross" : "emoji-happy"}
             size={24}
             color="grey"
@@ -361,31 +356,41 @@ const ChatRoomScreen = () => {
             }}
           />
 
-          <Entypo
-            style={{ paddingStart: 8 }}
-            name="image"
-            size={24}
-            color="grey"
-            onPress={() => setModalVisible(true)}
-          />
-
           {/* Send button */}
 
           <Pressable
-            style={{
-              backgroundColor: "#007bff",
-              padding: 5,
-              marginEnd: 15,
-              marginStart: 9,
-              paddingVertical: 10,
-              paddingStart: 8,
-              paddingEnd: 12,
-              borderRadius: 25,
-            }}
-            onPress={() => handleSendMessageOfType("text", "")}
+            style={[
+              {
+                backgroundColor: "#007bff",
+                padding: 5,
+                paddingVertical: 10,
+                borderRadius: 25,
+              },
+              I18nManager.isRTL
+                ? {
+                    marginStart: 15,
+                    marginEnd: 9,
+                    paddingStart: 12,
+                    paddingEnd: 8,
+                  }
+                : {
+                    marginStart: 9,
+                    marginEnd: 15,
+                    paddingStart: 8,
+                    paddingEnd: 12,
+                  },
+            ]}
+            onPress={handleSendMessage}
             disabled={!textInput}
           >
-            <Ionicons name="send" size={24} color="white" />
+            <Ionicons
+              name="send"
+              size={24}
+              color="white"
+              style={{
+                transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
+              }}
+            />
           </Pressable>
         </View>
       </KeyboardAvoidingView>

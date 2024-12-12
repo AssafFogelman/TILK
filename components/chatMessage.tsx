@@ -1,4 +1,11 @@
-import { Image, Pressable, Text, View, StyleSheet } from "react-native";
+import {
+  Image,
+  Pressable,
+  Text,
+  View,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 import React, { useContext } from "react";
 import { MessageType } from "../types/types";
 import { useAuthState } from "../AuthContext";
@@ -40,6 +47,7 @@ const ChatMessage = ({
   };
 
   const isMessageSelected = selectedMessages.includes(chatMessage.messageId);
+  const isPending = !chatMessage.receivedSuccessfully;
 
   if (chatMessage.messageType === "text") {
     return (
@@ -53,8 +61,10 @@ const ChatMessage = ({
             ? styles.userMessage
             : styles.recipientMessage,
           isMessageSelected && styles.selectedMessage,
+          isPending && styles.pendingMessage,
         ]}
       >
+        {isPending && <ActivityIndicator size="small" />}
         <View style={styles.messageContent}>
           <Text style={styles.messageText}>{chatMessage.text}</Text>
           <Text style={styles.timeText}>{formatTime(chatMessage.date)}</Text>
@@ -98,6 +108,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#8E8E8E",
     alignSelf: "flex-end",
+  },
+  pendingMessage: {
+    backgroundColor: "#FFE4E1", // light red for pending messages
   },
 });
 

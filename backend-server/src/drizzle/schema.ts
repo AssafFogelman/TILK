@@ -276,6 +276,9 @@ export const chatMessages = pgTable(
     imageURL: text("image_url"),
     text: text("text"),
     unread: boolean("unread").default(true).notNull(),
+    //if the message is sent by the user, and then becomes read, that means that the other user read it
+    //if the message is sent by the other user, and then becomes read, that means that the user read it
+    //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
     receivedSuccessfully: boolean("received_successfully")
       .default(false)
       .notNull(),
