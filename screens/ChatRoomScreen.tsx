@@ -32,6 +32,7 @@ import {
 } from "../components/chat-room-components/StatusViewsChatRoom";
 import { Text } from "react-native-paper";
 import { useAuthState } from "../AuthContext";
+import { emit } from "../APIs/emit";
 const SOCKET_TIMEOUT = 5000; // 5 seconds
 
 const ChatRoomScreen = () => {
@@ -156,14 +157,13 @@ const ChatRoomScreen = () => {
         messageId: tempId, // Temporary ID for optimistic update
         sentDate: new Date().toISOString(),
         receivedDate: null,
-        imageURL: null,
         text: textInput,
-        unread: false,
+        unread: true,
         //if the message is sent by the user, and then becomes read, that means that the other user read it
         //if the message is sent by the other user, and then becomes read, that means that the user read it
         //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
-        messageType: "text",
         senderId: userId,
+        gotToServer: false,
       };
 
       // Optimistically update the query
@@ -174,17 +174,26 @@ const ChatRoomScreen = () => {
 
       let timeoutId: NodeJS.Timeout;
 
+      type SendMessageResponseType = {
+        success: boolean;
+        messageId: string;
+      };
       //send the message using websocket
-      socket.emit(
+      emit<SendMessageResponseType>(
+        socket,
         "sendMessage",
         newMessage,
         // Acknowledgment callback
-        (response: { success: boolean; messageId: string }) => {
-          clearTimeout(timeoutId);
-          if (response.success) {
+        (error, response) => {
+          if (error) {
+            //we received this error from the server, meaning that the message arrived but
+            // the message was already sent by us earlier.
+            return;
+          }
+          if (response?.success) {
             // Update the temporary ID with the real one - important for deleting messages later
             queryClient.setQueryData(
-              ["chatMessages", otherUserData.userId],
+              ["chatMessages", chatId],
               (oldData: typeof chatMessages = []) =>
                 oldData?.map((message) =>
                   message.messageId === tempId

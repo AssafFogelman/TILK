@@ -22,7 +22,8 @@ const weekdays = [
   "Saturday",
 ];
 
-const formatDate = (inputDate: string) => {
+const formatDate = (inputDate: string | null) => {
+  if (!inputDate) return "";
   const dateAsDate = new Date(inputDate);
   const nowAsDate = new Date();
   const dayDifference = Math.abs(dateAsDate.getDay() - nowAsDate.getDay());

@@ -37,7 +37,7 @@ export const UserCard = ({
       }}
     >
       <Text style={{ color: chat.unread ? "#25D366" : "#545454" }}>
-        {formatDate(chat.messages[0].date)}
+        {formatDate(chat.lastMessageDate)}
       </Text>
       {/* this difference between an unread chat and unread messages makes it 
       possible to mark a chat as unread even though all messages are read */}
@@ -70,13 +70,7 @@ export const UserCard = ({
           titleStyle={chat.unread ? { fontWeight: "bold" } : undefined}
           subtitleStyle={{ color: "#545454" }}
           title={chat.otherUser.nickname}
-          subtitle={
-            !chat.messages[0]
-              ? ""
-              : chat.messages[0].messageType === "image"
-                ? "📷"
-                : chat.messages[0].text
-          }
+          subtitle={chat.lastMessageText}
           left={LeftContent}
           right={RightContent}
         />

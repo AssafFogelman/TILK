@@ -199,12 +199,7 @@ export const getConnectionsList = async (c: Context) => {
           WHEN ${chats.participant1} = ${userId} THEN ${chats.participant2}
           ELSE ${chats.participant1}
         END`.as("otherUserId"),
-        lastMessage: sql`
-        CASE
-          WHEN ${chatMessages.messageType} = 'text' THEN ${chatMessages.text}
-          ELSE 'image 🖼️'
-        END`.as("lastMessage"),
-        messageType: chatMessages.messageType,
+        lastMessage: chatMessages.text,
         unread: chatMessages.unread,
       })
       .from(chats)
@@ -231,7 +226,6 @@ export const getConnectionsList = async (c: Context) => {
         {
           text: String(msg.lastMessage),
           unread: msg.unread,
-          messageType: msg.messageType,
         },
       ])
     );

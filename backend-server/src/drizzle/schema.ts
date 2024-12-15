@@ -12,6 +12,7 @@ import {
   primaryKey,
   check,
   index,
+  integer,
 } from "drizzle-orm/pg-core";
 
 //declaring an enum
@@ -218,9 +219,6 @@ export const blocks = pgTable(
   }
 );
 
-//declaring an enum for message types
-export const messageTypeEnum = pgEnum("message_type_enum", ["image", "text"]);
-
 //chats
 export const chats = pgTable(
   "chats",
@@ -236,10 +234,9 @@ export const chats = pgTable(
     lastMessageSender: uuid("last_message_sender").references(
       () => users.userId
     ),
-    lastMessageType: messageTypeEnum("last_message_type"),
-    lastMessageImageURL: text("last_message_image_url"),
     lastMessageText: text("last_message_text"),
-    unread: boolean("unread").default(true).notNull(),
+    unread: boolean("unread").default(false).notNull(),
+    unreadCount: integer("unread_count").default(0).notNull(),
     //if the message is sent by the user, and then becomes read, that means that the other user read it
     //if the message is sent by the other user, and then becomes read, that means that the user read it
     //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
@@ -284,13 +281,12 @@ export const chatMessages = pgTable(
     senderId: uuid("sender_id")
       .notNull()
       .references(() => users.userId),
-    messageType: messageTypeEnum("message_type").notNull(),
-    imageURL: text("image_url"),
     text: text("text"),
     unread: boolean("unread").default(true).notNull(),
     //if the message is sent by the user, and then becomes read, that means that the other user read it
     //if the message is sent by the other user, and then becomes read, that means that the user read it
     //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
+    gotToServer: boolean("got_to_server").default(false).notNull(),
   },
   (table) => {
     return {

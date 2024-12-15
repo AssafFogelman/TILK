@@ -223,7 +223,6 @@ export type ConnectionsScreenUser = {
   lastMessage?: {
     text: string;
     unread: boolean;
-    messageType: string;
   } | null;
   unread?: boolean;
   socketId?: string | null;
@@ -257,15 +256,14 @@ export type MessageType = {
   messageId: string;
   sentDate: string;
   receivedDate: string | null;
-  imageURL: string | null;
   text: string | null;
   unread: boolean;
   //if the message is sent by the user, and then becomes read, that means that the other user read it
   //if the message is sent by the other user, and then becomes read, that means that the user read it
   //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
-  messageType: string;
   //senderId will tell us who sent the message - the user or the other user
   senderId: string;
+  gotToServer: boolean;
 };
 
 export type ChatType = {

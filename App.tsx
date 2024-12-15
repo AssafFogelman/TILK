@@ -81,16 +81,8 @@ function useWebSocketEventsAndDisconnect() {
       console.log("websocket connected!");
     }
 
-    function onIncomingMessage({
-      imageURL,
-      text,
-      unread,
-      messageType,
-      senderId,
-      receivedSuccessfully,
-      date,
-    }: MessageType) {
-      console.log("incoming message:", text);
+    function onIncomingMessage(message: MessageType) {
+      console.log("incoming message:", message);
     }
 
     // function onDisconnect() {
