@@ -14,6 +14,9 @@ import { users } from "./drizzle/schema";
 import { eq } from "drizzle-orm";
 import { err } from "drizzle-kit/cli/views";
 import * as os from "node:os";
+import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected";
+import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected";
+import { sendMessage } from "./APIs/websocket/send-message";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -74,37 +77,9 @@ io.on("connection", (socket) => {
   console.log(
     `client connected! id: ${socket.id}, headers: ${socket.request.headers}`
   );
-  socket.on("setCurrentlyConnected", async (userId) => {
-    try {
-      //tie the socket id to the appropriate user
-      //set "currently_connected" to true
-      await db
-        .update(users)
-        .set({ socketId: socket.id, currentlyConnected: true })
-        .where(eq(users.userId, userId));
-      console.log(
-        "the socket id " + socket.id + " was entered into userId: " + userId
-      );
-    } catch (error) {
-      console.log(
-        "error trying to set currentlyConnected in the database: ",
-        error
-      );
-    }
-  });
-  socket.on("disconnect", async (reason) => {
-    try {
-      console.log(`user ${socket.id} disconnected for ${reason}`);
-
-      //set the user that disconnected as not "currently connected" in the DB
-      await db
-        .update(users)
-        .set({ socketId: null, currentlyConnected: false })
-        .where(eq(users.socketId, socket.id));
-    } catch (error) {
-      console.log("error trying to delete socket Id for the user: ", error);
-    }
-  });
+  socket.on("setCurrentlyConnected", setCurrentlyConnected);
+  socket.on("disconnect", registerAsUnconnected);
+  socket.on("sendMessage", sendMessage);
 });
 
 /*

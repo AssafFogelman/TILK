@@ -15,7 +15,7 @@ export type StackParamList = {
   Login: undefined; //there are no params that are sent to this screen
   Register: undefined; //there are no params that are sent to this screen
   Tabs: NavigatorScreenParams<TabParamList>; //there are no params that are sent to this screen
-  ChatRoom: { otherUserData: UserType }; //this screen will receive a param named "otherUserData" of type UserType
+  ChatRoom: { otherUserData: UserType; chatId: string }; //this screen will receive a param named "otherUserData" of type UserType
   SelectAvatar: undefined; //there are no params that are sent to this screen
   PersonalDetails: undefined; //there are no params that are sent to this screen
   LookingTo: undefined; //there are no params that are sent to this screen
@@ -269,6 +269,7 @@ export type MessageType = {
 };
 
 export type ChatType = {
+  chatId: string;
   otherUser: UserType;
   unread: boolean;
   lastMessageDate: string | null;

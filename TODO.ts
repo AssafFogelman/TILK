@@ -31,6 +31,9 @@
     chats screen:
     it's a list of users sorted by the last time you chatted with them.
     once you click on a user, you go to the chat screen that covers the footer of the tabs. and a different header too. (if you return it returns).
+    * can we invalidate only one chat and not the entire chat list? problems for later.
+
+
 
     chat room screen:
     * when a message is sent to the server, it should update the chat of the last message in addition to adding a new message.

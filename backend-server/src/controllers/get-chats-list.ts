@@ -74,6 +74,7 @@ export async function getChatsList(c: Context) {
         lastMessageType: chat.lastMessageType,
         lastMessageImageURL: chat.lastMessageImageURL,
         lastMessageText: chat.lastMessageText,
+        chatId: chat.chatId,
       };
     });
 

@@ -8,50 +8,38 @@ import { ChatType, MessageType, UserType } from "../../../types/types";
 export async function getChatMessages(c: Context) {
   try {
     const { userId } = c.get("tokenPayload");
-    const otherUserId = c.req.param("otherUserId");
+    const chatId = c.req.param("chatId");
 
-    //check if otherUserId is a valid user
-    const otherUser = await db.query.users.findFirst({
-      where: eq(users.userId, otherUserId),
-    });
-
-    if (!otherUser) throw new Error("Other user Id not found");
-
-    const chat = await db.query.chats.findFirst({
-      where: or(
-        and(
-          eq(chats.participant1, userId),
-          eq(chats.participant2, otherUserId)
-        ),
-        and(eq(chats.participant1, otherUserId), eq(chats.participant2, userId))
-      ),
-      with: {
-        messages: {
-          orderBy: [
-            sql`CASE 
+    const messages = await db.query.chatMessages.findMany({
+      where: eq(chatMessages.chatId, chatId),
+      orderBy: [
+        sql`CASE 
               WHEN ${chatMessages.senderId} = ${userId} THEN ${chatMessages.sentDate}
               ELSE ${chatMessages.receivedDate}
             END ASC`,
-          ],
-          /* the order of the messages is determined by when the user sent the message 
+      ],
+      /* the order of the messages is determined by when the user sent the message 
           (for a sent message), and by when the user received the message (for a received message)*/
-          columns: {
-            messageId: true,
-            sentDate: true,
-            receivedDate: true,
-            imageURL: true,
-            text: true,
-            unread: true,
-            messageType: true,
-            senderId: true,
-          },
-        },
-      },
     });
 
-    if (!chat) throw new Error("Chat not found");
+    // Check if chat exists (if needed)
+    if (messages.length === 0) {
+      // verify the chat actually exists and not just empty
+      const chatExists = await db.query.chats.findFirst({
+        where: eq(chats.chatId, chatId),
+        columns: {
+          chatId: true,
+        },
+      });
 
-    const { messages } = chat;
+      if (!chatExists) {
+        throw new Error("Chat not found");
+      }
+
+      // the chat exists but has no messages
+      return c.json([], 204);
+      //no content status code
+    }
 
     //convert date to ISO string for sending to the client
     const formattedMessages: MessageType[] = messages.map((msg) => ({
@@ -60,7 +48,7 @@ export async function getChatMessages(c: Context) {
       receivedDate: msg.receivedDate?.toISOString() ?? null,
     }));
 
-    return c.json(formattedMessages);
+    return c.json(formattedMessages, 200);
   } catch (error) {
     console.log("error getting chat messages: ", error);
     return c.json({ message: "Error getting chat messages", error }, 401);

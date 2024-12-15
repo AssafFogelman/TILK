@@ -63,13 +63,14 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
   function goToChatRoom(chat: ChatType) {
     // Prefetch the chat data
     queryClient.prefetchQuery({
-      queryKey: ["chatMessages", chat.otherUser.userId],
-      queryFn: () => fetchChatMessages(chat.otherUser.userId),
+      queryKey: ["chatMessages", chat.chatId],
+      queryFn: () => fetchChatMessages(chat.chatId),
     });
 
     // Navigate immediately with minimal data
     navigation.navigate("ChatRoom", {
       otherUserData: chat.otherUser,
+      chatId: chat.chatId,
     });
   }
 

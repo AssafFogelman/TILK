@@ -43,7 +43,8 @@ const ChatRoomScreen = () => {
 
   const navigation = useNavigation<ChatRoomScreenNavigationProp>();
   const route = useRoute<ChatRoomScreenRouteProp>();
-  const { otherUserData }: { otherUserData: UserType } = route.params;
+  const { otherUserData, chatId }: { otherUserData: UserType; chatId: string } =
+    route.params;
   const { userId } = useAuthState();
   // const deleteMessagesMutation = useMutation({
   //   mutationFn: (messageIdsToDelete: string[]) => {
@@ -113,8 +114,8 @@ const ChatRoomScreen = () => {
     isPending,
     isError,
   } = useQuery({
-    queryKey: ["chatMessages", otherUserData.userId],
-    queryFn: () => fetchChatMessages(otherUserData.userId),
+    queryKey: ["chatMessages", chatId],
+    queryFn: () => fetchChatMessages(chatId),
     // Initialize with previous data if available
     placeholderData: (previousData) => previousData,
   });
@@ -167,7 +168,7 @@ const ChatRoomScreen = () => {
 
       // Optimistically update the query
       queryClient.setQueryData(
-        ["chatMessages", otherUserData.userId],
+        ["chatMessages", chatId],
         (oldData: typeof chatMessages = []) => [...oldData, newMessage]
       );
 
@@ -176,12 +177,7 @@ const ChatRoomScreen = () => {
       //send the message using websocket
       socket.emit(
         "sendMessage",
-        {
-          text: textInput,
-          recipientId: otherUserData.userId,
-          senderId: userId,
-          tempId, // Include temporary ID in emission
-        },
+        newMessage,
         // Acknowledgment callback
         (response: { success: boolean; messageId: string }) => {
           clearTimeout(timeoutId);
@@ -265,59 +261,6 @@ const ChatRoomScreen = () => {
             ))}
           </ScrollView>
         )}
-
-        {/* Modal for taking photos and choosing photos */}
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <Pressable
-            style={{
-              flex: 1,
-              flexDirection: "row-reverse",
-              alignItems: "flex-end",
-              justifyContent: "center",
-              gap: 20,
-              paddingBottom: 80,
-            }}
-            onPress={() => setModalVisible(false)}
-          >
-            {/* pick photo */}
-            <Entypo
-              style={{
-                backgroundColor: "#007bff",
-                paddingVertical: 10,
-                paddingHorizontal: 10,
-                borderRadius: 25,
-              }}
-              onPress={() => {
-                setModalVisible(false);
-              }}
-              name="folder-images"
-              size={30}
-              color="white"
-            />
-
-            {/* take photo */}
-
-            <Entypo
-              style={{
-                backgroundColor: "#007bff",
-                paddingVertical: 10,
-                paddingHorizontal: 10,
-                borderRadius: 25,
-              }}
-              name="camera"
-              size={30}
-              onPress={() => {
-                setModalVisible(false);
-              }}
-              color="white"
-            />
-          </Pressable>
-        </Modal>
 
         {/* chat input line */}
         <View
