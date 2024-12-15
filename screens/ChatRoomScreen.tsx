@@ -45,61 +45,61 @@ const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomScreenRouteProp>();
   const { otherUserData }: { otherUserData: UserType } = route.params;
   const { userId } = useAuthState();
-  const deleteMessagesMutation = useMutation({
-    mutationFn: (messageIdsToDelete: string[]) => {
-      return new Promise((resolve, reject) => {
-        // Emit delete event to socket
-        socket.emit(
-          "deleteMessages",
-          messageIdsToDelete,
-          (response: { success: boolean; error?: string }) => {
-            if (response.success) {
-              resolve(response);
-            } else {
-              reject(new Error(response.error || "Failed to delete messages"));
-            }
-          }
-        );
+  // const deleteMessagesMutation = useMutation({
+  //   mutationFn: (messageIdsToDelete: string[]) => {
+  //     return new Promise((resolve, reject) => {
+  //       // Emit delete event to socket
+  //       socket.emit(
+  //         "deleteMessages",
+  //         messageIdsToDelete,
+  //         (response: { success: boolean; error?: string }) => {
+  //           if (response.success) {
+  //             resolve(response);
+  //           } else {
+  //             reject(new Error(response.error || "Failed to delete messages"));
+  //           }
+  //         }
+  //       );
 
-        // Optional: Add timeout handling
-        const timeout = setTimeout(() => {
-          reject(new Error("Socket timeout: Delete operation took too long"));
-        }, 5000);
+  //       // Optional: Add timeout handling
+  //       const timeout = setTimeout(() => {
+  //         reject(new Error("Socket timeout: Delete operation took too long"));
+  //       }, 5000);
 
-        // Clean up timeout if operation completes
-        return () => clearTimeout(timeout);
-      });
-    },
-    onSuccess: (_, messageIdsToDelete) => {
-      queryClient.invalidateQueries({
-        queryKey: ["chatMessages", otherUserData.userId],
-      });
+  //       // Clean up timeout if operation completes
+  //       return () => clearTimeout(timeout);
+  //     });
+  //   },
+  //   onSuccess: (_, messageIdsToDelete) => {
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["chatMessages", otherUserData.userId],
+  //     });
 
-      setSelectedMessages((currentArray) =>
-        currentArray.filter(
-          (messageId) => !messageIdsToDelete.includes(messageId)
-        )
-      );
-    },
-    onError: (error) => {
-      console.log("Error deleting messages:", error);
-      // Add user feedback here (e.g., toast notification)
-    },
-  });
+  //     setSelectedMessages((currentArray) =>
+  //       currentArray.filter(
+  //         (messageId) => !messageIdsToDelete.includes(messageId)
+  //       )
+  //     );
+  //   },
+  //   onError: (error) => {
+  //     console.log("Error deleting messages:", error);
+  //     // Add user feedback here (e.g., toast notification)
+  //   },
+  // });
 
-  // Listen for delete confirmations from other clients
-  useEffect(() => {
-    socket.on("messagesDeleted", (deletedMessageIds: string[]) => {
-      // Update UI when other clients delete messages
-      queryClient.invalidateQueries({
-        queryKey: ["chatData", otherUserData.userId],
-      });
-    });
+  // // Listen for delete confirmations from other clients
+  // useEffect(() => {
+  //   socket.on("messagesDeleted", (deletedMessageIds: string[]) => {
+  //     // Update UI when other clients delete messages
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["chatData", otherUserData.userId],
+  //     });
+  //   });
 
-    return () => {
-      socket.off("messagesDeleted");
-    };
-  }, [otherUserData.userId]);
+  //   return () => {
+  //     socket.off("messagesDeleted");
+  //   };
+  // }, [otherUserData.userId]);
 
   //scroll the messages feed to the bottom at the entrance
   //TODO
@@ -140,9 +140,9 @@ const ChatRoomScreen = () => {
   it will not load besides the first time we enter the chat screen. however, this makes it much slower. 
   there might be a faster way. try to solve this in the future. */
 
-  const deleteSelectedMessages = (messageIdsToDelete: string[]) => {
-    deleteMessagesMutation.mutate(messageIdsToDelete);
-  };
+  // const deleteSelectedMessages = (messageIdsToDelete: string[]) => {
+  //   deleteMessagesMutation.mutate(messageIdsToDelete);
+  // };
 
   const handleEmojiPress = () => {
     setShowEmojiSelector((currentState) => !currentState);
@@ -153,7 +153,8 @@ const ChatRoomScreen = () => {
       const tempId = Date.now().toString();
       const newMessage: MessageType = {
         messageId: tempId, // Temporary ID for optimistic update
-        date: new Date().toISOString(),
+        sentDate: new Date().toISOString(),
+        receivedDate: null,
         imageURL: null,
         text: textInput,
         unread: false,
@@ -162,7 +163,6 @@ const ChatRoomScreen = () => {
         //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
         messageType: "text",
         senderId: userId,
-        receivedSuccessfully: false,
       };
 
       // Optimistically update the query
@@ -235,7 +235,7 @@ const ChatRoomScreen = () => {
 
   return (
     <>
-      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: "#F0F0F0" }}>
+      <KeyboardAvoidingView style={{ flex: 1 }}>
         {isPending || !chatMessages ? (
           <LoadingView />
         ) : isError ? (
@@ -252,8 +252,8 @@ const ChatRoomScreen = () => {
                 <ChatTimestamp
                   chatMessage={chatMessage}
                   index={index}
-                  previousMessageTimestamp={
-                    chatMessages[index ? index - 1 : 0].date
+                  previousMessageSentDate={
+                    chatMessages[index ? index - 1 : 0].sentDate
                   }
                 />
                 <ChatMessage

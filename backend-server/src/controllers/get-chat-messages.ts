@@ -1,4 +1,4 @@
-import { eq, or, desc, isNotNull, and, asc } from "drizzle-orm";
+import { eq, or, desc, isNotNull, and, asc, sql } from "drizzle-orm";
 import { Context } from "hono";
 import { chats, chatMessages, users } from "../drizzle/schema";
 import { db } from "../drizzle/db";
@@ -27,16 +27,23 @@ export async function getChatMessages(c: Context) {
       ),
       with: {
         messages: {
-          orderBy: [asc(chatMessages.date)],
+          orderBy: [
+            sql`CASE 
+              WHEN ${chatMessages.senderId} = ${userId} THEN ${chatMessages.sentDate}
+              ELSE ${chatMessages.receivedDate}
+            END ASC`,
+          ],
+          /* the order of the messages is determined by when the user sent the message 
+          (for a sent message), and by when the user received the message (for a received message)*/
           columns: {
             messageId: true,
-            date: true,
+            sentDate: true,
+            receivedDate: true,
             imageURL: true,
             text: true,
             unread: true,
             messageType: true,
             senderId: true,
-            receivedSuccessfully: true,
           },
         },
       },
@@ -49,7 +56,8 @@ export async function getChatMessages(c: Context) {
     //convert date to ISO string for sending to the client
     const formattedMessages: MessageType[] = messages.map((msg) => ({
       ...msg,
-      date: msg.date.toISOString(),
+      sentDate: msg.sentDate.toISOString(),
+      receivedDate: msg.receivedDate?.toISOString() ?? null,
     }));
 
     return c.json(formattedMessages);

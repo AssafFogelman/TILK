@@ -255,7 +255,8 @@ export type ConnectionsListType = ConnectionsListItem[];
 
 export type MessageType = {
   messageId: string;
-  date: string;
+  sentDate: string;
+  receivedDate: string | null;
   imageURL: string | null;
   text: string | null;
   unread: boolean;
@@ -265,13 +266,16 @@ export type MessageType = {
   messageType: string;
   //senderId will tell us who sent the message - the user or the other user
   senderId: string;
-  receivedSuccessfully: boolean;
 };
 
 export type ChatType = {
   otherUser: UserType;
   unread: boolean;
-  messages: MessageType[];
+  lastMessageDate: string | null;
+  lastMessageSender: string | null;
+  lastMessageType: string | null;
+  lastMessageImageURL: string | null;
+  lastMessageText: string | null;
 };
 
 export type UserType = {

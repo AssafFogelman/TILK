@@ -47,7 +47,7 @@ const ChatMessage = ({
   };
 
   const isMessageSelected = selectedMessages.includes(chatMessage.messageId);
-  const isPending = !chatMessage.receivedSuccessfully;
+  const isPending = !chatMessage.receivedDate;
 
   if (chatMessage.messageType === "text") {
     return (
@@ -67,7 +67,15 @@ const ChatMessage = ({
         {isPending && <ActivityIndicator size="small" />}
         <View style={styles.messageContent}>
           <Text style={styles.messageText}>{chatMessage.text}</Text>
-          <Text style={styles.timeText}>{formatTime(chatMessage.date)}</Text>
+          <Text style={styles.timeText}>
+            {formatTime(chatMessage.sentDate)}
+          </Text>
+          {/* the order of the messages is determined either by when the user sent the message 
+          for a sent message, and when the user received the message, for a received message 
+          
+          However, the timestamp will always be the sent date. 
+          And so you will see when the other user actually sent the message
+          (in case he was offline)*/}
         </View>
       </Pressable>
     );

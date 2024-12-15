@@ -1,4 +1,4 @@
-import { eq, or, desc, isNotNull, and, asc } from "drizzle-orm";
+import { eq, or, desc, isNotNull, and, asc, sql } from "drizzle-orm";
 import { Context } from "hono";
 import { chats, chatMessages } from "../drizzle/schema";
 import { db } from "../drizzle/db";
@@ -11,29 +11,7 @@ export async function getChatsList(c: Context) {
 
     const chatsList = await db.query.chats.findMany({
       where: or(eq(chats.participant1, userId), eq(chats.participant2, userId)),
-      orderBy: (chats) => {
-        // Get the latest message date for each chat
-        const subQuery = db
-          .select({ maxDate: chatMessages.date })
-          .from(chatMessages)
-          .where(eq(chatMessages.chatId, chats.chatId))
-          .orderBy(desc(chatMessages.date))
-          .limit(1);
-        return desc(subQuery);
-      },
       with: {
-        messages: {
-          orderBy: [asc(chatMessages.date)],
-          columns: {
-            date: true,
-            imageURL: true,
-            text: true,
-            unread: true,
-            messageType: true,
-            senderId: true,
-            receivedSuccessfully: true,
-          },
-        },
         participant1: {
           columns: {
             userId: true,
@@ -53,6 +31,7 @@ export async function getChatsList(c: Context) {
           },
         },
       },
+      orderBy: desc(chats.lastMessageDate),
     });
 
     //make sure that the other user has a nickname and a small avatar
@@ -66,7 +45,7 @@ export async function getChatsList(c: Context) {
         chat.participant2.biography
     );
 
-    // Transform to match ChatsType
+    // Transform to match ChatType
     const formattedChats: ChatType[] = filteredChatsList.map((chat) => {
       const otherUser: UserType =
         chat.participant1.userId === userId
@@ -87,25 +66,14 @@ export async function getChatsList(c: Context) {
               biography: chat.participant1.biography!,
             };
 
-      // Check if any messages are unread
-      const hasUnreadMessages = chat.messages.some(
-        (msg) => msg.unread && msg.senderId !== userId
-      );
-
       return {
         otherUser,
-        unread: hasUnreadMessages,
-        messages: chat.messages.map(
-          (msg): MessageType => ({
-            date: msg.date.toISOString(),
-            imageURL: msg.imageURL,
-            text: msg.text,
-            unread: msg.unread,
-            messageType: msg.messageType,
-            senderId: msg.senderId,
-            receivedSuccessfully: msg.receivedSuccessfully,
-          })
-        ),
+        unread: chat.unread,
+        lastMessageDate: chat.lastMessageDate?.toISOString() ?? null,
+        lastMessageSender: chat.lastMessageSender,
+        lastMessageType: chat.lastMessageType,
+        lastMessageImageURL: chat.lastMessageImageURL,
+        lastMessageText: chat.lastMessageText,
       };
     });
 

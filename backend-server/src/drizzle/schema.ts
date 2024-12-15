@@ -218,6 +218,9 @@ export const blocks = pgTable(
   }
 );
 
+//declaring an enum for message types
+export const messageTypeEnum = pgEnum("message_type_enum", ["image", "text"]);
+
 //chats
 export const chats = pgTable(
   "chats",
@@ -229,6 +232,17 @@ export const chats = pgTable(
     participant2: uuid("participant2")
       .notNull()
       .references(() => users.userId),
+    lastMessageDate: timestamp("last_message_date"),
+    lastMessageSender: uuid("last_message_sender").references(
+      () => users.userId
+    ),
+    lastMessageType: messageTypeEnum("last_message_type"),
+    lastMessageImageURL: text("last_message_image_url"),
+    lastMessageText: text("last_message_text"),
+    unread: boolean("unread").default(true).notNull(),
+    //if the message is sent by the user, and then becomes read, that means that the other user read it
+    //if the message is sent by the other user, and then becomes read, that means that the user read it
+    //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
   },
   (table) => {
     return {
@@ -248,9 +262,6 @@ export const chats = pgTable(
   }
 );
 
-//declaring an enum for message types
-export const messageTypeEnum = pgEnum("message_type_enum", ["image", "text"]);
-
 //chat messages
 
 //we want the search of messages to go this way: each chat message has a chat id.
@@ -268,7 +279,8 @@ export const chatMessages = pgTable(
     chatId: uuid("chat_id")
       .notNull()
       .references(() => chats.chatId),
-    date: timestamp("date").defaultNow().notNull(),
+    sentDate: timestamp("sent_date").notNull(),
+    receivedDate: timestamp("received_date"),
     senderId: uuid("sender_id")
       .notNull()
       .references(() => users.userId),
@@ -279,17 +291,18 @@ export const chatMessages = pgTable(
     //if the message is sent by the user, and then becomes read, that means that the other user read it
     //if the message is sent by the other user, and then becomes read, that means that the user read it
     //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
-    receivedSuccessfully: boolean("received_successfully")
-      .default(false)
-      .notNull(),
   },
   (table) => {
     return {
-      /** we will be looking for all the messages that two users share in a chat room.
-      So, we will search the "chat_messages" table for all the messages of that chat.
-      That is why we should index the "chat_Id" column.
-      */
-      chatMessageIndex: index("chat_message_index").on(table.chatId),
+      /** we are searching for only the messages of some chatId.
+       * then we order the messages by the date they were sent or received.
+       * That is why we index the "chat_Id" column (as a prefix, meaning first) and then the dates.
+       */
+      chatMessageIndex: index("chat_message_index").on(
+        table.chatId,
+        table.sentDate,
+        table.receivedDate
+      ),
     };
   }
 );

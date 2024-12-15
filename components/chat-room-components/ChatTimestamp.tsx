@@ -6,11 +6,11 @@ import { Chip, useTheme } from "react-native-paper";
 
 const ChatTimestamp = ({
   chatMessage,
-  previousMessageTimestamp,
+  previousMessageSentDate,
   index,
 }: {
   chatMessage: MessageType;
-  previousMessageTimestamp: string;
+  previousMessageSentDate: string;
   index: number;
 }) => {
   const theme = useTheme();
@@ -18,8 +18,8 @@ const ChatTimestamp = ({
   const shouldShowTimestamp = () => {
     if (index === 0) return true;
 
-    const previous = new Date(previousMessageTimestamp);
-    const current = new Date(chatMessage.date);
+    const previous = new Date(previousMessageSentDate);
+    const current = new Date(chatMessage.sentDate);
 
     return (
       previous.getFullYear() !== current.getFullYear() ||
@@ -40,7 +40,7 @@ const ChatTimestamp = ({
         }}
         style={{ backgroundColor: theme.colors.surfaceVariant }}
       >
-        {formatDate2(chatMessage.date)}
+        {formatDate2(chatMessage.sentDate)}
       </Chip>
     </View>
   );
