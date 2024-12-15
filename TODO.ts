@@ -70,3 +70,64 @@
     
     
     */
+
+/*
+
+sending and receiving a message:
+
+0.when entering the chat room:
+optimistically: 
+- the chat "unread count" turns to 0, and the chat's "unread" becomes false.
+- the "unread" of every message *that the client received* becomes false.
+0.5 the client emits to the server ("messegesRead") to update this.
+0.53 the server updates the DB that the chat is now not "unread", and marks all the last messages as "unread" = false
+0.55 the server emits to the recipient client ("messegesRead").
+0.56 the recipient client optimistically updates the status of the chat and the messages he sent as not "unread"
+0.6 the client invalidates the chats query. (I don't think we need to invalidate the messages' query)
+1. the client (A) presses the "send" button
+2. the cache optimistically updates with that message as "pending"
+3. the message is emitted to the server ("sendMessageToServer") and an acknowledgement is received
+4. upon acknowledgement, the client (A) updates the chat messages and chats optimistically (and its predecessors that were not received by the server), and invalidates both queries.
+5. the server finds the last message that was received, and checks the intergrity of the chat - maybe the client already sent the messages but did not get an acknowledgement (?) which messages he needs to update (by their websocket pId)
+4. the server updates the db - 
+in chats - 
+lastMessageDate,
+lastMessageSender,
+lastMessageType,
+lastMessageText,
+unread,
+unreadCount
+
+in chatMessages - a new message with:
+gotToServer - true
+new messageId
+
+last message and that is was received.
+
+
+6. the socket on the server emits to the client (B) ("newMessageReceived").
+7. the client (B) listens to the event ("newMessageReceived"), and optimistically updates the cache - 
+chats: updates the chat to unread, unread count and so on. 
+chat messages: if that query exists, it adds the new message
+then invalidates the query.
+8. the client (B) emits ("messageReceivedByClient") to the server.
+9. the server updates the DB that the last message was received by the client
+10. the server emits ("messageReceivedByClient") to the client (A)
+11. the client (A) optimistically updates the message, (and its predecessors that were not read) in the cache. 
+
+
+
+
+
+the chat messages update only once with REST API and later with ivalidation. And so you do not need stale time to be zero:
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: Infinity,
+    },
+  },
+})
+
+
+*/
