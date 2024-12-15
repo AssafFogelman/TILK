@@ -53,7 +53,7 @@ export const UserCard = ({
             I18nManager.isRTL ? { left: 2 } : { right: 2 },
           ]}
         >
-          {unreadCount(chat.messages) || ""}
+          {chat.unreadCount || ""}
         </Badge>
       )}
     </View>

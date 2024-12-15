@@ -177,12 +177,14 @@ export const getConnectionsList = async (c: Context) => {
     //     )
     //   )) as SentRequestsQueryResult;
 
-    // Get tags for all users
+    //extract all other-users' ids
     const userIds = [
       ...receivedRequests,
       ...connectedUsers,
       // ...sentRequests,
     ].map((u) => u.userId);
+
+    // Get tags for all users
     const userTags =
       userIds.length > 0
         ? await db
@@ -192,29 +194,18 @@ export const getConnectionsList = async (c: Context) => {
             .where(inArray(tagsUsers.userId, userIds))
         : [];
 
-    // Get last messages for connected users
+    // Get last messages of chats. Intended for connected users only.
     const lastMessages = await db
       .select({
         otherUserId: sql`CASE 
           WHEN ${chats.participant1} = ${userId} THEN ${chats.participant2}
           ELSE ${chats.participant1}
         END`.as("otherUserId"),
-        lastMessage: chatMessages.text,
-        unread: chatMessages.unread,
+        lastMessageSender: chats.lastMessageSender,
+        lastMessageText: chats.lastMessageText,
+        unread: chats.unread,
       })
       .from(chats)
-      .innerJoin(
-        chatMessages,
-        and(
-          eq(chatMessages.chatId, chats.chatId),
-          //get the highest value of date
-          sql`${chatMessages.date} = (
-            SELECT MAX(date)
-            FROM ${chatMessages} cm2
-            WHERE cm2.chat_id = ${chats.chatId}
-          )`
-        )
-      )
       .where(
         or(eq(chats.participant1, userId), eq(chats.participant2, userId))
       );
@@ -222,9 +213,12 @@ export const getConnectionsList = async (c: Context) => {
     // a Map for quick lookup of last messages
     const lastMessagesMap = new Map(
       lastMessages.map((msg) => [
+        //key is the other user's id
         msg.otherUserId,
+        //value is the last message object
         {
-          text: String(msg.lastMessage),
+          lastMessageSenderId: msg.lastMessageSender ?? null,
+          lastMessageText: msg.lastMessageText ?? null,
           unread: msg.unread,
         },
       ])
@@ -262,7 +256,7 @@ export const getConnectionsList = async (c: Context) => {
         tags: userTags
           .filter((t) => t.userId === connectedUser.userId)
           .map((t) => t.tagName),
-        lastMessage: lastMessagesMap.get(connectedUser.userId) || null, //if there is no last message, return null
+        lastMessage: lastMessagesMap.get(connectedUser.userId) ?? null, //if there is no last message, return null
       })),
 
       // ...sentRequestsSeparator,

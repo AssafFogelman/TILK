@@ -11,7 +11,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { Entypo } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import {
   ChatRoomScreenRouteProp,
   ChatRoomScreenNavigationProp,
@@ -47,61 +51,63 @@ const ChatRoomScreen = () => {
   const { otherUserData, chatId }: { otherUserData: UserType; chatId: string } =
     route.params;
   const { userId } = useAuthState();
-  // const deleteMessagesMutation = useMutation({
-  //   mutationFn: (messageIdsToDelete: string[]) => {
-  //     return new Promise((resolve, reject) => {
-  //       // Emit delete event to socket
-  //       socket.emit(
-  //         "deleteMessages",
-  //         messageIdsToDelete,
-  //         (response: { success: boolean; error?: string }) => {
-  //           if (response.success) {
-  //             resolve(response);
-  //           } else {
-  //             reject(new Error(response.error || "Failed to delete messages"));
-  //           }
-  //         }
-  //       );
 
-  //       // Optional: Add timeout handling
-  //       const timeout = setTimeout(() => {
-  //         reject(new Error("Socket timeout: Delete operation took too long"));
-  //       }, 5000);
+  //when entering, place a listener so once the user exits the chat room,
+  //mark the messages as read
+  useSetBlurListener();
 
-  //       // Clean up timeout if operation completes
-  //       return () => clearTimeout(timeout);
-  //     });
-  //   },
-  //   onSuccess: (_, messageIdsToDelete) => {
-  //     queryClient.invalidateQueries({
-  //       queryKey: ["chatMessages", otherUserData.userId],
-  //     });
+  const { mutate: markAsReadMutation } = useMutation({
+    mutationFn: markMessagesAsReadFunction,
+    onSuccess: invalidateChatsMessagesQuery,
+  });
 
-  //     setSelectedMessages((currentArray) =>
-  //       currentArray.filter(
-  //         (messageId) => !messageIdsToDelete.includes(messageId)
-  //       )
-  //     );
-  //   },
-  //   onError: (error) => {
-  //     console.log("Error deleting messages:", error);
-  //     // Add user feedback here (e.g., toast notification)
-  //   },
-  // });
+  function invalidateChatsMessagesQuery() {
+    queryClient.invalidateQueries({ queryKey: ["chatMessages"] });
+  }
 
-  // // Listen for delete confirmations from other clients
-  // useEffect(() => {
-  //   socket.on("messagesDeleted", (deletedMessageIds: string[]) => {
-  //     // Update UI when other clients delete messages
-  //     queryClient.invalidateQueries({
-  //       queryKey: ["chatData", otherUserData.userId],
-  //     });
-  //   });
+  async function markMessagesAsReadFunction() {
+    try {
+      // Optimistically update the query
+      queryClient.setQueryData(
+        ["chatMessages", chatId],
+        (oldData: MessageType[] = []) => {
+          if (!oldData.length) return oldData;
 
-  //   return () => {
-  //     socket.off("messagesDeleted");
-  //   };
-  // }, [otherUserData.userId]);
+          return oldData.map((message) =>
+            message.senderId !== userId
+              ? { ...message, unread: false }
+              : message
+          );
+        }
+      );
+
+      // get the ids of the users who sent a connection request
+      const requestingUsersIds = data
+        ?.filter(
+          (item): item is ConnectionsScreenUser =>
+            "unread" in item && item.unread === true
+        )
+        .map((item) => item.userId);
+      // mark the connection requests as read
+      if (requestingUsersIds && requestingUsersIds.length > 0) {
+        await axios.post("/user/mark-as-read", requestingUsersIds);
+      }
+    } catch (error) {
+      console.error(
+        "error marking unread connection requests as read",
+        isAxiosError(error) ? error.response?.data.message : error
+      );
+    }
+  }
+
+  useFocusEffect(() => {
+    // Optimistically update the query
+    queryClient.setQueryData(
+      ["chatMessages", chatId],
+      (oldData: typeof chatMessages = []) => [...oldData, newMessage]
+    );
+    scrollToBottom();
+  });
 
   //scroll the messages feed to the bottom at the entrance
   //TODO
@@ -185,13 +191,14 @@ const ChatRoomScreen = () => {
         newMessage,
         // Acknowledgment callback
         (error, response) => {
-          if (error) {
+          if (error || !response?.success) {
             //we received this error from the server, meaning that the message arrived but
             // the message was already sent by us earlier.
+
             return;
           }
           if (response?.success) {
-            // Update the temporary ID with the real one - important for deleting messages later
+            // Update the temporary ID with the real one - important for selecting and deleting messages later
             queryClient.setQueryData(
               ["chatMessages", chatId],
               (oldData: typeof chatMessages = []) =>
@@ -200,33 +207,14 @@ const ChatRoomScreen = () => {
                     ? {
                         ...message,
                         messageId: response.messageId,
-                        receivedSuccessfully: true,
+                        gotToServer: true,
                       }
                     : message
                 )
             );
-          } else {
-            // Handle failure - remove the optimistic message
-            queryClient.setQueryData(
-              ["chatMessages", otherUserData.userId],
-              (oldData: typeof chatMessages = []) =>
-                oldData?.filter((message) => message.messageId !== tempId)
-            );
-            // Show error to user
-            console.error("Failed to send message");
           }
         }
       );
-      //if the message is not sent within 5 seconds, remove the optimistic message
-      timeoutId = setTimeout(() => {
-        // Remove the optimistic message if no response after timeout
-        queryClient.setQueryData(
-          ["chatMessages", otherUserData.userId],
-          (oldData: typeof chatMessages = []) =>
-            oldData?.filter((message) => message.messageId !== tempId)
-        );
-        console.log("Message send timeout");
-      }, SOCKET_TIMEOUT);
 
       setTextInput("");
     } catch (error) {
@@ -363,6 +351,16 @@ const ChatRoomScreen = () => {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollToEnd({ animated: false });
     }
+  }
+
+  function useSetBlurListener() {
+    useEffect(() => {
+      const markAsRead = navigation.addListener("blur", () => {
+        markAsReadMutation();
+      });
+
+      return markAsRead;
+    });
   }
 };
 

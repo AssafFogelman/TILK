@@ -221,24 +221,15 @@ export type ConnectionsScreenUser = {
   currentlyConnected: boolean;
   tags: string[];
   lastMessage?: {
-    text: string;
+    lastMessageText: string | null;
     unread: boolean;
+    lastMessageSenderId: string | null;
   } | null;
   unread?: boolean;
   socketId?: string | null;
   gender: "man" | "woman" | "other";
   dateOfBirth: string | null;
   biography: string;
-};
-
-//the buttons that each type of user has:
-export const connectionsUserActionsStates: Record<
-  ConnectionsScreenUserType,
-  string[]
-> = {
-  connectionRequest: ["accept", "decline"],
-  connectedUser: ["chat"],
-  sentRequest: ["cancel request"],
 };
 
 export type SeparatorItem = {
@@ -250,6 +241,15 @@ export type ConnectionsListItem = ConnectionsScreenUser | SeparatorItem;
 
 export type ConnectionsListType = ConnectionsListItem[];
 
+//the buttons that each type of user has:
+export const connectionsUserActionsStates: Record<
+  ConnectionsScreenUserType,
+  string[]
+> = {
+  connectionRequest: ["accept", "decline"],
+  connectedUser: ["chat"],
+  sentRequest: ["cancel request"],
+};
 //************************** chats types **************************
 
 export type MessageType = {
@@ -275,6 +275,7 @@ export type ChatType = {
   lastMessageType: string | null;
   lastMessageImageURL: string | null;
   lastMessageText: string | null;
+  unreadCount: number;
 };
 
 export type UserType = {
