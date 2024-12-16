@@ -131,3 +131,24 @@ const queryClient = new QueryClient({
 
 
 */
+
+/*
+
+  and error log schema TTL:
+
+  example:
+ 
+  export const cacheEntries = pgTable(
+  "cache_entries",
+  {
+    key: text("key").primaryKey(),
+    value: text("value").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    *expiresAt: timestamp("expires_at").notNull(),
+  },
+  (table) => ({
+    *ttlIndex: index("cache_ttl_index").on(table.expiresAt),
+  })
+);
+
+*/

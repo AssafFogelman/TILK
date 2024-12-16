@@ -39,11 +39,16 @@ export const users = pgTable("users", {
   offGrid: boolean("off_grid").default(false).notNull(),
   nickname: text("nickname"), //it is mandatory , but it is not mandatory for the first phase of the registration
   //makes SQL create a timestamp once the record is created
-  created: timestamp("created").defaultNow().notNull(),
+  created: timestamp("created", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
   //is the user currently connected
   currentlyConnected: boolean("currently_connected").default(false).notNull(),
   admin: boolean("admin").default(false).notNull(),
-  locationDate: timestamp("location_date"),
+  locationDate: timestamp("location_date", {
+    withTimezone: true,
+    mode: "date",
+  }),
   //used to set whether the user is currently connected
   socketId: text("socket_id"),
 });
@@ -140,7 +145,12 @@ export const tagCategories = pgTable("tag_categories", {
 export const connections = pgTable(
   "connections",
   {
-    connectionDate: timestamp("connection_date").defaultNow().notNull(),
+    connectionDate: timestamp("connection_date", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .defaultNow()
+      .notNull(),
     connectedUser1: uuid("connected_user1")
       .notNull()
       .references(() => users.userId),
@@ -173,7 +183,10 @@ export const connectionRequests = pgTable(
     senderId: uuid("sender_id")
       .notNull()
       .references(() => users.userId),
-    requestDate: timestamp("request_date").defaultNow(),
+    requestDate: timestamp("request_date", {
+      withTimezone: true,
+      mode: "date",
+    }).defaultNow(),
     unread: boolean("unread").notNull().default(true),
   },
   (table) => {
@@ -202,7 +215,9 @@ export const blocks = pgTable(
     blockedUserId: uuid("blocked_user_id")
       .notNull()
       .references(() => users.userId),
-    blockDate: timestamp("block_date").defaultNow().notNull(),
+    blockDate: timestamp("block_date", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
   },
 
   (table) => {
@@ -230,11 +245,20 @@ export const chats = pgTable(
     participant2: uuid("participant2")
       .notNull()
       .references(() => users.userId),
-    lastMessageDate: timestamp("last_message_date"),
+    lastMessageDate: timestamp("last_message_date", {
+      withTimezone: true,
+      mode: "date",
+    }),
     lastMessageSender: uuid("last_message_sender").references(
       () => users.userId
     ),
     lastMessageText: text("last_message_text"),
+    readByParticipant1: boolean("read_by_participant1")
+      .default(false)
+      .notNull(),
+    readByParticipant2: boolean("read_by_participant2")
+      .default(false)
+      .notNull(),
     unread: boolean("unread").default(false).notNull(),
     unreadCount: integer("unread_count").default(0).notNull(),
     //if the message is sent by the user, and then becomes read, that means that the other user read it
@@ -276,8 +300,14 @@ export const chatMessages = pgTable(
     chatId: uuid("chat_id")
       .notNull()
       .references(() => chats.chatId),
-    sentDate: timestamp("sent_date").notNull(),
-    receivedDate: timestamp("received_date"),
+    sentDate: timestamp("sent_date", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+    receivedDate: timestamp("received_date", {
+      withTimezone: true,
+      mode: "date",
+    }),
     senderId: uuid("sender_id")
       .notNull()
       .references(() => users.userId),
@@ -303,6 +333,25 @@ export const chatMessages = pgTable(
   }
 );
 
+//when the user last opened a particular chat
+export const chatReadDate = pgTable(
+  "chat_read_date",
+  {
+    chatId: uuid("chat_id")
+      .notNull()
+      .references(() => chats.chatId),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.userId),
+    lastReadAt: timestamp("last_read_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.chatId, table.userId] }),
+  })
+);
+
 //notification templates
 export const notificationTemplates = pgTable("notification_templates", {
   notificationId: uuid("notification_id")
@@ -320,7 +369,9 @@ export const events = pgTable("events", {
   userId: uuid("user_id")
     .notNull()
     .references(() => users.userId),
-  eventDate: timestamp("event_date").defaultNow().notNull(),
+  eventDate: timestamp("event_date", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
   eventType: uuid("event_type")
     .notNull()
     .references(() => eventTypes.eventTypeId),
@@ -361,7 +412,9 @@ export const eventTypes = pgTable("event_types", {
 
 export const errorLog = pgTable("error_log", {
   errorId: uuid("error_id").primaryKey().defaultRandom().notNull().unique(),
-  timestamp: timestamp("date").defaultNow().notNull(),
+  timestamp: timestamp("date", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
   userId: uuid("user_id"), //sometimes we will not know what the userId is, if the user hasn't registered yet.
   error: text("error").notNull(),
   info: text("info").notNull(),
@@ -470,6 +523,17 @@ export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
     //foreign key
     fields: [chatMessages.senderId],
     //references
+    references: [users.userId],
+  }),
+}));
+
+export const chatReadDateRelations = relations(chatReadDate, ({ one }) => ({
+  chat: one(chats, {
+    fields: [chatReadDate.chatId],
+    references: [chats.chatId],
+  }),
+  user: one(users, {
+    fields: [chatReadDate.userId],
     references: [users.userId],
   }),
 }));

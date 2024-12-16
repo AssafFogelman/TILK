@@ -21,6 +21,8 @@ import {
   ChatRoomScreenNavigationProp,
   UserType,
   MessageType,
+  ChatType,
+  ConnectionsScreenUser,
 } from "../types/types";
 import * as ImagePicker from "expo-image-picker";
 import ChatMessage from "../components/chatMessage";
@@ -65,14 +67,27 @@ const ChatRoomScreen = () => {
     queryClient.invalidateQueries({ queryKey: ["chatMessages"] });
   }
 
+  async function markChatAsReadFunction() {
+    try {
+      // Optimistically update the chats query to be read
+      queryClient.setQueryData(["chats"], (oldData: ChatType[] = []) => {
+        if (!oldData.length) return oldData;
+        return oldData.map((chat) =>
+          chat.chatId === chatId
+            ? { ...chat, unread: false, unreadCount: 0 }
+            : chat
+        );
+      });
+    }
+
+
   async function markMessagesAsReadFunction() {
     try {
-      // Optimistically update the query
+      // Optimistically update the chat messages query to be read
       queryClient.setQueryData(
         ["chatMessages", chatId],
         (oldData: MessageType[] = []) => {
           if (!oldData.length) return oldData;
-
           return oldData.map((message) =>
             message.senderId !== userId
               ? { ...message, unread: false }
@@ -81,13 +96,10 @@ const ChatRoomScreen = () => {
         }
       );
 
-      // get the ids of the users who sent a connection request
-      const requestingUsersIds = data
-        ?.filter(
-          (item): item is ConnectionsScreenUser =>
-            "unread" in item && item.unread === true
-        )
-        .map((item) => item.userId);
+      
+
+
+
       // mark the connection requests as read
       if (requestingUsersIds && requestingUsersIds.length > 0) {
         await axios.post("/user/mark-as-read", requestingUsersIds);
