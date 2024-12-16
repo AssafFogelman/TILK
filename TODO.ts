@@ -72,13 +72,16 @@
     */
 
 /*
-
 sending and receiving a message:
 
 0.when entering the chat room:
 optimistically: 
 - the chat "unread count" turns to 0, and the chat's "unread" becomes false.
 - the "unread" of every message *that the client received* becomes false.
+0.1 DB update:
+the chat read date - chatReadDate  update. 
+unread count
+the "unread" of every message *that the client received* 
 0.5 the client emits to the server ("messegesRead") to update this.
 0.53 the server updates the DB that the chat is now not "unread", and marks all the last messages as "unread" = false
 0.55 the server emits to the recipient client ("messegesRead").
@@ -128,6 +131,9 @@ const queryClient = new QueryClient({
     },
   },
 })
+
+
+
 
 
 */
