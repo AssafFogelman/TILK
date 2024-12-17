@@ -42,6 +42,7 @@ import { emit } from "../APIs/emit";
 import { isAxiosError } from "axios";
 import { useSetFocusBlurListener } from "../hooks/chat-room-hooks/useSetFocusBlurListener";
 import { useOnChatEntrance } from "../hooks/chat-room-hooks/useOnChatEntrance";
+import { FlashList } from "@shopify/flash-list";
 const SOCKET_TIMEOUT = 5000; // 5 seconds
 
 const ChatRoomScreen = () => {
@@ -58,12 +59,13 @@ const ChatRoomScreen = () => {
   const { userId } = useAuthState();
   // is the screen currently visible
   const isChatVisible = useRef(true);
+  const flashListRef = useRef<FlashList<MessageType>>(null);
 
   //set that once the user exits the chat room, "isChatVisible" will be false (and true if focused)
   useSetFocusBlurListener(chatId, userId, isChatVisible);
 
-  //mark unread messages as read, scroll down, set chat as read and unread count as 0.
-  useOnChatEntrance(chatId, userId, isChatVisible, scrollViewRef);
+  //mark unread messages as read, set chat as read and unread count as 0.
+  useOnChatEntrance(chatId, userId, isChatVisible);
 
   //fetch chat messages
   const {
@@ -184,29 +186,15 @@ const ChatRoomScreen = () => {
         ) : isError ? (
           <ErrorView />
         ) : (
-          <ScrollView
-            ref={scrollViewRef}
-            contentContainerStyle={{ flexGrow: 1 }}
+          <FlashList
+            ref={flashListRef}
+            data={chatMessages}
+            renderItem={renderItem}
+            // estimatedItemSize={100}
             onContentSizeChange={scrollToBottom}
-          >
-            {/* chat messages go here */}
-            {chatMessages.map((chatMessage, index) => (
-              <View key={index} style={{ paddingTop: 10 }}>
-                <ChatTimestamp
-                  chatMessage={chatMessage}
-                  index={index}
-                  previousMessageSentDate={
-                    chatMessages[index ? index - 1 : 0].sentDate
-                  }
-                />
-                <ChatMessage
-                  chatMessage={chatMessage}
-                  selectedMessages={selectedMessages}
-                  setSelectedMessages={setSelectedMessages}
-                />
-              </View>
-            ))}
-          </ScrollView>
+            onLayout={scrollToBottom}
+            style={{ flex: 1 }}
+          />
         )}
 
         {/* chat input line */}
@@ -297,6 +285,34 @@ const ChatRoomScreen = () => {
     </>
   );
 
+  function renderItem({
+    item: message,
+    index,
+  }: {
+    item: MessageType;
+    index: number;
+  }) {
+    return (
+      <View style={{ paddingTop: 10 }}>
+        <ChatTimestamp
+          chatMessage={message}
+          index={index}
+          previousMessage={index > 0 ? chatMessages[index - 1] : null}
+        />
+        <ChatMessage
+          chatMessage={message}
+          selectedMessages={selectedMessages}
+          setSelectedMessages={setSelectedMessages}
+        />
+      </View>
+    );
+  }
+
+  function scrollToBottom() {
+    if (flashListRef.current && chatMessages.length > 0) {
+      flashListRef.current.scrollToEnd({ animated: false });
+    }
+  }
   async function markMessagesAsRead() {
     try {
       // Optimistically update the chat messages query to be read
