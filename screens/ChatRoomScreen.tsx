@@ -39,6 +39,9 @@ import {
 import { Text } from "react-native-paper";
 import { useAuthState } from "../AuthContext";
 import { emit } from "../APIs/emit";
+import { isAxiosError } from "axios";
+import { useSetFocusBlurListener } from "../hooks/chat-room-hooks/useSetFocusBlurListener";
+import { useOnChatEntrance } from "../hooks/chat-room-hooks/useOnChatEntrance";
 const SOCKET_TIMEOUT = 5000; // 5 seconds
 
 const ChatRoomScreen = () => {
@@ -53,79 +56,14 @@ const ChatRoomScreen = () => {
   const { otherUserData, chatId }: { otherUserData: UserType; chatId: string } =
     route.params;
   const { userId } = useAuthState();
+  // is the screen currently visible
+  const isChatVisible = useRef(true);
 
-  //when entering, place a listener so once the user exits the chat room,
-  //mark the messages as read
-  useSetBlurListener();
+  //set that once the user exits the chat room, "isChatVisible" will be false (and true if focused)
+  useSetFocusBlurListener(chatId, userId, isChatVisible);
 
-  const { mutate: markAsReadMutation } = useMutation({
-    mutationFn: markMessagesAsReadFunction,
-    onSuccess: invalidateChatsMessagesQuery,
-  });
-
-  function invalidateChatsMessagesQuery() {
-    queryClient.invalidateQueries({ queryKey: ["chatMessages"] });
-  }
-
-  async function markChatAsReadFunction() {
-    try {
-      // Optimistically update the chats query to be read
-      queryClient.setQueryData(["chats"], (oldData: ChatType[] = []) => {
-        if (!oldData.length) return oldData;
-        return oldData.map((chat) =>
-          chat.chatId === chatId
-            ? { ...chat, unread: false, unreadCount: 0 }
-            : chat
-        );
-      });
-    }
-
-
-  async function markMessagesAsReadFunction() {
-    try {
-      // Optimistically update the chat messages query to be read
-      queryClient.setQueryData(
-        ["chatMessages", chatId],
-        (oldData: MessageType[] = []) => {
-          if (!oldData.length) return oldData;
-          return oldData.map((message) =>
-            message.senderId !== userId
-              ? { ...message, unread: false }
-              : message
-          );
-        }
-      );
-
-      
-
-
-
-      // mark the connection requests as read
-      if (requestingUsersIds && requestingUsersIds.length > 0) {
-        await axios.post("/user/mark-as-read", requestingUsersIds);
-      }
-    } catch (error) {
-      console.error(
-        "error marking unread connection requests as read",
-        isAxiosError(error) ? error.response?.data.message : error
-      );
-    }
-  }
-
-  useFocusEffect(() => {
-    // Optimistically update the query
-    queryClient.setQueryData(
-      ["chatMessages", chatId],
-      (oldData: typeof chatMessages = []) => [...oldData, newMessage]
-    );
-    scrollToBottom();
-  });
-
-  //scroll the messages feed to the bottom at the entrance
-  //TODO
-  useEffect(() => {
-    scrollToBottom();
-  }, []);
+  //mark unread messages as read, scroll down, set chat as read and unread count as 0.
+  useOnChatEntrance(chatId, userId, isChatVisible, scrollViewRef);
 
   //fetch chat messages
   const {
@@ -359,20 +297,49 @@ const ChatRoomScreen = () => {
     </>
   );
 
-  function scrollToBottom() {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({ animated: false });
+  async function markMessagesAsRead() {
+    try {
+      // Optimistically update the chat messages query to be read
+      queryClient.setQueryData(
+        ["chatMessages", chatId],
+        (oldData: MessageType[] = []) => {
+          if (!oldData.length) return oldData;
+          return oldData.map((message) =>
+            message.senderId !== userId
+              ? { ...message, unread: false }
+              : message
+          );
+        }
+      );
+    } catch (error) {
+      console.error(
+        "error marking unread messages as read",
+        isAxiosError(error) ? error.response?.data.message : error
+      );
     }
   }
 
-  function useSetBlurListener() {
-    useEffect(() => {
-      const markAsRead = navigation.addListener("blur", () => {
-        markAsReadMutation();
+  async function markChatAsRead() {
+    try {
+      // Optimistically update the chats query to be read
+      queryClient.setQueryData(["chats"], (oldData: ChatType[] = []) => {
+        if (!oldData.length) return oldData;
+        return oldData.map((chat) =>
+          chat.chatId === chatId
+            ? { ...chat, unread: false, unreadCount: 0 }
+            : chat
+        );
       });
+    } catch (error) {
+      console.error(
+        "error marking chat as read",
+        isAxiosError(error) ? error.response?.data.message : error
+      );
+    }
+  }
 
-      return markAsRead;
-    });
+  function invalidateChatMessagesQuery() {
+    queryClient.invalidateQueries({ queryKey: ["chatMessages"] });
   }
 };
 

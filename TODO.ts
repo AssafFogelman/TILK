@@ -48,6 +48,9 @@
     select avatar screen:
     * if the useEffect is running regardless, make this screen 'lazy'
 
+    * when the server starts, it needs set all the chat exit times to now. 
+    *this might prevent the phenomenon of chats with an enter date but no exit date.
+
 
     * the websocket needs to reconnect without losing data - take from the websocket site
     * change the "open cage" request to go to the server instead directly to the site to prevent key theft

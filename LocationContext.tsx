@@ -82,6 +82,7 @@ function useSubscribeLocation() {
   }
 }
 
+//refetch all data in tanstack query on app focus
 function useRefetchDataOnAppFocus() {
   useEffect(() => {
     const subscription = AppState.addEventListener("change", onAppStateChange);

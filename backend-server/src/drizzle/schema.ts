@@ -333,25 +333,6 @@ export const chatMessages = pgTable(
   }
 );
 
-//when the user last opened a particular chat
-export const chatReadDate = pgTable(
-  "chat_read_date",
-  {
-    chatId: uuid("chat_id")
-      .notNull()
-      .references(() => chats.chatId),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.userId),
-    lastReadAt: timestamp("last_read_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.chatId, table.userId] }),
-  })
-);
-
 //notification templates
 export const notificationTemplates = pgTable("notification_templates", {
   notificationId: uuid("notification_id")
@@ -523,17 +504,6 @@ export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
     //foreign key
     fields: [chatMessages.senderId],
     //references
-    references: [users.userId],
-  }),
-}));
-
-export const chatReadDateRelations = relations(chatReadDate, ({ one }) => ({
-  chat: one(chats, {
-    fields: [chatReadDate.chatId],
-    references: [chats.chatId],
-  }),
-  user: one(users, {
-    fields: [chatReadDate.userId],
     references: [users.userId],
   }),
 }));
