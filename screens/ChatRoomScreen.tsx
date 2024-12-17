@@ -190,10 +190,9 @@ const ChatRoomScreen = () => {
             ref={flashListRef}
             data={chatMessages}
             renderItem={renderItem}
-            // estimatedItemSize={100}
+            estimatedItemSize={100}
             onContentSizeChange={scrollToBottom}
             onLayout={scrollToBottom}
-            style={{ flex: 1 }}
           />
         )}
 

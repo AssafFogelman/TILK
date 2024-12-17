@@ -63,7 +63,10 @@ const ChatMessage = ({
         isPending && styles.pendingMessage,
       ]}
     >
-      {isPending && <ActivityIndicator size="small" />}
+      {isPending && <Text style={{ color: "gray" }}>🕐</Text>}
+      {gotToTheServer && <Text style={{ color: "gray" }}>✓</Text>}
+      {gotToTheOtherUser && <Text style={{ color: "gray" }}>✓✓</Text>}
+      {read && senderId === userId && <Text style={{ color: "blue" }}>✓✓</Text>}
       <View style={styles.messageContent}>
         <Text style={styles.messageText}>{chatMessage.text}</Text>
         <Text style={styles.timeText}>{formatTime(chatMessage.sentDate)}</Text>
