@@ -49,8 +49,6 @@ export const users = pgTable("users", {
     withTimezone: true,
     mode: "date",
   }),
-  //used to set whether the user is currently connected
-  socketId: text("socket_id"),
 });
 /*
 uuid - a long long string for Ids
@@ -333,6 +331,35 @@ export const chatMessages = pgTable(
   }
 );
 
+export const unreadEventsEnum = pgEnum("unread_events_enum", [
+  "unread_message",
+  "unread_connection_request",
+  "unread_connection_approval",
+  "unread_looking_to_do_same_thing",
+]);
+
+export const unreadEvents = pgTable(
+  "unread_events",
+  {
+    userId: uuid("user_id").references(() => users.userId),
+    eventType: unreadEventsEnum("event_type").notNull(),
+    chatId: uuid("chat_id").references(() => chats.chatId),
+    messageId: uuid("message_id").references(() => chatMessages.messageId),
+  },
+  (table) => {
+    return {
+      unreadEventsIndex: index("unread_events_index").on(
+        table.userId,
+        table.eventType,
+        // I've put the chatId before messageId,
+        // because we will usually want to delete all the unread messages of a certain chat.
+        table.chatId,
+        table.messageId
+      ),
+    };
+  }
+);
+
 //notification templates
 export const notificationTemplates = pgTable("notification_templates", {
   notificationId: uuid("notification_id")
@@ -508,6 +535,23 @@ export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
   }),
 }));
 
+//unread events relations
+export const unreadEventsRelations = relations(unreadEvents, ({ one }) => ({
+  userId: one(users, {
+    fields: [unreadEvents.userId],
+    references: [users.userId],
+  }),
+  chatId: one(chats, {
+    fields: [unreadEvents.chatId],
+    references: [chats.chatId],
+  }),
+  messageId: one(chatMessages, {
+    fields: [unreadEvents.messageId],
+    references: [chatMessages.messageId],
+  }),
+}));
+
+//events - the server records things that happen. relations
 export const eventsRelations = relations(events, ({ one }) => ({
   eventType: one(eventTypes, {
     //this foreign key

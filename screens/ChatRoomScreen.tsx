@@ -64,9 +64,6 @@ const ChatRoomScreen = () => {
   //set that once the user exits the chat room, "isChatVisible" will be false (and true if focused)
   useSetFocusBlurListener(chatId, userId, isChatVisible);
 
-  //mark unread messages as read, set chat as read and unread count as 0.
-  useOnChatEntrance(chatId, userId, isChatVisible);
-
   //fetch chat messages
   const {
     data: chatMessages = [],
@@ -78,6 +75,9 @@ const ChatRoomScreen = () => {
     // Initialize with previous data if available
     placeholderData: (previousData) => previousData,
   });
+
+  //mark unread messages as read, set chat as read and unread count as 0.
+  useOnChatEntrance(chatId, userId, isChatVisible, chatMessages);
 
   //set the header
   useEffect(() => {
@@ -310,27 +310,6 @@ const ChatRoomScreen = () => {
   function scrollToBottom() {
     if (flashListRef.current && chatMessages.length > 0) {
       flashListRef.current.scrollToEnd({ animated: false });
-    }
-  }
-  async function markMessagesAsRead() {
-    try {
-      // Optimistically update the chat messages query to be read
-      queryClient.setQueryData(
-        ["chatMessages", chatId],
-        (oldData: MessageType[] = []) => {
-          if (!oldData.length) return oldData;
-          return oldData.map((message) =>
-            message.senderId !== userId
-              ? { ...message, unread: false }
-              : message
-          );
-        }
-      );
-    } catch (error) {
-      console.error(
-        "error marking unread messages as read",
-        isAxiosError(error) ? error.response?.data.message : error
-      );
     }
   }
 

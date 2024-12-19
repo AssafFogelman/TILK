@@ -17,6 +17,7 @@ import * as os from "node:os";
 import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected";
 import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected";
 import { sendMessage } from "./APIs/websocket/send-message";
+import { markMessagesAsRead } from "./APIs/websocket/mark-messages-as-read";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -65,7 +66,7 @@ const server = serve(
 
 //websocket
 //http://192.168.1.116:5000/ws/
-const io = new Server(server as HttpServer, {
+export const io = new Server(server as HttpServer, {
   path: "/ws/",
   serveClient: true,
   cors: {
@@ -79,7 +80,8 @@ io.on("connection", (socket) => {
   );
   socket.on("setCurrentlyConnected", setCurrentlyConnected);
   socket.on("disconnect", registerAsUnconnected);
-  socket.on("sendMessage", sendMessage);
+  // socket.on("sendMessage", sendMessage);
+  socket.on("markMessagesAsRead", markMessagesAsRead);
 });
 
 /*
@@ -121,7 +123,7 @@ setNoUserIsCurrentlyConnected();
 //at server startup, we want to make sure that no user is set to "currently connected"
 async function setNoUserIsCurrentlyConnected() {
   try {
-    await db.update(users).set({ socketId: null, currentlyConnected: false });
+    await db.update(users).set({ currentlyConnected: false });
   } catch (error) {
     console.log(
       "an error occurred while trying to reset the currently connected and socketId fields of all the users: "

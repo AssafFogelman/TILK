@@ -304,3 +304,38 @@ export type Route = {
   focusedIcon: IconName;
   unfocusedIcon: IconName;
 };
+
+/*************************************unread events types *************************************/
+
+//all these types are just used to articulate that if
+//an event is of type "unread_message", is also positively possesses
+//the other related keys such as "messageId".
+export type UnreadEventType =
+  | "unread_message"
+  | "unread_connection_request"
+  | "unread_connection_approval"
+  | "unread_looking_to_do_same_thing";
+
+type BaseUnreadEvent = {
+  eventType: UnreadEventType;
+};
+
+type UnreadMessageEvent = BaseUnreadEvent & {
+  eventType: "unread_message";
+  chatId: string;
+  messageId: string;
+  text: string;
+  sentDate: Date;
+  senderId: string;
+};
+
+type OtherEvent = BaseUnreadEvent & {
+  eventType: Exclude<UnreadEventType, "unread_message">;
+  chatId?: string | null;
+  messageId?: string | null;
+  text?: string | null;
+  sentDate?: Date | null;
+  senderId?: string | null;
+};
+
+export type UnreadEventsResponse = UnreadMessageEvent | OtherEvent | {};

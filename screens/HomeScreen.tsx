@@ -24,6 +24,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import * as Location from "expo-location";
+import { useFetchUnreadEvents } from "../hooks/home-screen-hooks/useFetchUnreadEvents";
 // regardless of the location changes, perform the KNN query every LOCATION_INTERVAL
 const LOCATION_INTERVAL = 2 * 60 * 1000; // 2 minutes in milliseconds
 

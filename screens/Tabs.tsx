@@ -10,6 +10,7 @@ import { getHeaderTitle } from "@react-navigation/elements";
 import TabHeader from "../components/home-screen-components/TabHeader";
 import { Alert } from "react-native";
 import { ConnectionsScreen } from "./ConnectionsScreen";
+import { useFetchUnreadEvents } from "../hooks/home-screen-hooks/useFetchUnreadEvents";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -42,6 +43,9 @@ const Tabs = () => {
   const [tabState, setTabState] = useState(initialTabState);
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
+
+  //fetch unread events - unread messages/connection requests/connection approvals
+  const { unreadEvents } = useFetchUnreadEvents();
 
   const renderIcon = (route: Route, focused: boolean, color: string) => {
     const iconName = focused ? route.focusedIcon : route.unfocusedIcon;
@@ -92,6 +96,15 @@ const Tabs = () => {
               (r) => r.key === route.key
             ) as Route;
             return renderIcon(currentRoute, focused, color);
+          }}
+          getBadge={({ route }) => {
+            if (
+              route.key === "Chats" &&
+              unreadEvents?.unread_messages.length > 0
+            ) {
+              return unreadEvents.unread_messages.length;
+            }
+            return undefined;
           }}
           theme={theme}
         />

@@ -63,10 +63,17 @@ const ChatMessage = ({
         isPending && styles.pendingMessage,
       ]}
     >
-      {isPending && <Text style={{ color: "gray" }}>🕐</Text>}
-      {gotToTheServer && <Text style={{ color: "gray" }}>✓</Text>}
-      {gotToTheOtherUser && <Text style={{ color: "gray" }}>✓✓</Text>}
-      {read && senderId === userId && <Text style={{ color: "blue" }}>✓✓</Text>}
+      {chatMessage.senderId === userId &&
+        (!chatMessage.unread ? (
+          <Text style={{ color: "blue" }}>✓✓</Text>
+        ) : chatMessage.receivedDate ? (
+          <Text style={{ color: "gray" }}>✓✓</Text>
+        ) : chatMessage.gotToServer ? (
+          <Text style={{ color: "gray" }}>✓</Text>
+        ) : (
+          <Text style={{ color: "gray" }}>🕐</Text>
+        ))}
+
       <View style={styles.messageContent}>
         <Text style={styles.messageText}>{chatMessage.text}</Text>
         <Text style={styles.timeText}>{formatTime(chatMessage.sentDate)}</Text>
