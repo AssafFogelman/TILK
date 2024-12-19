@@ -3,8 +3,11 @@ import { db } from "../drizzle/db";
 import { chatMessages } from "../drizzle/schema";
 import { unreadEvents } from "../drizzle/schema";
 import { and, eq } from "drizzle-orm";
-import { UnreadEventType } from "../../../types/types";
-import { UnreadEventsResponse } from "../../../types/types";
+import {
+  UnreadEvent,
+  UnreadEvents,
+  UnreadEventType,
+} from "../../../types/types";
 
 export async function getUnreadEvents(c: Context) {
   try {
@@ -41,18 +44,19 @@ export async function getUnreadEvents(c: Context) {
 
     //reduce the unread events to a single object with the event type as the key and the events as the value.
     //if there are no events for a particular event type, it will not be included in the final object.
-    const finalUnreadEvents = theUnreadEvents.reduce<
-      Partial<Record<UnreadEventType, UnreadEventsResponse[]>>
-    >((acc, event) => {
-      const eventType = event.eventType as UnreadEventType;
+    const finalUnreadEvents = theUnreadEvents.reduce<UnreadEvents>(
+      (acc, event) => {
+        const eventType = event.eventType as UnreadEventType;
 
-      if (!acc[eventType]) {
-        acc[eventType] = [];
-      }
+        if (!acc[eventType]) {
+          acc[eventType] = [];
+        }
 
-      acc[eventType]?.push(event as UnreadEventsResponse);
-      return acc;
-    }, {});
+        acc[eventType]?.push(event as UnreadEvent);
+        return acc;
+      },
+      {}
+    );
     return c.json(finalUnreadEvents, 200);
   } catch (error) {
     console.log("error getting unread events: ", error);

@@ -100,9 +100,9 @@ const Tabs = () => {
           getBadge={({ route }) => {
             if (
               route.key === "Chats" &&
-              unreadEvents?.unread_messages.length > 0
+              (unreadEvents?.unread_message?.length ?? 0) > 0
             ) {
-              return unreadEvents.unread_messages.length;
+              return unreadEvents.unread_message?.length;
             }
             return undefined;
           }}

@@ -338,4 +338,6 @@ type OtherEvent = BaseUnreadEvent & {
   senderId?: string | null;
 };
 
-export type UnreadEventsResponse = UnreadMessageEvent | OtherEvent | {};
+export type UnreadEvent = UnreadMessageEvent | OtherEvent | {};
+
+export type UnreadEvents = Partial<Record<UnreadEventType, UnreadEvent[]>>;
