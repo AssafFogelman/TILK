@@ -55,8 +55,15 @@ const ChatRoomScreen = () => {
 
   const navigation = useNavigation<ChatRoomScreenNavigationProp>();
   const route = useRoute<ChatRoomScreenRouteProp>();
-  const { otherUserData, chatId }: { otherUserData: UserType; chatId: string } =
-    route.params;
+  const {
+    otherUserData,
+    chatId,
+    lastReadMessageId,
+  }: {
+    otherUserData: UserType;
+    chatId: string;
+    lastReadMessageId: string | null;
+  } = route.params;
   const { userId } = useAuthState();
   // is the screen currently visible
   const isChatVisible = useRef(true);
@@ -194,7 +201,7 @@ const ChatRoomScreen = () => {
             onContentSizeChange={scrollToBottom}
             onLayout={scrollToBottom}
             ItemSeparatorComponent={(leadingItem, trailingItem) =>
-              Separator({ leadingItem, trailingItem })
+              Separator({ leadingItem, trailingItem, lastReadMessageId })
             }
           />
         )}

@@ -99,7 +99,6 @@ the "unread" of every message *that the client received*
 in chats - 
 lastMessageDate,
 lastMessageSender,
-lastMessageType,
 lastMessageText,
 unread,
 unreadCount

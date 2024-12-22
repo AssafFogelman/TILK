@@ -71,10 +71,10 @@ export async function getChatsList(c: Context) {
         unread: chat.unread,
         lastMessageDate: chat.lastMessageDate?.toISOString() ?? null,
         lastMessageSender: chat.lastMessageSender,
-        lastMessageType: chat.lastMessageType,
-        lastMessageImageURL: chat.lastMessageImageURL,
         lastMessageText: chat.lastMessageText,
         chatId: chat.chatId,
+        lastReadMessageId: chat.lastReadMessageId,
+        unreadCount: chat.unreadCount, //TODO: may be redundant
       };
     });
 

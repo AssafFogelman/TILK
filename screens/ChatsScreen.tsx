@@ -71,6 +71,7 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
     navigation.navigate("ChatRoom", {
       otherUserData: chat.otherUser,
       chatId: chat.chatId,
+      lastReadMessageId: chat.lastReadMessageId,
     });
   }
 

@@ -7,18 +7,17 @@ import { useAuthState } from "../../AuthContext";
 export const Separator = ({
   leadingItem,
   trailingItem,
+  lastReadMessageId,
 }: {
   leadingItem: MessageType;
   trailingItem: MessageType;
+  lastReadMessageId: string | null;
 }) => {
   const theme = useTheme();
   const { userId } = useAuthState();
 
-  if (trailingItem.senderId === userId) return null; //next message was sent by the user
-  if (leadingItem.senderId !== userId && leadingItem.unread === true)
-    return null; //the previous message was received and is unread
-  if (trailingItem.senderId !== userId && trailingItem.unread === false)
-    return null; //the next message is already read
+  if (leadingItem.messageId !== lastReadMessageId) return null;
+  //it will not show the separator after the last message or before the first message because a separator is only between cells.
   return (
     <View
       style={{
