@@ -11,15 +11,19 @@ type OTPProps = {
   digitsArray: string[];
   setDigitsArray: React.Dispatch<React.SetStateAction<any[]>>;
   separatorIndexes: number[];
+  visible?: boolean;
 };
 
 const OTP = ({
   digitsArray,
   setDigitsArray,
   separatorIndexes = [],
+  visible = false,
+  // visible is not obligatory. used in case OPT is used in a modal that
+  // becomes visible when the user does something. In that case we want the keyboard to pop-up
 }: OTPProps) => {
   const digitInputRefs = useRef<(TextInput | null)[]>([]);
-  useFocusOnFirstDigit();
+  useFocusOnFirstDigit(visible);
 
   return (
     <View>
@@ -83,12 +87,17 @@ const OTP = ({
   }
 
   //focus on the first digit
-  function useFocusOnFirstDigit() {
+  function useFocusOnFirstDigit(visible: boolean) {
     useEffect(() => {
-      if (digitInputRefs.current[0]) {
-        digitInputRefs.current[0].focus();
-      }
-    }, []);
+      // Small delay to ensure modal is rendered
+      const timer = setTimeout(() => {
+        if (digitInputRefs.current[0]) {
+          digitInputRefs.current[0].focus();
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }, [visible]);
   }
 };
 

@@ -85,6 +85,7 @@ const PhoneVerificationScreen = () => {
               digitsArray={code}
               setDigitsArray={setCode}
               separatorIndexes={[]}
+              visible={modalVisible}
             />
             <Pressable
               style={({ pressed }) => [

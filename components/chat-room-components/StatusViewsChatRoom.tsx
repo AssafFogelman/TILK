@@ -10,12 +10,12 @@ export const LoadingView = () => (
 
 export const ErrorView = () => (
   <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    <Text>Could not load connected users...</Text>
+    <Text>Could not load messages...</Text>
   </View>
 );
 
 export const NoDataView = () => (
   <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    <Text>you have no connected users...</Text>
+    <Text>there are no messages yet...</Text>
   </View>
 );

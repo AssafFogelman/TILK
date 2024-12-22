@@ -34,17 +34,17 @@ export const postBio = async (c: Context) => {
       throw { message: "invalid gender supplied" };
     }
 
-    //verify biography is at least 140 characters long
-    if (biography.length < 140) {
+    //verify biography is at least 100 characters long
+    if (biography.length < 100) {
       throw { message: "invalid biography supplied" };
     }
     if (dateOfBirth !== null) {
       //verify dateOfBirth is in an "MM/DD/YYYY" or "YYYY-MM-DD" pattern.
       const MMDDYYYY = new RegExp(
-        "(0[1-9]|1[012])\\/(0[1-9]|[12][0-9]|3[01])\\/(19|20)\\d\\d",
+        "(0[1-9]|1[012])\\/(0[1-9]|[12][0-9]|3[01])\\/(19|20)\\d\\d"
       );
       const YYYYMMDD = new RegExp(
-        "^[12][901][0-9][0-9]-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$",
+        "^[12][901][0-9][0-9]-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$"
       );
 
       if (!MMDDYYYY.test(dateOfBirth) && !YYYYMMDD.test(dateOfBirth)) {

@@ -35,7 +35,6 @@ export const getConnectionsList = async (c: Context) => {
         originalAvatar: users.originalAvatars,
         nickname: users.nickname,
         currentlyConnected: users.currentlyConnected,
-        socketId: users.socketId,
         unread: connectionRequests.unread,
         gender: users.gender,
         dateOfBirth: users.dateOfBirth,

@@ -22,7 +22,7 @@ import { useSetCurrentlyConnected } from "../hooks/home-screen-hooks/useSetCurre
 import { useNavigation } from "@react-navigation/native";
 import Entypo from "@expo/vector-icons/Entypo";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import * as Location from "expo-location";
 import { useFetchUnreadEvents } from "../hooks/home-screen-hooks/useFetchUnreadEvents";
 // regardless of the location changes, perform the KNN query every LOCATION_INTERVAL
@@ -123,7 +123,9 @@ const HomeScreen = () => {
       return response.data;
     } catch (error) {
       console.error("Error fetching connections list:", error);
-
+      if (error instanceof AxiosError) {
+        console.error("Axios error details:", error.response?.data);
+      }
       return []; // Return an empty array in case of error
     }
   }
