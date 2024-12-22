@@ -331,7 +331,7 @@ export const chatMessages = pgTable(
   }
 );
 
-export const unreadEventsEnum = pgEnum("unread_events_enum", [
+export const eventsEnum = pgEnum("events_enum", [
   "unread_message",
   "unread_connection_request",
   "unread_connection_approval",
@@ -342,7 +342,7 @@ export const unreadEvents = pgTable(
   "unread_events",
   {
     userId: uuid("user_id").references(() => users.userId),
-    eventType: unreadEventsEnum("event_type").notNull(),
+    eventType: eventsEnum("events_enum").notNull(),
     chatId: uuid("chat_id").references(() => chats.chatId),
     messageId: uuid("message_id").references(() => chatMessages.messageId),
   },
@@ -353,6 +353,28 @@ export const unreadEvents = pgTable(
         table.eventType,
         // I've put the chatId before messageId,
         // because we will usually want to delete all the unread messages of a certain chat.
+        table.chatId,
+        table.messageId
+      ),
+    };
+  }
+);
+
+export const undeliveredEvents = pgTable(
+  "undelivered_events",
+  {
+    userId: uuid("user_id").references(() => users.userId),
+    eventType: eventsEnum("events_enum").notNull(),
+    chatId: uuid("chat_id").references(() => chats.chatId),
+    messageId: uuid("message_id").references(() => chatMessages.messageId),
+  },
+  (table) => {
+    return {
+      undeliveredEventsIndex: index("undelivered_events_index").on(
+        table.userId,
+        table.eventType,
+        // I've put the chatId before messageId,
+        // because we will usually want to delete all the undelivered messages of a certain chat.
         table.chatId,
         table.messageId
       ),
@@ -372,7 +394,7 @@ export const notificationTemplates = pgTable("notification_templates", {
 });
 
 //event history
-export const events = pgTable("events", {
+export const pastEvents = pgTable("past_events", {
   eventId: uuid("event_id").primaryKey().defaultRandom().notNull().unique(),
   userId: uuid("user_id")
     .notNull()
@@ -380,9 +402,9 @@ export const events = pgTable("events", {
   eventDate: timestamp("event_date", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),
-  eventType: uuid("event_type")
+  pastEventType: uuid("past_event_type")
     .notNull()
-    .references(() => eventTypes.eventTypeId),
+    .references(() => pastEventTypes.pastEventTypeId),
   /*
   so, let's assume a user has blocked another user. a record will be added to the "blocks"
   table. that record will have a "block_id". through this id we can extrapolate data on 
@@ -408,13 +430,13 @@ export const tablesEnum = pgEnum("tables_enum", [
   "notificationTemplates",
 ]);
 
-export const eventTypes = pgTable("event_types", {
-  eventTypeId: uuid("event_type_id")
+export const pastEventTypes = pgTable("past_event_types", {
+  pastEventTypeId: uuid("past_event_type_id")
     .primaryKey()
     .notNull()
     .unique()
     .defaultRandom(),
-  eventTypeName: text("event_type_name").notNull().unique(),
+  pastEventTypeName: text("past_event_type_name").notNull().unique(),
   tableAffected: tablesEnum("table_affected").notNull(),
 });
 
@@ -439,7 +461,7 @@ export const userRelations = relations(users, ({ many }) => ({
   connectionRequests: many(connectionRequests),
   blocks: many(blocks),
   chats: many(chats),
-  events: many(events),
+  events: many(pastEvents),
 }));
 
 export const tagsUsersRelations = relations(tagsUsers, ({ one }) => ({
@@ -551,16 +573,35 @@ export const unreadEventsRelations = relations(unreadEvents, ({ one }) => ({
   }),
 }));
 
-//events - the server records things that happen. relations
-export const eventsRelations = relations(events, ({ one }) => ({
-  eventType: one(eventTypes, {
+//undelivered events relations
+export const undeliveredEventsRelations = relations(
+  undeliveredEvents,
+  ({ one }) => ({
+    userId: one(users, {
+      fields: [undeliveredEvents.userId],
+      references: [users.userId],
+    }),
+    chatId: one(chats, {
+      fields: [undeliveredEvents.chatId],
+      references: [chats.chatId],
+    }),
+    messageId: one(chatMessages, {
+      fields: [undeliveredEvents.messageId],
+      references: [chatMessages.messageId],
+    }),
+  })
+);
+
+//past events - the server records things that happen. relations
+export const pastEventsRelations = relations(pastEvents, ({ one }) => ({
+  eventType: one(pastEventTypes, {
     //this foreign key
-    fields: [events.eventType],
+    fields: [pastEvents.pastEventType],
     //references
-    references: [eventTypes.eventTypeId],
+    references: [pastEventTypes.pastEventTypeId],
   }),
 }));
 
-export const eventTypesRelations = relations(eventTypes, ({ many }) => ({
-  events: many(events),
+export const pastEventTypesRelations = relations(pastEvents, ({ many }) => ({
+  events: many(pastEvents),
 }));
