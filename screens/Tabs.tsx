@@ -104,6 +104,16 @@ const Tabs = () => {
             ) {
               return unreadEvents.unread_message?.length;
             }
+            if (
+              (route.key === "Connections" &&
+                (unreadEvents?.unread_connection_request?.length ?? 0) > 0) ||
+              (unreadEvents?.unread_connection_approval?.length ?? 0) > 0
+            ) {
+              return (
+                (unreadEvents?.unread_connection_request?.length ?? 0) +
+                (unreadEvents?.unread_connection_approval?.length ?? 0)
+              );
+            }
             return undefined;
           }}
           theme={theme}

@@ -43,6 +43,7 @@ import { isAxiosError } from "axios";
 import { useSetFocusBlurListener } from "../hooks/chat-room-hooks/useSetFocusBlurListener";
 import { useOnChatEntrance } from "../hooks/chat-room-hooks/useOnChatEntrance";
 import { FlashList } from "@shopify/flash-list";
+import { Separator } from "../components/chat-room-components/Separator";
 const SOCKET_TIMEOUT = 5000; // 5 seconds
 
 const ChatRoomScreen = () => {
@@ -60,7 +61,6 @@ const ChatRoomScreen = () => {
   // is the screen currently visible
   const isChatVisible = useRef(true);
   const flashListRef = useRef<FlashList<MessageType>>(null);
-
   //set that once the user exits the chat room, "isChatVisible" will be false (and true if focused)
   useSetFocusBlurListener(chatId, userId, isChatVisible);
 
@@ -193,6 +193,9 @@ const ChatRoomScreen = () => {
             estimatedItemSize={100}
             onContentSizeChange={scrollToBottom}
             onLayout={scrollToBottom}
+            ItemSeparatorComponent={(leadingItem, trailingItem) =>
+              Separator({ leadingItem, trailingItem })
+            }
           />
         )}
 

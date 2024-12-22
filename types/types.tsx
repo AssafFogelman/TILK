@@ -329,13 +329,10 @@ type UnreadMessageEvent = BaseUnreadEvent & {
   senderId: string;
 };
 
+//i will later want to add types to other unread events
 type OtherEvent = BaseUnreadEvent & {
   eventType: Exclude<UnreadEventType, "unread_message">;
-  chatId?: string | null;
-  messageId?: string | null;
-  text?: string | null;
-  sentDate?: Date | null;
-  senderId?: string | null;
+  senderId: string;
 };
 
 export type UnreadEvent = UnreadMessageEvent | OtherEvent | {};
