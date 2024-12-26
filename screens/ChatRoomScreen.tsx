@@ -44,12 +44,13 @@ import { useSetFocusBlurListener } from "../hooks/chat-room-hooks/useSetFocusBlu
 import { useOnChatEntrance } from "../hooks/chat-room-hooks/useOnChatEntrance";
 import { FlashList } from "@shopify/flash-list";
 import { Separator } from "../components/chat-room-components/Separator";
+import { ListHeader } from "../components/chat-room-components/ListHeader";
 const SOCKET_TIMEOUT = 5000; // 5 seconds
 
 const ChatRoomScreen = () => {
   const [textInput, setTextInput] = useState("");
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(() => Math.random() < 0.5);
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const scrollViewRef = useRef<null | ScrollView>(null);
 
@@ -200,9 +201,17 @@ const ChatRoomScreen = () => {
             estimatedItemSize={100}
             onContentSizeChange={scrollToBottom}
             onLayout={scrollToBottom}
-            ItemSeparatorComponent={(leadingItem, trailingItem) =>
-              Separator({ leadingItem, trailingItem, lastReadMessageId })
+            ItemSeparatorComponent={(props) =>
+              Separator({ ...props, lastReadMessageId })
             }
+            ListHeaderComponent={(props) =>
+              ListHeader({
+                ...props,
+                isLastReadMessageId: !!lastReadMessageId,
+                isFirstMessage: !!chatMessages[0],
+              })
+            }
+            extraData={modalVisible}
           />
         )}
 
