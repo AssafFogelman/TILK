@@ -181,7 +181,6 @@ export type ReceivedRequestsQueryResult = {
   smallAvatar: string; // removed null since we filter these out
   nickname: string; // removed null since we filter these out
   currentlyConnected: boolean;
-  socketId: string | null;
   unread: boolean;
   gender: "man" | "woman" | "other"; // removed null since we filter these out
   dateOfBirth: string | null;
@@ -205,7 +204,6 @@ export type SentRequestsQueryResult = {
   smallAvatar: string; // removed null since we filter these out
   nickname: string; // removed null since we filter these out
   currentlyConnected: boolean;
-  socketId: string | null;
   gender: "man" | "woman" | "other"; // removed null since we filter these out
   dateOfBirth: string | null;
   biography: string; // removed null since we filter these out
@@ -230,7 +228,6 @@ export type ConnectionsScreenUser = {
     lastMessageSenderId: string | null;
   } | null;
   unread?: boolean;
-  socketId?: string | null;
   gender: "man" | "woman" | "other";
   dateOfBirth: string | null;
   biography: string;
@@ -313,31 +310,31 @@ export type Route = {
 //all these types are just used to articulate that if
 //an event is of type "unread_message", is also positively possesses
 //the other related keys such as "messageId".
-export type UnreadEventType =
-  | "unread_message"
-  | "unread_connection_request"
-  | "unread_connection_approval"
-  | "unread_looking_to_do_same_thing";
+export type TilkEventType =
+  | "unread_messages"
+  | "unread_connection_requests"
+  | "unread_connection_approvals"
+  | "unread_looking_to_do_same_things";
 
-type BaseUnreadEvent = {
-  eventType: UnreadEventType;
+type BaseEvent = {
+  offset: Date;
+  userId: string;
+  otherUserId: string;
 };
 
-type UnreadMessageEvent = BaseUnreadEvent & {
-  eventType: "unread_message";
+type MessageEvent = BaseEvent & {
+  eventType: "unread_messages";
   chatId: string;
   messageId: string;
   text: string;
   sentDate: Date;
-  senderId: string;
 };
 
 //i will later want to add types to other unread events
-type OtherEvent = BaseUnreadEvent & {
-  eventType: Exclude<UnreadEventType, "unread_message">;
-  senderId: string;
+type OtherEvent = BaseEvent & {
+  eventType: Exclude<TilkEventType, "unread_messages">;
 };
-
-export type UnreadEvent = UnreadMessageEvent | OtherEvent | {};
-
-export type UnreadEvents = Partial<Record<UnreadEventType, UnreadEvent[]>>;
+//individual events
+export type TilkEvent = MessageEvent | OtherEvent;
+//when you want to get all the unread events sorted by event types
+export type TilkEvents = Partial<Record<TilkEventType, TilkEvent[]>>;

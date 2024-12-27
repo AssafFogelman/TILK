@@ -17,7 +17,7 @@ export function emit<T>(
           //the emit failed, let's retry indefinitely
           tryEmit();
         } else {
-          // Call the callback with either the error or response
+          // the server has received the event, let's call the callback with either the error or response from the server
           onAcknowledgement?.(error, response);
         }
       });

@@ -18,6 +18,7 @@ import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected"
 import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected";
 import { sendMessage } from "./APIs/websocket/send-message";
 import { markMessagesAsRead } from "./APIs/websocket/mark-messages-as-read";
+import { fetchUndeliveredEventsFromDatabase } from "./APIs/websocket/fetch-undelivered-events-from-database";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -74,14 +75,16 @@ export const io = new Server(server as HttpServer, {
   },
 });
 io.on("error", (err) => console.log("error: ", err));
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log(
-    `client connected! id: ${socket.id}, headers: ${socket.request.headers}`
+    `client connected to websocket! id: ${socket.id}, headers: ${socket.request.headers}`
   );
+
+  //set as "currently connected" + deliver undelivered events
   socket.on("setCurrentlyConnected", setCurrentlyConnected);
   socket.on("disconnect", registerAsUnconnected);
   // socket.on("sendMessage", sendMessage);
-  socket.on("markMessagesAsRead", markMessagesAsRead);
+  socket.on("markMessagesAsRead", markMessagesAsRead); //mark the messages+chat+events as read
 });
 
 /*
@@ -126,7 +129,7 @@ async function setNoUserIsCurrentlyConnected() {
     await db.update(users).set({ currentlyConnected: false });
   } catch (error) {
     console.log(
-      "an error occurred while trying to reset the currently connected and socketId fields of all the users: "
+      "an error occurred while trying to reset the currently connected field of all the users: "
     );
     console.log(error);
   }

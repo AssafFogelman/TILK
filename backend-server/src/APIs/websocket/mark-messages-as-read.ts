@@ -1,13 +1,16 @@
 import { db } from "../../drizzle/db";
-import { chatMessages } from "../../drizzle/schema";
+import { chatMessages, chats, unreadEvents } from "../../drizzle/schema";
 import { and, eq, inArray } from "drizzle-orm";
-import { io } from "../..";
 
+//mark the messages+chat+events as read
 export async function markMessagesAsRead(
   chatId: string,
-  unreadMessagesIds: string[]
+  unreadMessagesIds: string[],
+  callback: (error: Error | null, response?: { success: boolean }) => void
 ) {
   try {
+    if (!unreadMessagesIds.length)
+      callback(new Error("no unread messages detected"), { success: false });
     //mark the messages as read in the DB
     await db
       .update(chatMessages)
@@ -20,12 +23,20 @@ export async function markMessagesAsRead(
           inArray(chatMessages.messageId, unreadMessagesIds)
         )
       );
-    //emit the event to the other user
-    io.emit("markMessagesAsRead", {
-      chatId,
-      unreadMessagesIds,
-    });
+    //mark the chat as read
+    await db
+      .update(chats)
+      .set({
+        unread: false,
+        unreadCount: 0,
+        lastReadMessageId: unreadMessagesIds[0],
+      })
+      .where(eq(chats.chatId, chatId));
+    //delete the unread events from the DB
+    await db.delete(unreadEvents).where(eq(unreadEvents.chatId, chatId));
+    callback(null, { success: true });
   } catch (error) {
     console.error("error marking messages as read", error);
+    callback(new Error("error marking messages as read"), { success: false });
   }
 }

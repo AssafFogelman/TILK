@@ -1,7 +1,7 @@
 /*
 
     main app:
-    * when a new user signs in, he is sent into "Homescreen". He passes other screen, 
+    * when a new user signs in, he is sent into "HomeScreen". He passes other screen, 
      although it does look like they do load because I saw that certain requests that are in useEffects in "AvatarScreen" got triggered.
     so check "verification screen".
 
@@ -85,16 +85,16 @@ optimistically:
 the chat read date - chatReadDate  update. 
 unread count
 the "unread" of every message *that the client received* 
-0.5 the client emits to the server ("messegesRead") to update this.
+0.5 the client emits to the server ("messagesRead") to update this.
 0.53 the server updates the DB that the chat is now not "unread", and marks all the last messages as "unread" = false
-0.55 the server emits to the recipient client ("messegesRead").
+0.55 the server emits to the recipient client ("messagesRead").
 0.56 the recipient client optimistically updates the status of the chat and the messages he sent as not "unread"
 0.6 the client invalidates the chats query. (I don't think we need to invalidate the messages' query)
 1. the client (A) presses the "send" button
 2. the cache optimistically updates with that message as "pending"
 3. the message is emitted to the server ("sendMessageToServer") and an acknowledgement is received
 4. upon acknowledgement, the client (A) updates the chat messages and chats optimistically (and its predecessors that were not received by the server), and invalidates both queries.
-5. the server finds the last message that was received, and checks the intergrity of the chat - maybe the client already sent the messages but did not get an acknowledgement (?) which messages he needs to update (by their websocket pId)
+5. the server finds the last message that was received, and checks the integrity of the chat - maybe the client already sent the messages but did not get an acknowledgement (?) which messages he needs to update (by their websocket pId)
 4. the server updates the db - 
 in chats - 
 lastMessageDate,
@@ -124,7 +124,7 @@ then invalidates the query.
 
 
 
-the chat messages update only once with REST API and later with ivalidation. And so you do not need stale time to be zero:
+the chat messages update only once with REST API and later with invalidation. And so you do not need stale time to be zero:
 
 const queryClient = new QueryClient({
   defaultOptions: {

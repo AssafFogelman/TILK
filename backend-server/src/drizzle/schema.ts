@@ -333,19 +333,25 @@ export const chatMessages = pgTable(
 );
 
 export const eventsEnum = pgEnum("events_enum", [
-  "unread_message",
-  "unread_connection_request",
-  "unread_connection_approval",
-  "unread_looking_to_do_same_thing",
+  "unread_messages",
+  "unread_connection_requests",
+  "unread_connection_approvals",
+  "unread_looking_to_do_same_things",
 ]);
 
 export const unreadEvents = pgTable(
   "unread_events",
   {
+    id: uuid("id").primaryKey().defaultRandom().notNull(),
     userId: uuid("user_id").references(() => users.userId),
     eventType: eventsEnum("events_enum").notNull(),
     chatId: uuid("chat_id").references(() => chats.chatId),
     messageId: uuid("message_id").references(() => chatMessages.messageId),
+    receivedDate: timestamp("received_date", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(), //not defaultNow because the event received date is determined here.
+    //the receivedDate is used for distinguishing between events
   },
   (table) => {
     return {
@@ -364,20 +370,25 @@ export const unreadEvents = pgTable(
 export const undeliveredEvents = pgTable(
   "undelivered_events",
   {
-    userId: uuid("user_id").references(() => users.userId),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.userId),
+    otherUserId: uuid("other_user_id")
+      .notNull()
+      .references(() => users.userId),
     eventType: eventsEnum("events_enum").notNull(),
     chatId: uuid("chat_id").references(() => chats.chatId),
     messageId: uuid("message_id").references(() => chatMessages.messageId),
+    offset: timestamp("offset", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+    //the offset is a way to know which events the client has already received
   },
   (table) => {
     return {
       undeliveredEventsIndex: index("undelivered_events_index").on(
         table.userId,
-        table.eventType,
-        // I've put the chatId before messageId,
-        // because we will usually want to delete all the undelivered messages of a certain chat.
-        table.chatId,
-        table.messageId
+        table.offset
       ),
     };
   }
@@ -578,15 +589,15 @@ export const unreadEventsRelations = relations(unreadEvents, ({ one }) => ({
 export const undeliveredEventsRelations = relations(
   undeliveredEvents,
   ({ one }) => ({
-    userId: one(users, {
+    user: one(users, {
       fields: [undeliveredEvents.userId],
       references: [users.userId],
     }),
-    chatId: one(chats, {
+    chat: one(chats, {
       fields: [undeliveredEvents.chatId],
       references: [chats.chatId],
     }),
-    messageId: one(chatMessages, {
+    message: one(chatMessages, {
       fields: [undeliveredEvents.messageId],
       references: [chatMessages.messageId],
     }),

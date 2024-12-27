@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import axios, { isAxiosError } from "axios";
-import { UnreadEvents } from "../../types/types";
+import { TilkEvents } from "../../types/types";
 
 export const useFetchUnreadEvents = () => {
   const { data: unreadEvents = {} } = useQuery({
@@ -10,7 +10,7 @@ export const useFetchUnreadEvents = () => {
 
   return { unreadEvents };
 
-  async function fetchUnreadEvents(): Promise<UnreadEvents> {
+  async function fetchUnreadEvents(): Promise<TilkEvents> {
     try {
       const response = await axios.get("/notifications/unread-events");
       return response.data;

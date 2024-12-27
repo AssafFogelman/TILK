@@ -180,7 +180,7 @@ const ChatRoomScreen = () => {
     } catch (error) {
       // Rollback on error
       queryClient.invalidateQueries({
-        queryKey: ["chatMessages", otherUserData.userId],
+        queryKey: ["chatMessages", chatId],
       });
       console.log("there was a problem sending the message:", error);
     }
@@ -335,7 +335,7 @@ const ChatRoomScreen = () => {
   async function markChatAsRead() {
     try {
       // Optimistically update the chats query to be read
-      queryClient.setQueryData(["chats"], (oldData: ChatType[] = []) => {
+      queryClient.setQueryData(["chatsList"], (oldData: ChatType[] = []) => {
         if (!oldData.length) return oldData;
         return oldData.map((chat) =>
           chat.chatId === chatId

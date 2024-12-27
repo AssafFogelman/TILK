@@ -7,6 +7,5 @@ export const useSetCurrentlyConnected = () => {
 
   useEffect(() => {
     socket.connect();
-    socket.emit("setCurrentlyConnected", userId);
   }, [userId]);
 };

@@ -3,11 +3,7 @@ import { db } from "../drizzle/db";
 import { chatMessages } from "../drizzle/schema";
 import { unreadEvents } from "../drizzle/schema";
 import { and, eq } from "drizzle-orm";
-import {
-  UnreadEvent,
-  UnreadEvents,
-  UnreadEventType,
-} from "../../../types/types";
+import { TilkEvent, TilkEvents, TilkEventType } from "../../../types/types";
 
 export async function getUnreadEvents(c: Context) {
   try {
@@ -44,15 +40,15 @@ export async function getUnreadEvents(c: Context) {
 
     //reduce the unread events to a single object with the event type as the key and the events as the value.
     //if there are no events for a particular event type, it will not be included in the final object.
-    const finalUnreadEvents = theUnreadEvents.reduce<UnreadEvents>(
+    const finalUnreadEvents = theUnreadEvents.reduce<TilkEvents>(
       (acc, event) => {
-        const eventType = event.eventType as UnreadEventType;
+        const eventType = event.eventType as TilkEventType;
 
         if (!acc[eventType]) {
           acc[eventType] = [];
         }
 
-        acc[eventType]?.push(event as UnreadEvent);
+        acc[eventType]?.push(event as TilkEvent);
         return acc;
       },
       {}

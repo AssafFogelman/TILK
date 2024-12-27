@@ -11,6 +11,7 @@ import TabHeader from "../components/home-screen-components/TabHeader";
 import { Alert } from "react-native";
 import { ConnectionsScreen } from "./ConnectionsScreen";
 import { useFetchUnreadEvents } from "../hooks/home-screen-hooks/useFetchUnreadEvents";
+import { useSetCurrentlyConnected } from "../hooks/home-screen-hooks/useSetCurrentlyConnected";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -43,6 +44,9 @@ const Tabs = () => {
   const [tabState, setTabState] = useState(initialTabState);
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
+
+  //set the user as "currently connected" (activating the websocket connection)
+  useSetCurrentlyConnected();
 
   //fetch unread events - unread messages/connection requests/connection approvals
   const { unreadEvents } = useFetchUnreadEvents();
@@ -100,18 +104,18 @@ const Tabs = () => {
           getBadge={({ route }) => {
             if (
               route.key === "Chats" &&
-              (unreadEvents?.unread_message?.length ?? 0) > 0
+              (unreadEvents?.unread_messages?.length ?? 0) > 0
             ) {
-              return unreadEvents.unread_message?.length;
+              return unreadEvents.unread_messages?.length;
             }
             if (
               (route.key === "Connections" &&
-                (unreadEvents?.unread_connection_request?.length ?? 0) > 0) ||
-              (unreadEvents?.unread_connection_approval?.length ?? 0) > 0
+                (unreadEvents?.unread_connection_requests?.length ?? 0) > 0) ||
+              (unreadEvents?.unread_connection_approvals?.length ?? 0) > 0
             ) {
               return (
-                (unreadEvents?.unread_connection_request?.length ?? 0) +
-                (unreadEvents?.unread_connection_approval?.length ?? 0)
+                (unreadEvents?.unread_connection_requests?.length ?? 0) +
+                (unreadEvents?.unread_connection_approvals?.length ?? 0)
               );
             }
             return undefined;

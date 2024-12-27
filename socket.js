@@ -6,4 +6,10 @@ const URL =
     ? undefined
     : process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 
-export const socket = io(URL, { path: "/ws/", autoConnect: false });
+//TODO: we will have to see whether setting the URL to undefined in production indeed works
+export const socket = io(URL, {
+  path: "/ws/",
+  autoConnect: false,
+  //delivery guarantee method - storing the offset of the last received event
+  auth: { offset: undefined },
+});

@@ -18,13 +18,11 @@ import {
   ErrorView,
   NoDataView,
 } from "../components/home-screen-components/StatusViews";
-import { useSetCurrentlyConnected } from "../hooks/home-screen-hooks/useSetCurrentlyConnected";
 import { useNavigation } from "@react-navigation/native";
 import Entypo from "@expo/vector-icons/Entypo";
 import { useQuery } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import * as Location from "expo-location";
-import { useFetchUnreadEvents } from "../hooks/home-screen-hooks/useFetchUnreadEvents";
 // regardless of the location changes, perform the KNN query every LOCATION_INTERVAL
 const LOCATION_INTERVAL = 2 * 60 * 1000; // 2 minutes in milliseconds
 
@@ -36,9 +34,6 @@ const HomeScreen = () => {
 
   const { subscribe, currentLocation } = useLocation();
   const navigation = useNavigation<HomeScreenNavigationProp>();
-
-  //set the user as "currently connected" (activating the websocket connection)
-  useSetCurrentlyConnected();
 
   // Set up location subscription
   useEffect(() => {

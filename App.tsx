@@ -25,6 +25,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { useReactQueryDevTools } from "@dev-plugins/react-query";
 import { queryClient } from "./services/queryClient";
 import { MessageType } from "./types/types";
+import { SocketEvents } from "./SocketEvents";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
@@ -32,8 +33,7 @@ axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 export default function App() {
   //use tanstack query devtools
   useReactQueryDevTools(queryClient);
-  //load websocket listeners and cleanup
-  useWebSocketEventsAndDisconnect();
+
   //is websocket connected
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isConnected = useIsWebSocketConnected();
@@ -44,74 +44,32 @@ export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <SafeAreaProvider>
-            <SafeAreaView style={{ flex: 1 }}>
-              <Text>
-                user is {isConnected ? "connected" : "disconnected"} to
-                websocket
-              </Text>
-              <AuthProvider>
-                <LocationProvider>
-                  <PaperProvider theme={theme}>
-                    <NavigationContainer theme={theme}>
-                      <StackNavigator />
-                    </NavigationContainer>
-                  </PaperProvider>
-                </LocationProvider>
-              </AuthProvider>
-            </SafeAreaView>
-          </SafeAreaProvider>
-          <Toast />
-        </GestureHandlerRootView>
+        <AuthProvider>
+          <LocationProvider>
+            <SocketEvents>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <SafeAreaProvider>
+                  <SafeAreaView style={{ flex: 1 }}>
+                    <Text>
+                      user is {isConnected ? "connected" : "disconnected"} to
+                      websocket
+                    </Text>
+
+                    <PaperProvider theme={theme}>
+                      <NavigationContainer theme={theme}>
+                        <StackNavigator />
+                      </NavigationContainer>
+                    </PaperProvider>
+                  </SafeAreaView>
+                </SafeAreaProvider>
+                <Toast />
+              </GestureHandlerRootView>
+            </SocketEvents>
+          </LocationProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );
-}
-
-function useWebSocketEventsAndDisconnect() {
-  //load websocket events and cleanup
-  useEffect(() => {
-    //if already connected, run connection function
-    if (socket.connected) {
-      onConnect();
-    }
-
-    function onConnect() {
-      console.log("websocket connected!");
-    }
-
-    function onIncomingMessage(message: MessageType) {
-      console.log("incoming message:", message);
-    }
-
-    // function onDisconnect() {
-    //something that should happen if the server goes down
-    // }
-
-    // function onFooEvent(value) {
-    //   setFooEvents(previous => [...previous, value]);
-    // }
-
-    //listen to events and run functions accordingly
-    socket.on("connect", onConnect);
-    // socket.on("disconnect", onDisconnect);
-    socket.on("incoming-message", onIncomingMessage);
-
-    return () => {
-      //when the component unmounts (the app closes), disconnect the socket and close the event listeners
-
-      //close the event listener "connect"
-      socket.off("connect", onConnect);
-      //close the event listener "incoming-message"
-      socket.off("incoming-message", onIncomingMessage);
-      //disconnect the socket
-      socket.disconnect();
-
-      // socket.off("disconnect", onDisconnect);
-      // socket.off('foo', onFooEvent);
-    };
-  }, []);
 }
 
 //is web socket connected?
