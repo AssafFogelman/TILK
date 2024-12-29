@@ -1,26 +1,64 @@
-import { MessageType } from "../../../../types/types";
-import { eq } from "drizzle-orm";
+import { io } from "../..";
+import {
+  MessageType,
+  SendMessageResponseType,
+  TilkEventType,
+} from "../../../../types/types";
+import { and, eq } from "drizzle-orm";
+import { chatMessages, undeliveredEvents, users } from "../../drizzle/schema";
+import { db } from "../../drizzle/db";
 
-export async function sendMessage(message: ChatMessage) {
+export async function sendMessage(
+  message: MessageType,
+  otherUserId: string,
+  callback: (error: Error | null, response?: SendMessageResponseType) => void
+) {
   try {
+    const { sentDate, text, senderId, chatId } = message;
     // Save message to database
-    const savedMessage = await db
+    const [savedMessage] = (await db
       .insert(chatMessages)
       .values({
-        ...message,
-        delivered: false, // Mark as undelivered initially
+        chatId,
+        sentDate,
+        text,
+        senderId,
+        gotToServer: true,
       })
-      .returning();
+      .returning()) as [MessageType];
+
+    //return the new messageId to the sender
+    callback(null, { success: true, messageId: savedMessage.messageId });
 
     // Check if recipient is online
     const recipient = await db.query.users.findFirst({
-      where: eq(users.userId, message.recipientId),
+      where: eq(users.userId, otherUserId),
       columns: { currentlyConnected: true },
     });
 
     if (recipient?.currentlyConnected) {
       // If online, emit immediately
-      io.to(message.recipientId).emit("newMessage", savedMessage);
+      //we assigned him to a room whose name is his user Id when he connected.
+      //so we can emit to him directly
+      io.to(otherUserId).emit(
+        "newEvent",
+        {
+          ...savedMessage,
+          eventType: TilkEventType.MESSAGE,
+        },
+        ({ success }: { success: boolean }) => {
+          if (!success) {
+            // Mark as undelivered
+            await db
+              .insert(undeliveredEvents)
+              .values({
+                ...savedMessage,
+                eventType: TilkEventType.MESSAGE,
+              })
+              .onConflictDoNothing();
+          }
+        }
+      );
 
       // Mark as delivered
       await db

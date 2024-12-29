@@ -45,6 +45,7 @@ import { useOnChatEntrance } from "../hooks/chat-room-hooks/useOnChatEntrance";
 import { FlashList } from "@shopify/flash-list";
 import { Separator } from "../components/chat-room-components/Separator";
 import { ListHeader } from "../components/chat-room-components/ListHeader";
+import { handleSendMessage } from "../hooks/chat-room-hooks/handleSendMessage";
 const SOCKET_TIMEOUT = 5000; // 5 seconds
 
 const ChatRoomScreen = () => {
@@ -114,76 +115,6 @@ const ChatRoomScreen = () => {
 
   const handleEmojiPress = () => {
     setShowEmojiSelector((currentState) => !currentState);
-  };
-
-  const handleSendMessage = async () => {
-    try {
-      const tempId = Date.now().toString();
-      const newMessage: MessageType = {
-        messageId: tempId, // Temporary ID for optimistic update
-        sentDate: new Date().toISOString(),
-        receivedDate: null,
-        text: textInput,
-        unread: true,
-        //if the message is sent by the user, and then becomes read, that means that the other user read it
-        //if the message is sent by the other user, and then becomes read, that means that the user read it
-        //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
-        senderId: userId,
-        gotToServer: false,
-      };
-
-      // Optimistically update the query
-      queryClient.setQueryData(
-        ["chatMessages", chatId],
-        (oldData: typeof chatMessages = []) => [...oldData, newMessage]
-      );
-
-      let timeoutId: NodeJS.Timeout;
-
-      type SendMessageResponseType = {
-        success: boolean;
-        messageId: string;
-      };
-      //send the message using websocket
-      emit<SendMessageResponseType>(
-        socket,
-        "sendMessage",
-        newMessage,
-        // Acknowledgment callback
-        (error, response) => {
-          if (error || !response?.success) {
-            //we received this error from the server, meaning that the message arrived but
-            // the message was already sent by us earlier.
-
-            return;
-          }
-          if (response?.success) {
-            // Update the temporary ID with the real one - important for selecting and deleting messages later
-            queryClient.setQueryData(
-              ["chatMessages", chatId],
-              (oldData: typeof chatMessages = []) =>
-                oldData?.map((message) =>
-                  message.messageId === tempId
-                    ? {
-                        ...message,
-                        messageId: response.messageId,
-                        gotToServer: true,
-                      }
-                    : message
-                )
-            );
-          }
-        }
-      );
-
-      setTextInput("");
-    } catch (error) {
-      // Rollback on error
-      queryClient.invalidateQueries({
-        queryKey: ["chatMessages", chatId],
-      });
-      console.log("there was a problem sending the message:", error);
-    }
   };
 
   return (
@@ -276,7 +207,15 @@ const ChatRoomScreen = () => {
                     paddingEnd: 12,
                   },
             ]}
-            onPress={handleSendMessage}
+            onPress={() =>
+              handleSendMessage(
+                textInput,
+                setTextInput,
+                chatId,
+                userId,
+                otherUserData.userId
+              )
+            }
             disabled={!textInput}
           >
             <Ionicons
@@ -330,29 +269,6 @@ const ChatRoomScreen = () => {
     if (flashListRef.current && chatMessages.length > 0) {
       flashListRef.current.scrollToEnd({ animated: false });
     }
-  }
-
-  async function markChatAsRead() {
-    try {
-      // Optimistically update the chats query to be read
-      queryClient.setQueryData(["chatsList"], (oldData: ChatType[] = []) => {
-        if (!oldData.length) return oldData;
-        return oldData.map((chat) =>
-          chat.chatId === chatId
-            ? { ...chat, unread: false, unreadCount: 0 }
-            : chat
-        );
-      });
-    } catch (error) {
-      console.error(
-        "error marking chat as read",
-        isAxiosError(error) ? error.response?.data.message : error
-      );
-    }
-  }
-
-  function invalidateChatMessagesQuery() {
-    queryClient.invalidateQueries({ queryKey: ["chatMessages"] });
   }
 };
 

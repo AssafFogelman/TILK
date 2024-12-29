@@ -333,10 +333,10 @@ export const chatMessages = pgTable(
 );
 
 export const eventsEnum = pgEnum("events_enum", [
-  "unread_messages",
-  "unread_connection_requests",
-  "unread_connection_approvals",
-  "unread_looking_to_do_same_things",
+  "message",
+  "connection_request",
+  "connection_approval",
+  "looking_to_do_same_things",
 ]);
 
 export const unreadEvents = pgTable(

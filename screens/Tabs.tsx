@@ -104,18 +104,18 @@ const Tabs = () => {
           getBadge={({ route }) => {
             if (
               route.key === "Chats" &&
-              (unreadEvents?.unread_messages?.length ?? 0) > 0
+              (unreadEvents?.MESSAGE?.length ?? 0) > 0
             ) {
-              return unreadEvents.unread_messages?.length;
+              return unreadEvents.MESSAGE?.length;
             }
             if (
               (route.key === "Connections" &&
-                (unreadEvents?.unread_connection_requests?.length ?? 0) > 0) ||
-              (unreadEvents?.unread_connection_approvals?.length ?? 0) > 0
+                (unreadEvents?.CONNECTION_REQUEST?.length ?? 0) > 0) ||
+              (unreadEvents?.CONNECTION_APPROVAL?.length ?? 0) > 0
             ) {
               return (
-                (unreadEvents?.unread_connection_requests?.length ?? 0) +
-                (unreadEvents?.unread_connection_approvals?.length ?? 0)
+                (unreadEvents?.CONNECTION_REQUEST?.length ?? 0) +
+                (unreadEvents?.CONNECTION_APPROVAL?.length ?? 0)
               );
             }
             return undefined;

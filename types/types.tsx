@@ -255,8 +255,8 @@ export const connectionsUserActionsStates: Record<
 
 export type MessageType = {
   messageId: string;
-  sentDate: string;
-  receivedDate: string | null;
+  sentDate: Date;
+  receivedDate: Date | null;
   text: string | null;
   unread: boolean;
   //if the message is sent by the user, and then becomes read, that means that the other user read it
@@ -265,6 +265,7 @@ export type MessageType = {
   //senderId will tell us who sent the message - the user or the other user
   senderId: string;
   gotToServer: boolean;
+  chatId: string;
 };
 
 export type ChatType = {
@@ -310,11 +311,13 @@ export type Route = {
 //all these types are just used to articulate that if
 //an event is of type "unread_message", is also positively possesses
 //the other related keys such as "messageId".
-export type TilkEventType =
-  | "unread_messages"
-  | "unread_connection_requests"
-  | "unread_connection_approvals"
-  | "unread_looking_to_do_same_things";
+
+export const TilkEventType = {
+  MESSAGE: "MESSAGE",
+  CONNECTION_REQUEST: "CONNECTION_REQUEST",
+  CONNECTION_APPROVAL: "CONNECTION_APPROVAL",
+  LOOKING_TO_DO_SAME_THINGS: "LOOKING_TO_DO_SAME_THINGS",
+} as const;
 
 type BaseEvent = {
   offset: Date;
@@ -323,7 +326,7 @@ type BaseEvent = {
 };
 
 type MessageEvent = BaseEvent & {
-  eventType: "unread_messages";
+  eventType: typeof TilkEventType.MESSAGE;
   chatId: string;
   messageId: string;
   text: string;
@@ -332,9 +335,18 @@ type MessageEvent = BaseEvent & {
 
 //i will later want to add types to other unread events
 type OtherEvent = BaseEvent & {
-  eventType: Exclude<TilkEventType, "unread_messages">;
+  eventType: Exclude<typeof TilkEventType, typeof TilkEventType.MESSAGE>;
 };
 //individual events
 export type TilkEvent = MessageEvent | OtherEvent;
 //when you want to get all the unread events sorted by event types
-export type TilkEvents = Partial<Record<TilkEventType, TilkEvent[]>>;
+export type TilkEvents = Partial<
+  Record<keyof typeof TilkEventType, TilkEvent[]>
+>;
+
+/********************************* send message types *********************************/
+
+export type SendMessageResponseType = {
+  success: boolean;
+  messageId: string;
+};

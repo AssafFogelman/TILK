@@ -1,6 +1,12 @@
 import { useEffect } from "react";
 import { socket } from "./socket";
-import { ChatType, MessageType, TilkEvent, TilkEvents } from "./types/types";
+import {
+  ChatType,
+  MessageType,
+  TilkEvent,
+  TilkEvents,
+  TilkEventType,
+} from "./types/types";
 import { useAuthState } from "./AuthContext";
 import { emit } from "./APIs/emit";
 import { queryClient } from "./services/queryClient";
@@ -24,7 +30,7 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
         emit(socket, "setCurrentlyConnected", userId);
       }
 
-      function onEvent(
+      function onNewEvent(
         event: TilkEvent,
         callback: ({
           offset,
@@ -39,15 +45,16 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
         console.log("incoming event:", event);
         switch (event.eventType) {
           //in the case the event is a message
-          case "unread_messages":
+          case TilkEventType.MESSAGE:
             const newMessage: MessageType = {
               messageId: event.messageId,
               text: event.text,
-              sentDate: event.sentDate.toISOString(),
-              receivedDate: receivedDate.toISOString(),
+              sentDate: event.sentDate,
+              receivedDate: receivedDate,
               unread: true,
               senderId: event.otherUserId,
               gotToServer: true,
+              chatId: event.chatId,
             };
 
             // Optimistically add the message to the chat messages query (if it exists)
@@ -107,7 +114,7 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
       //listen to events and run functions accordingly
       socket.on("connect", onConnect);
       // socket.on("disconnect", onDisconnect);
-      socket.on("event", onEvent);
+      socket.on("newEvent", onNewEvent);
 
       return () => {
         //when the component unmounts (the app closes), disconnect the socket and close the event listeners
