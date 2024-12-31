@@ -1,18 +1,21 @@
 import { io } from "../..";
 import { and, eq } from "drizzle-orm";
-import { chatMessages, users } from "../../drizzle/schema";
+import { chatMessages, undeliveredEvents, users } from "../../drizzle/schema";
 import { db } from "../../drizzle/db";
+import { TilkEventType } from "../../../../types/types";
 
-export async function messageDelivered(
-  {
-    receivedDate,
-    messageId,
-    chatId,
-  }: { receivedDate: Date; messageId: string; chatId: string },
-  callback: (error: Error | null, response?: { success: boolean }) => void
-) {
+export async function messageDelivered({
+  senderId,
+  receivedDate,
+  messageId,
+  chatId,
+}: {
+  receivedDate: Date;
+  messageId: string;
+  chatId: string;
+}) {
   try {
-    // Mark as delivered
+    // Mark message as delivered
     await db
       .update(chatMessages)
       .set({ receivedDate })
@@ -23,8 +26,15 @@ export async function messageDelivered(
         )
       );
 
-    //confirm to the recipient client that the delivery confirmation reached the server back.
-    callback(null, { success: true });
+    // If delivered successfully, remove from undelivered events
+    await db
+      .delete(undeliveredEvents)
+      .where(
+        and(
+          eq(undeliveredEvents.eventType, TilkEventType.MESSAGE)
+          eq(undeliveredEvents.messageId, savedMessage.messageId),
+        )
+      );
 
     // Check if recipient is online
     const recipient = await db.query.users.findFirst({

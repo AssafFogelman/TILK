@@ -1,27 +1,25 @@
 import { io } from "../..";
-import {
-  MessageType,
-  SendMessageResponseType,
-  TilkEventType,
-} from "../../../../types/types";
 import { and, eq } from "drizzle-orm";
 import { chatMessages, users } from "../../drizzle/schema";
 import { db } from "../../drizzle/db";
-import { sendMessage } from "./send-message";
+import { TilkEventType } from "../../../../types/types";
+import { messageDelivered } from "./message-delivered";
 
-export async function sendEvent({
-  message,
-  otherUserId,
+export async function eventDelivered({
+  receivedDate,
+  messageId,
+  chatId,
   eventType,
 }: {
-  message: MessageType;
-  otherUserId: string;
+  receivedDate: Date;
+  messageId: string;
+  chatId: string;
   eventType: keyof typeof TilkEventType;
 }) {
   try {
     switch (eventType) {
       case TilkEventType.MESSAGE:
-        sendMessage(message, otherUserId);
+        messageDelivered({ receivedDate, messageId, chatId });
         break;
     }
   } catch (error) {

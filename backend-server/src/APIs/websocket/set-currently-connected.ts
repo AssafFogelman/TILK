@@ -77,7 +77,7 @@ export async function setCurrentlyConnected(this: Socket, userId: string) {
                 .delete(undeliveredEvents)
                 .where(
                   and(
-                    eq(undeliveredEvents.userId, userId),
+                    eq(undeliveredEvents.recipientId, userId),
                     eq(undeliveredEvents.offset, lastDeliveredEvent)
                   )
                 );

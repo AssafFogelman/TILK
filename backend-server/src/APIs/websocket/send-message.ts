@@ -16,21 +16,32 @@ export async function sendMessage(
   try {
     const { sentDate, text, senderId, chatId } = message;
     // Save message to database
-    const [savedMessage] = (await db
-      .insert(chatMessages)
+    const savedMessage: MessageType = (
+      await db
+        .insert(chatMessages)
+        .values({
+          chatId,
+          sentDate,
+          text,
+          senderId,
+          gotToServer: true,
+        })
+        .returning()
+    )[0];
+
+    // First, create an undelivered event
+    await db
+      .insert(undeliveredEvents)
       .values({
-        chatId,
-        sentDate,
-        text,
-        senderId,
-        gotToServer: true,
+        ...savedMessage,
+        eventType: TilkEventType.MESSAGE,
       })
-      .returning()) as [MessageType];
+      .onConflictDoNothing();
 
     //return the new messageId to the sender
     callback(null, { success: true, messageId: savedMessage.messageId });
 
-    // Check if recipient is online
+    // Check if recipient is currently online
     const recipient = await db.query.users.findFirst({
       where: eq(users.userId, otherUserId),
       columns: { currentlyConnected: true },
@@ -40,25 +51,11 @@ export async function sendMessage(
       // If online, emit immediately
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly
-      io.to(otherUserId).emit(
-        "newEvent",
-        {
-          ...savedMessage,
-          eventType: TilkEventType.MESSAGE,
-        },
-        ({ success }: { success: boolean }) => {
-          if (!success) {
-            // Mark as undelivered
-            await db
-              .insert(undeliveredEvents)
-              .values({
-                ...savedMessage,
-                eventType: TilkEventType.MESSAGE,
-              })
-              .onConflictDoNothing();
-          }
-        }
-      );
+
+      io.to(otherUserId).emit("newEvent", {
+        ...savedMessage,
+        eventType: TilkEventType.MESSAGE,
+      });
 
       // Mark as delivered
       await db

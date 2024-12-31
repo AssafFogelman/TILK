@@ -10,7 +10,7 @@ export async function fetchUndeliveredEventsFromDatabase(
   try {
     const events = await db.query.undeliveredEvents.findMany({
       where: and(
-        eq(undeliveredEvents.userId, userId),
+        eq(undeliveredEvents.recipientId, userId),
         gt(undeliveredEvents.offset, offset),
         // Only join with chatMessages if messageId exists
         or(

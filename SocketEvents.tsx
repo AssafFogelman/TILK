@@ -121,8 +121,8 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
 
         //close the event listener "connect"
         socket.off("connect", onConnect);
-        //close the event listener "event"
-        socket.off("event", onEvent);
+        //close the event listener "newEvent"
+        socket.off("newEvent", onNewEvent);
         //disconnect the socket
         socket.disconnect();
 

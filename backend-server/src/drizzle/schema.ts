@@ -370,24 +370,20 @@ export const unreadEvents = pgTable(
 export const undeliveredEvents = pgTable(
   "undelivered_events",
   {
-    userId: uuid("user_id")
+    recipientId: uuid("recipient_id")
       .notNull()
       .references(() => users.userId),
-    otherUserId: uuid("other_user_id")
-      .notNull()
-      .references(() => users.userId),
+    senderId: uuid("sender_id").references(() => users.userId), //optional
     eventType: eventsEnum("events_enum").notNull(),
     chatId: uuid("chat_id").references(() => chats.chatId),
     messageId: uuid("message_id").references(() => chatMessages.messageId),
-    offset: timestamp("offset", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    offset: timestamp("offset", { withTimezone: true, mode: "date" }).notNull(),
     //the offset is a way to know which events the client has already received
   },
   (table) => {
     return {
       undeliveredEventsIndex: index("undelivered_events_index").on(
-        table.userId,
+        table.recipientId,
         table.offset
       ),
     };
@@ -590,7 +586,7 @@ export const undeliveredEventsRelations = relations(
   undeliveredEvents,
   ({ one }) => ({
     user: one(users, {
-      fields: [undeliveredEvents.userId],
+      fields: [undeliveredEvents.recipientId],
       references: [users.userId],
     }),
     chat: one(chats, {
