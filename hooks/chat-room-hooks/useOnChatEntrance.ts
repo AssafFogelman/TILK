@@ -4,7 +4,7 @@ import { ScrollView } from "react-native";
 import { ChatType, MessageType, TilkEvents } from "../../types/types";
 import { queryClient } from "../../services/queryClient";
 import { isAxiosError } from "axios";
-import { socket } from "../../socket";
+import { socket } from "../../services/socket/socket";
 import { emit } from "../../APIs/emit";
 
 export function useOnChatEntrance(

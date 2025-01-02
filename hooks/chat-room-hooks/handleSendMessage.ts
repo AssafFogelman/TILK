@@ -1,6 +1,6 @@
 import { emit } from "../../APIs/emit";
 import { queryClient } from "../../services/queryClient";
-import { socket } from "../../socket";
+import { socket } from "../../services/socket/socket";
 import {
   ChatType,
   MessageType,

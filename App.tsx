@@ -8,7 +8,7 @@ import "@ethersproject/shims";
 // import { ethers } from "ethers";
 
 import StackNavigator from "./StackNavigator";
-import { socket } from "./socket.js";
+import { socket } from "./services/socket/socket.js";
 
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -25,7 +25,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { useReactQueryDevTools } from "@dev-plugins/react-query";
 import { queryClient } from "./services/queryClient";
 import { MessageType } from "./types/types";
-import { SocketEvents } from "./SocketEvents";
+import { SocketEvents } from "./services/socket/SocketEvents";
 
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;

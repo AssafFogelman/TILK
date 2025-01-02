@@ -5,30 +5,37 @@ import { TilkEvent } from "../../../../types/types";
 
 export async function fetchUndeliveredEventsFromDatabase(
   userId: string,
-  offset: Date
+  lastReceivedEventId: string
 ): Promise<TilkEvent[]> {
   try {
-    const events = await db.query.undeliveredEvents.findMany({
+    // const events = await db.query.undeliveredEvents.findMany({
+    //   where: and(
+    //     eq(undeliveredEvents.recipientId, userId),
+    //     gt(undeliveredEvents.offset, offset),
+    //     // Only join with chatMessages if messageId exists
+    //     or(
+    //       and(
+    //         isNotNull(undeliveredEvents.messageId),
+    //         eq(chatMessages.chatId, undeliveredEvents.chatId),
+    //         eq(chatMessages.messageId, undeliveredEvents.messageId)
+    //       ),
+    //       isNull(undeliveredEvents.messageId)
+    //     )
+    //   ),
+    //   with: {
+    //     message: {
+    //       columns: {
+    //         text: true,
+    //       },
+    //     },
+    //   },
+    // });
+
+    const missedMessages = await db.query.chatMessages.findMany({
       where: and(
-        eq(undeliveredEvents.recipientId, userId),
-        gt(undeliveredEvents.offset, offset),
-        // Only join with chatMessages if messageId exists
-        or(
-          and(
-            isNotNull(undeliveredEvents.messageId),
-            eq(chatMessages.chatId, undeliveredEvents.chatId),
-            eq(chatMessages.messageId, undeliveredEvents.messageId)
-          ),
-          isNull(undeliveredEvents.messageId)
-        )
+        eq(chatMessages.recipientId, userId),
+        gt(chatMessages.eventId, lastReceivedEventId)
       ),
-      with: {
-        message: {
-          columns: {
-            text: true,
-          },
-        },
-      },
     });
 
     return events.map((event) => {

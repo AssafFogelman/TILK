@@ -29,7 +29,7 @@ import ChatMessage from "../components/chatMessage";
 import ChatTimestamp from "../components/chat-room-components/ChatTimestamp";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { ChatRoomHeader } from "../components/chat-room-components/ChatRoomHeader";
-import { socket } from "../socket";
+import { socket } from "../services/socket/socket";
 import { queryClient } from "../services/queryClient";
 import { fetchChatMessages } from "../APIs/chatAPIs";
 import {

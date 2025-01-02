@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAuthState } from "../../AuthContext";
-import { socket } from "../../socket";
+import { socket } from "../../services/socket/socket";
 
 export const useSetCurrentlyConnected = () => {
   const { userId } = useAuthState();

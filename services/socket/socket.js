@@ -10,6 +10,6 @@ const URL =
 export const socket = io(URL, {
   path: "/ws/",
   autoConnect: false,
-  //delivery guarantee method - storing the offset of the last received event
-  auth: { offset: undefined },
+  //delivery guarantee method - storing the last received event id
+  auth: { lastReceivedEventId: undefined },
 });

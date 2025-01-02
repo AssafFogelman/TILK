@@ -30,7 +30,7 @@ export async function onNewMessage(
           senderId,
           recipientId,
           gotToServer,
-          eventId: `${recipientId}:0:${gotToServer + ""}.${getNextSequence(gotToServer).toString().padStart(3, "0")}`, //"0" is the event type of a message
+          eventId: `${recipientId}:${gotToServer + ""}.${getNextSequence(gotToServer).toString().padStart(3, "0")}:0`, //"0" is the event type of a message
         })
         .returning()
     )[0];
@@ -58,8 +58,7 @@ export async function onNewMessage(
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly
 
-      io.to(recipientId).emit("newEvent", {
-        ...savedMessage,
+      io.to(recipientId).emit("newEvent", savedMessage, {
         eventType: TilkEventType.MESSAGE,
         eventId: eventId,
       });

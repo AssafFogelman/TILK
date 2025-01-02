@@ -335,6 +335,11 @@ export const chatMessages = pgTable(
         table.sentDate,
         table.receivedDate
       ),
+      //this index is used for fetching undelivered messages
+      chatMessageIndex2: index("chat_message_index2").on(
+        table.recipientId,
+        table.eventId
+      ),
       eventIdFormat: check(
         "event_id_format",
         sql`${table.eventId} ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9]{1}:\d{13}\.\d{3}$'`
