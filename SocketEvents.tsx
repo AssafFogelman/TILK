@@ -27,6 +27,7 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
 
       function onConnect() {
         console.log("websocket connected!");
+        //set as currently connected
         emit(socket, "setCurrentlyConnected", userId);
       }
 
@@ -97,8 +98,11 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
         });
 
         //the offset is the date of the last received event
-        socket.auth = { ...socket.auth, offset: event.offset } as {
-          offset?: Date;
+        socket.auth = {
+          ...socket.auth,
+          lastReceivedEventId: event.eventId,
+        } as {
+          lastReceivedEventId?: string;
         };
         callback({ offset: event.offset, receivedDate });
       }

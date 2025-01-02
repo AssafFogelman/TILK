@@ -16,10 +16,11 @@ import { err } from "drizzle-kit/cli/views";
 import * as os from "node:os";
 import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected";
 import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected";
-import { sendEvent } from "./APIs/websocket/send-event";
+import { onNewEvent } from "./APIs/websocket/on-new-event";
 import { markMessagesAsRead } from "./APIs/websocket/mark-messages-as-read";
 import { fetchUndeliveredEventsFromDatabase } from "./APIs/websocket/fetch-undelivered-events-from-database";
 import { messageDelivered } from "./APIs/websocket/message-delivered";
+import { eventDelivered } from "./APIs/websocket/event-delivered";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -81,10 +82,11 @@ io.on("connection", async (socket) => {
 
   //set as "currently connected" + deliver undelivered events
   socket.on("setCurrentlyConnected", setCurrentlyConnected);
-  //client sent a message to the server
-  socket.on("sendMessage", sendEvent);
-  //client confirmed that the message was delivered
-  socket.on("messageDelivered", messageDelivered);
+  //client sent an event to the server
+  socket.on("newEvent", onNewEvent);
+  //client confirmed that the event was delivered
+  socket.on("eventDelivered", eventDelivered);
+
   socket.on("disconnect", registerAsUnconnected);
   socket.on("markMessagesAsRead", markMessagesAsRead); //mark the messages+chat+events as read
 });

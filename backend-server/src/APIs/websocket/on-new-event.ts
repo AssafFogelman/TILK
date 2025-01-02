@@ -7,21 +7,22 @@ import {
 import { and, eq } from "drizzle-orm";
 import { chatMessages, users } from "../../drizzle/schema";
 import { db } from "../../drizzle/db";
-import { sendMessage } from "./send-message";
+import { onNewMessage as onNewMessage } from "./on-new-message";
 
-export async function sendEvent({
-  message,
-  otherUserId,
-  eventType,
-}: {
-  message: MessageType;
-  otherUserId: string;
-  eventType: keyof typeof TilkEventType;
-}) {
+export async function onNewEvent(
+  {
+    message,
+    eventType,
+  }: {
+    message: MessageType;
+    eventType: keyof typeof TilkEventType;
+  },
+  callback: (error: Error | null, response?: SendMessageResponseType) => void
+) {
   try {
     switch (eventType) {
       case TilkEventType.MESSAGE:
-        sendMessage(message, otherUserId);
+        onNewMessage(message, callback);
         break;
     }
   } catch (error) {

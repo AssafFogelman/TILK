@@ -13,6 +13,7 @@ import {
   check,
   index,
   integer,
+  bigint,
 } from "drizzle-orm/pg-core";
 
 //declaring an enum
@@ -310,12 +311,18 @@ export const chatMessages = pgTable(
     senderId: uuid("sender_id")
       .notNull()
       .references(() => users.userId),
+    recipientId: uuid("recipient_id")
+      .notNull()
+      .references(() => users.userId),
     text: text("text"),
     unread: boolean("unread").default(true).notNull(),
     //if the message is sent by the user, and then becomes read, that means that the other user read it
     //if the message is sent by the other user, and then becomes read, that means that the user read it
     //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
-    gotToServer: boolean("got_to_server").default(false).notNull(),
+    gotToServer: bigint("got_to_server", { mode: "number" })
+      .notNull()
+      .default(0), //new Date().getTime();  // returns number like 1677123456789
+    eventId: text("event_id").notNull(), //the receiving userId:0:gotToServer(in milliseconds).sequence number.
   },
   (table) => {
     return {
@@ -328,15 +335,19 @@ export const chatMessages = pgTable(
         table.sentDate,
         table.receivedDate
       ),
+      eventIdFormat: check(
+        "event_id_format",
+        sql`${table.eventId} ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9]{1}:\d{13}\.\d{3}$'`
+      ),
     };
   }
 );
 
 export const eventsEnum = pgEnum("events_enum", [
-  "message",
-  "connection_request",
-  "connection_approval",
-  "looking_to_do_same_things",
+  "MESSAGE",
+  "CONNECTION_REQUEST",
+  "CONNECTION_APPROVAL",
+  "LOOKING_TO_DO_SAME_THINGS",
 ]);
 
 export const unreadEvents = pgTable(
@@ -367,28 +378,28 @@ export const unreadEvents = pgTable(
   }
 );
 
-export const undeliveredEvents = pgTable(
-  "undelivered_events",
-  {
-    recipientId: uuid("recipient_id")
-      .notNull()
-      .references(() => users.userId),
-    senderId: uuid("sender_id").references(() => users.userId), //optional
-    eventType: eventsEnum("events_enum").notNull(),
-    chatId: uuid("chat_id").references(() => chats.chatId),
-    messageId: uuid("message_id").references(() => chatMessages.messageId),
-    offset: timestamp("offset", { withTimezone: true, mode: "date" }).notNull(),
-    //the offset is a way to know which events the client has already received
-  },
-  (table) => {
-    return {
-      undeliveredEventsIndex: index("undelivered_events_index").on(
-        table.recipientId,
-        table.offset
-      ),
-    };
-  }
-);
+// export const undeliveredEvents = pgTable(
+//   "undelivered_events",
+//   {
+//     recipientId: uuid("recipient_id")
+//       .notNull()
+//       .references(() => users.userId),
+//     senderId: uuid("sender_id").references(() => users.userId), //optional
+//     eventType: eventsEnum("events_enum").notNull(),
+//     chatId: uuid("chat_id").references(() => chats.chatId),
+//     messageId: uuid("message_id").references(() => chatMessages.messageId),
+//     offset: timestamp("offset", { withTimezone: true, mode: "date" }).notNull(),
+//     //the offset is a way to know which events the client has already received
+//   },
+//   (table) => {
+//     return {
+//       undeliveredEventsIndex: index("undelivered_events_index").on(
+//         table.recipientId,
+//         table.offset
+//       ),
+//     };
+//   }
+// );
 
 //notification templates
 export const notificationTemplates = pgTable("notification_templates", {
@@ -563,6 +574,12 @@ export const chatMessageRelations = relations(chatMessages, ({ one }) => ({
     //references
     references: [users.userId],
   }),
+  recipient: one(users, {
+    //foreign key
+    fields: [chatMessages.recipientId],
+    //references
+    references: [users.userId],
+  }),
 }));
 
 //unread events relations
@@ -581,24 +598,24 @@ export const unreadEventsRelations = relations(unreadEvents, ({ one }) => ({
   }),
 }));
 
-//undelivered events relations
-export const undeliveredEventsRelations = relations(
-  undeliveredEvents,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [undeliveredEvents.recipientId],
-      references: [users.userId],
-    }),
-    chat: one(chats, {
-      fields: [undeliveredEvents.chatId],
-      references: [chats.chatId],
-    }),
-    message: one(chatMessages, {
-      fields: [undeliveredEvents.messageId],
-      references: [chatMessages.messageId],
-    }),
-  })
-);
+// //undelivered events relations
+// export const undeliveredEventsRelations = relations(
+//   undeliveredEvents,
+//   ({ one }) => ({
+//     user: one(users, {
+//       fields: [undeliveredEvents.recipientId],
+//       references: [users.userId],
+//     }),
+//     chat: one(chats, {
+//       fields: [undeliveredEvents.chatId],
+//       references: [chats.chatId],
+//     }),
+//     message: one(chatMessages, {
+//       fields: [undeliveredEvents.messageId],
+//       references: [chatMessages.messageId],
+//     }),
+//   })
+// );
 
 //past events - the server records things that happen. relations
 export const pastEventsRelations = relations(pastEvents, ({ one }) => ({

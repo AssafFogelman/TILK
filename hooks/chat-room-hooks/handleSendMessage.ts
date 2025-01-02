@@ -28,7 +28,8 @@ export const handleSendMessage = async (
       //if the message is sent by the other user, and then becomes read, that means that the user read it
       //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
       senderId: userId,
-      gotToServer: false,
+      recipientId: otherUserId,
+      gotToServer: 0,
       chatId,
     };
 
@@ -57,8 +58,8 @@ export const handleSendMessage = async (
     //send the message using websocket
     emit<SendMessageResponseType>(
       socket,
-      "sendEvent",
-      { newMessage, otherUserId, eventType: TilkEventType.MESSAGE },
+      "newEvent",
+      { ...newMessage, eventType: TilkEventType.MESSAGE },
       acknowledgement
     );
 
@@ -71,7 +72,7 @@ export const handleSendMessage = async (
     console.log("there was a problem sending the message:", error);
   }
 
-  // Acknowledgment callback
+  // Acknowledgment callback - update the messageId and gotToServer
   function acknowledgement(
     error: Error | null,
     response?: SendMessageResponseType
@@ -97,6 +98,7 @@ export const handleSendMessage = async (
             : chat
         );
       });
+      //optimistically update the chat message as gotToServer
       queryClient.setQueryData(
         ["chatMessages", chatId],
         (oldData: MessageType[] = []) => {

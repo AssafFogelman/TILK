@@ -204,6 +204,34 @@
       "when": 1735483606552,
       "tag": "0029_lonely_trish_tilby",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "5",
+      "when": 1735810795375,
+      "tag": "0030_lucky_eternals",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "5",
+      "when": 1735810820650,
+      "tag": "0031_great_vermin",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1735824358966,
+      "tag": "0032_talented_madripoor",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1735831276007,
+      "tag": "0033_faithful_grey_gargoyle",
+      "breakpoints": true
     }
   ]
 }

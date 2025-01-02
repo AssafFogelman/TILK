@@ -264,7 +264,8 @@ export type MessageType = {
   //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
   //senderId will tell us who sent the message - the user or the other user
   senderId: string;
-  gotToServer: boolean;
+  recipientId: string;
+  gotToServer: number;
   chatId: string;
 };
 
