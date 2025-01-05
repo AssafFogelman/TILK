@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { ChatRoomScreenNavigationProp, MessageType } from "../../types/types";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { AppState } from "react-native";
-import { currentVisibleChatRef, markChatAsRead } from "../../APIs/chatAPIs";
+import { currentVisibleChatRef } from "../../APIs/chatAPIs";
 import { markAsReadOnChatEntrance } from "./markAsReadOnChatEntrance";
 
 export function useSetFocusBlurListener(
@@ -23,16 +23,12 @@ export function useSetFocusBlurListener(
   useEffect(() => {
     const unsubscribeBlur = navigation.addListener("blur", () => {
       currentVisibleChatRef.chatId = undefined;
-      //set the last read message of the chat and the unread count to 0
-      markChatAsRead(chatId);
     });
 
     // Handle when the app state changes from "active" to "background" or "inactive"
     const subscription = AppState.addEventListener("change", (status) => {
       if (status === "background" || status === "inactive") {
         currentVisibleChatRef.chatId = undefined;
-
-        markChatAsRead(chatId);
       }
     });
 

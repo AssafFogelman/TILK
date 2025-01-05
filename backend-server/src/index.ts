@@ -85,7 +85,6 @@ io.on("connection", async (socket) => {
   //client confirmed that he read the message while he was in the chat
   socket.on("messagesRead", onMessagesRead);
   //client exited the chat and the chatsList and unreadEvents queries should be updated
-  // socket.on("markAsReadOnChatExit", markChatAsRead); //TODO: check if this is needed. I mean, don't we already update everything when a new message arrives/sent?
   socket.on("disconnect", registerAsUnconnected);
 });
 
