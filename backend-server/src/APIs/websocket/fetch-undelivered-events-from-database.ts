@@ -1,7 +1,7 @@
-import { and, eq, gt, or, isNotNull, isNull } from "drizzle-orm";
-import { chatMessages, undeliveredEvents } from "../../drizzle/schema";
+import { and, eq, gt } from "drizzle-orm";
+import { chatMessages } from "../../drizzle/schema";
 import { db } from "../../drizzle/db";
-import { TilkEvent } from "../../../../types/types";
+import { type TilkEvent, TilkEventType } from "../../../../types/types";
 
 export async function fetchUndeliveredEventsFromDatabase(
   userId: string,
@@ -38,30 +38,21 @@ export async function fetchUndeliveredEventsFromDatabase(
       ),
     });
 
-    return events.map((event) => {
+    return missedMessages.map((event) => {
       const baseEvent = {
-        otherUserId: event.otherUserId,
-        userId: event.userId,
-        offset: event.offset,
+        otherUserId: event.senderId,
+        userId: event.recipientId,
+        offset: new Date(event.gotToServer),
       };
 
-      switch (event.eventType) {
-        case "unread_messages":
-          return {
-            ...baseEvent,
-            eventType: "unread_messages",
-            chatId: event.chatId!,
-            messageId: event.messageId!,
-            sentDate: event.offset,
-            text: event.message?.text || "",
-          };
-        // Add other cases as needed
-        default:
-          return {
-            ...baseEvent,
-            eventType: event.eventType,
-          };
-      }
+      return {
+        ...baseEvent,
+        eventType: TilkEventType.MESSAGE,
+        chatId: event.chatId!,
+        messageId: event.messageId!,
+        sentDate: event.sentDate,
+        text: event.text || "",
+      };
     }) as TilkEvent[];
   } catch (error) {
     console.error("Error fetching missed events from database", error);

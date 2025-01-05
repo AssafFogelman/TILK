@@ -1,5 +1,5 @@
 import { io } from "../..";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { chatMessages, chats, unreadEvents, users } from "../../drizzle/schema";
 import { db } from "../../drizzle/db";
 import { MessageType, TilkEventType } from "../../../../types/types";

@@ -1,15 +1,15 @@
-import { io } from "../..";
-import {
-  MessageType,
-  SendMessageResponseType,
-  TilkEventType,
-} from "../../../../types/types";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   chatMessages,
   /*undeliveredEvents,*/ users,
 } from "../../drizzle/schema";
 import { db } from "../../drizzle/db";
+import {
+  MessageType,
+  SendMessageResponseType,
+  TilkEventType,
+} from "../../../../types/types";
+import { io } from "../..";
 const messageSequences = new Map<string, number>();
 
 export async function onNewMessage(
@@ -35,15 +35,6 @@ export async function onNewMessage(
         .returning()
     )[0];
 
-    // First, create an undelivered event
-    // await db
-    //   .insert(undeliveredEvents)
-    //   .values({
-    //     ...savedMessage,
-    //     eventType: TilkEventType.MESSAGE,
-    //   })
-    //   .onConflictDoNothing();
-
     //return the new messageId to the sender
     callback(null, { success: true, messageId: savedMessage.messageId });
 
@@ -57,9 +48,8 @@ export async function onNewMessage(
       // If online, emit immediately
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly
-
       io.to(recipientId).emit("newEvent", savedMessage, {
-        eventType: TilkEventType.MESSAGE,
+        eventType: TilkEventType.MESSAGE, //"MESSAGE",
         eventId: eventId,
       });
     } else {

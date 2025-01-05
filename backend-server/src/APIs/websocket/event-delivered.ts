@@ -1,7 +1,3 @@
-import { io } from "../..";
-import { and, eq } from "drizzle-orm";
-import { chatMessages, users } from "../../drizzle/schema";
-import { db } from "../../drizzle/db";
 import { TilkEventType } from "../../../../types/types";
 import { messageDelivered } from "./message-delivered";
 

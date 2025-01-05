@@ -1,6 +1,3 @@
-import { useFocusEffect } from "@react-navigation/native";
-import { useQuery } from "@tanstack/react-query";
-import { ScrollView } from "react-native";
 import {
   ChatType,
   MessageType,

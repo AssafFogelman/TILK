@@ -1,12 +1,8 @@
-import { io } from "../..";
 import {
   MessageType,
   SendMessageResponseType,
   TilkEventType,
 } from "../../../../types/types";
-import { and, eq } from "drizzle-orm";
-import { chatMessages, users } from "../../drizzle/schema";
-import { db } from "../../drizzle/db";
 import { onNewMessage as onNewMessage } from "./on-new-message";
 
 export async function onNewEvent(
