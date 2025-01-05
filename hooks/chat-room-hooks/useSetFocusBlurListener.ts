@@ -3,12 +3,17 @@ import {
   ChatRoomScreenNavigationProp,
   ChatType,
   MessageType,
+  TilkEvents,
+  TilkEventType,
 } from "../../types/types";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "../../services/queryClient";
 import { isAxiosError } from "axios";
 import { AppState } from "react-native";
+import { emit } from "../../APIs/emit";
+import { socket } from "../../services/socket/socket";
+import { markChatAsRead } from "../../APIs/chatAPIs";
 
 export function useSetFocusBlurListener(
   chatId: string,
@@ -27,12 +32,14 @@ export function useSetFocusBlurListener(
   useEffect(() => {
     const unsubscribeBlur = navigation.addListener("blur", () => {
       isChatVisible.current = false;
+      markChatAsRead(chatId);
     });
 
-    // Handle app state changes (background, inactive, active)
+    // Handle when the app state changes from "active" to "background" or "inactive"
     const subscription = AppState.addEventListener("change", (status) => {
       if (status === "background" || status === "inactive") {
         isChatVisible.current = false;
+        markChatAsRead(chatId);
       }
     });
 

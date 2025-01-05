@@ -1,12 +1,6 @@
 import { Socket } from "socket.io";
 import { db } from "../../drizzle/db";
-import {
-  chatMessages,
-  chats,
-  undeliveredEvents,
-  unreadEvents,
-  users,
-} from "../../drizzle/schema";
+import { users } from "../../drizzle/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { fetchUndeliveredEventsFromDatabase as fetchMissedEventsFromDatabase } from "./fetch-undelivered-events-from-database";
 import { TilkEventType } from "../../../../types/types";

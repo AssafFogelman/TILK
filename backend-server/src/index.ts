@@ -21,6 +21,7 @@ import { markMessagesAsRead } from "./APIs/websocket/mark-messages-as-read";
 import { fetchUndeliveredEventsFromDatabase } from "./APIs/websocket/fetch-undelivered-events-from-database";
 import { messageDelivered } from "./APIs/websocket/message-delivered";
 import { eventDelivered } from "./APIs/websocket/event-delivered";
+import { markChatAsRead } from "./APIs/websocket/mark-chat-as-read";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -86,7 +87,7 @@ io.on("connection", async (socket) => {
   socket.on("newEvent", onNewEvent);
   //client confirmed that the event was delivered
   socket.on("eventDelivered", eventDelivered);
-
+  socket.on("markChatAsRead", markChatAsRead);
   socket.on("disconnect", registerAsUnconnected);
   socket.on("markMessagesAsRead", markMessagesAsRead); //mark the messages+chat+events as read
 });
