@@ -1,3 +1,4 @@
+import { currentVisibleChatRef } from "../../../APIs/chatAPIs";
 import { emit } from "../../../APIs/emit";
 import {
   ChatType,
@@ -42,11 +43,21 @@ export function onNewMessage(
       chat.chatId === message.chatId
         ? {
             ...chat,
-            unread: true,
-            unreadCount: chat.unreadCount + 1,
+            //if the user is currently in the chat, mark the chat as read
+            unread:
+              currentVisibleChatRef.chatId === message.chatId ? false : true,
+            //if the user is currently in the chat, reset the unread count
+            unreadCount:
+              currentVisibleChatRef.chatId === message.chatId
+                ? 0
+                : chat.unreadCount + 1,
             lastMessageDate: receivedDate,
             lastMessageSender: newMessage.senderId,
             lastMessageText: newMessage.text,
+            //if the user is currently in the chat, save the incoming message as the last read message
+            ...(currentVisibleChatRef.chatId === message.chatId && {
+              lastReadMessageId: newMessage.messageId,
+            }),
           }
         : chat
     );
@@ -78,4 +89,19 @@ export function onNewMessage(
     messageId: message.messageId,
     chatId: message.chatId,
   });
+
+  //if the chat is currently visible, mark the message as read
+  if (currentVisibleChatRef.chatId === message.chatId) {
+    emit(
+      socket,
+      "messagesRead",
+      {
+        chatId: message.chatId,
+        messageIds: [message.messageId],
+      },
+      (error) => {
+        if (error) console.error(error);
+      }
+    );
+  }
 }

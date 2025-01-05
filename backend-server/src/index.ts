@@ -11,17 +11,12 @@ import { routes } from "./routes/routes";
 import "dotenv/config";
 import { db } from "./drizzle/db";
 import { users } from "./drizzle/schema";
-import { eq } from "drizzle-orm";
-import { err } from "drizzle-kit/cli/views";
 import * as os from "node:os";
 import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected";
 import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected";
 import { onNewEvent } from "./APIs/websocket/on-new-event";
-import { markMessagesAsRead } from "./APIs/websocket/mark-messages-as-read";
-import { fetchUndeliveredEventsFromDatabase } from "./APIs/websocket/fetch-undelivered-events-from-database";
-import { messageDelivered } from "./APIs/websocket/message-delivered";
 import { eventDelivered } from "./APIs/websocket/event-delivered";
-import { markChatAsRead } from "./APIs/websocket/mark-chat-as-read";
+import { onMessagesRead } from "./APIs/websocket/message-read";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -87,9 +82,11 @@ io.on("connection", async (socket) => {
   socket.on("newEvent", onNewEvent);
   //client confirmed that the event was delivered
   socket.on("eventDelivered", eventDelivered);
-  socket.on("markChatAsRead", markChatAsRead);
+  //client confirmed that he read the message while he was in the chat
+  socket.on("messagesRead", onMessagesRead);
+  //client exited the chat and the chatsList and unreadEvents queries should be updated
+  // socket.on("markAsReadOnChatExit", markChatAsRead); //TODO: check if this is needed. I mean, don't we already update everything when a new message arrives/sent?
   socket.on("disconnect", registerAsUnconnected);
-  socket.on("markMessagesAsRead", markMessagesAsRead); //mark the messages+chat+events as read
 });
 
 /*

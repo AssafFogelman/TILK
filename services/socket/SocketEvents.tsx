@@ -3,6 +3,8 @@ import { socket } from "./socket";
 import { useAuthState } from "../../AuthContext";
 import { emit } from "../../APIs/emit";
 import { onNewEvent } from "./event-handlers/on-new-event";
+import { onMessageDelivered } from "./event-handlers/on-message-delivered";
+import { onMessagesRead } from "./event-handlers/on-message-read";
 
 export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
   //load websocket event listeners and cleanup
@@ -32,6 +34,10 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
       socket.on("connect", onConnect);
       // socket.on("disconnect", onDisconnect);
       socket.on("newEvent", onNewEvent);
+      //the message the user sent was delivered
+      socket.on("messageDelivered", onMessageDelivered);
+      //the message the user sent was read
+      socket.on("messagesRead", onMessagesRead);
 
       return () => {
         //when the component unmounts (the app closes), disconnect the socket and close the event listeners

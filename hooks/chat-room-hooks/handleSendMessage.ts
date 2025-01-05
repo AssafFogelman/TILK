@@ -46,6 +46,8 @@ export const handleSendMessage = async (
         chat.chatId === chatId
           ? {
               ...chat,
+              unread: false,
+              unreadCount: 0,
               lastMessageDate: newMessage.sentDate,
               lastMessageSender: newMessage.senderId,
               lastMessageText: newMessage.text,

@@ -41,7 +41,6 @@ import { useAuthState } from "../AuthContext";
 import { emit } from "../APIs/emit";
 import { isAxiosError } from "axios";
 import { useSetFocusBlurListener } from "../hooks/chat-room-hooks/useSetFocusBlurListener";
-import { useOnChatEntrance } from "../hooks/chat-room-hooks/useOnChatEntrance";
 import { FlashList } from "@shopify/flash-list";
 import { Separator } from "../components/chat-room-components/Separator";
 import { ListHeader } from "../components/chat-room-components/ListHeader";
@@ -67,11 +66,7 @@ const ChatRoomScreen = () => {
     lastReadMessageId: string | null;
   } = route.params;
   const { userId } = useAuthState();
-  // is the screen currently visible
-  const isChatVisible = useRef(true);
   const flashListRef = useRef<FlashList<MessageType>>(null);
-  //set that once the user exits the chat room, "isChatVisible" will be false (and true if focused)
-  useSetFocusBlurListener(chatId, userId, isChatVisible);
 
   //fetch chat messages
   const {
@@ -85,8 +80,8 @@ const ChatRoomScreen = () => {
     placeholderData: (previousData) => previousData,
   });
 
-  //mark unread messages as read, set chat as read and unread count as 0.
-  useOnChatEntrance(chatId, userId, isChatVisible, chatMessages);
+  //set that once the user exits the chat room, "currentVisibleChatRef" will be false (and true if focused)
+  useSetFocusBlurListener(chatId, userId, chatMessages);
 
   //set the header
   useEffect(() => {
@@ -100,6 +95,7 @@ const ChatRoomScreen = () => {
       ),
     });
 
+    //handle go back
     function handleGoBack() {
       navigation.goBack();
     }
