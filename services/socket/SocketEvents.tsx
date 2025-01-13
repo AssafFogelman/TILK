@@ -62,7 +62,7 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
         clearTimeout(timeoutId);
         return;
       }
-
+      can we get the server to set user to not currently connected uppon exit and not upon server entry?
       reconnectAttempts++;
       //each reconnection attempt is 1.5 times longer than the previous one
       const backoffTime =
