@@ -1,12 +1,12 @@
-import {Hono} from "hono";
+import { Hono } from "hono";
 import {
-    validateCode,
-    validatePhoneNo,
-    validateToken,
-} from "../../models/authSchemas";
-import {sendSms} from "../../controllers/send-sms";
-import {createToken} from "../../controllers/create-token";
-import {userData} from "../../controllers/user-data";
+  validateCode,
+  validatePhoneNo,
+  validateToken,
+} from "../../models/authSchemas.js";
+import { sendSms } from "../../controllers/send-sms.js";
+import { createToken } from "../../controllers/create-token.js";
+import { userData } from "../../controllers/user-data.js";
 
 export const auth = new Hono().basePath("/auth");
 

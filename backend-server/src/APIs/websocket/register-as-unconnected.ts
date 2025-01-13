@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
-import { db } from "../../drizzle/db";
-import { users } from "../../drizzle/schema";
+import { db } from "../../drizzle/db.js";
+import { users } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 
 export async function registerAsUnconnected(this: Socket, reason: string) {

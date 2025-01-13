@@ -1,24 +1,31 @@
-import { TilkEventType } from "../../../../types/types";
-import { messageDelivered } from "./message-delivered";
+import TilkEventType from "../../backend-types/TilkEventType.js";
+import { messageDelivered } from "./message-delivered.js";
 
-export async function eventDelivered({
-  receivedDate,
-  messageId,
-  chatId,
-  eventType,
-}: {
-  receivedDate: Date;
-  messageId: string;
-  chatId: string;
-  eventType: keyof typeof TilkEventType;
-}) {
+export async function eventDelivered(
+  {
+    receivedDate,
+    messageId,
+    chatId,
+    eventType,
+  }: {
+    receivedDate: string;
+    messageId: string;
+    chatId: string;
+    eventType: keyof typeof TilkEventType;
+  },
+  callback: (error: Error | null, response?: { success: boolean }) => void
+) {
   try {
+    callback(null, { success: true });
     switch (eventType) {
       case TilkEventType.MESSAGE:
-        messageDelivered({ receivedDate, messageId, chatId });
+        await messageDelivered({ receivedDate, messageId, chatId });
         break;
+      default:
+        console.error("unknown event type:", eventType);
+        callback(new Error("Unknown event type"));
     }
   } catch (error) {
-    console.log("error sending event:", error);
+    console.log("error marking event as delivered:", error);
   }
 }

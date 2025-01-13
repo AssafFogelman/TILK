@@ -1,7 +1,7 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [/*"dom",*/ "esnext"], // use "dom" when building a web app
     "esModuleInterop": true,
     "strict": true,
     "jsx": "react-jsx"

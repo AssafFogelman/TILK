@@ -1,11 +1,11 @@
 import { Hono } from "hono";
-import { auth } from "./auth/auth";
-import { user } from "./user/user";
-import { location } from "./location/location";
-import { errors } from "./errors/errors";
-import { chats } from "./chats/chats";
-import { messages } from "./messages/messages";
-import { notifications } from "./notifications/notifications";
+import { auth } from "./auth/auth.js";
+import { user } from "./user/user.js";
+import { location } from "./location/location.js";
+import { errors } from "./errors/errors.js";
+import { chats } from "./chats/chats.js";
+import { messages } from "./messages/messages.js";
+import { notifications } from "./notifications/notifications.js";
 
 export const routes = new Hono();
 

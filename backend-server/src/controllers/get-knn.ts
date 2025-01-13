@@ -1,7 +1,6 @@
 import { Context } from "hono";
-import { db } from "../drizzle/db";
+import { db } from "../drizzle/db.js";
 import { sql } from "drizzle-orm";
-import { user } from "../routes/user/user";
 
 type ReqType = {
   limit: number;
@@ -125,7 +124,6 @@ export const getKnn = async (c: Context) => {
             LIMIT ${limit};
     `;
     const knn = await db.execute(sql.raw(knnQuery));
-    console.log("knn: ", knn);
     return c.json({ knn }, 200);
   } catch (error) {
     console.log("error retrieving nearest neighbor user data: ", error);

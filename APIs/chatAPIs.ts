@@ -6,7 +6,22 @@ export async function fetchChatMessages(
 ): Promise<MessageType[]> {
   try {
     const { data } = await axios.get(`/messages/${chatId}`);
-    return data;
+    return data.map(
+      (message: {
+        messageId: string;
+        sentDate: string;
+        receivedDate: Date | null;
+        text: string | null;
+        unread: boolean;
+        senderId: string;
+        recipientId: string;
+        gotToServer: number;
+        chatId: string;
+      }) => ({
+        ...message,
+        sentDate: new Date(message.sentDate),
+      })
+    );
   } catch (error) {
     console.error(
       "Error fetching chat data:",

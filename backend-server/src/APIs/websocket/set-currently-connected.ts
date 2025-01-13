@@ -1,16 +1,25 @@
 import { Socket } from "socket.io";
-import { db } from "../../drizzle/db";
-import { users } from "../../drizzle/schema";
-import { and, eq, sql } from "drizzle-orm";
-import { fetchUndeliveredEventsFromDatabase as fetchMissedEventsFromDatabase } from "./fetch-undelivered-events-from-database";
-import { TilkEventType } from "../../../../types/types";
+import { db } from "../../drizzle/db.js";
+import { users } from "../../drizzle/schema.js";
+import { eq } from "drizzle-orm";
+import { fetchUndeliveredEventsFromDatabase as fetchMissedEventsFromDatabase } from "./fetch-undelivered-events-from-database.js";
+import { verifyToken } from "../../config/jwt.js";
 
 //set as "currently connected" + join a room + if this is a reconnection, deliver the missed events
-export async function setCurrentlyConnected(this: Socket, userId: string) {
-  const socket = this;
-  //store the userId in the socket data
-  socket.data.userId = userId;
+export async function setCurrentlyConnected(
+  this: Socket,
+  token: string,
+  callback: (error: Error | null, response?: { success: boolean }) => void
+) {
   try {
+    callback(null, { success: true }); // does not indicate the data is ok. only that the server received the event
+    const payload = (await verifyToken(token)) as { userId: string };
+    if (!payload || !payload.userId) throw new Error("Invalid token");
+    const userId = payload.userId;
+
+    //store the userId in the socket data
+    const socket = this;
+    socket.data.userId = userId;
     //set "currently_connected" to true
     await db
       .update(users)
@@ -22,12 +31,11 @@ export async function setCurrentlyConnected(this: Socket, userId: string) {
     socket.join(userId);
 
     //make sure the client received all undelivered events
-    const lastReceivedEventId: Date | undefined =
+    const lastReceivedEventId: string | undefined =
       socket.handshake.auth.lastReceivedEventId; //last successfully received event id
 
     if (lastReceivedEventId) {
       // this is a reconnection. the user is in the app and needs to see the new events now!
-      let lastDeliveredEvent: Date | undefined = undefined;
       for (const event of await fetchMissedEventsFromDatabase(
         userId,
         lastReceivedEventId
@@ -42,5 +50,6 @@ export async function setCurrentlyConnected(this: Socket, userId: string) {
       "error trying to set currentlyConnected or deliver pending messages from the database: ",
       error
     );
+    callback(error as Error);
   }
 }

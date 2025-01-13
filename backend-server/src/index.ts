@@ -7,16 +7,16 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { cors } from "hono/cors";
 import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
-import { routes } from "./routes/routes";
+import { routes } from "./routes/routes.js";
 import "dotenv/config";
-import { db } from "./drizzle/db";
-import { users } from "./drizzle/schema";
+import { db } from "./drizzle/db.js";
+import { users } from "./drizzle/schema.js";
 import * as os from "node:os";
-import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected";
-import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected";
-import { onNewEvent } from "./APIs/websocket/on-new-event";
-import { eventDelivered } from "./APIs/websocket/event-delivered";
-import { onMessagesRead } from "./APIs/websocket/message-read";
+import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected.js";
+import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected.js";
+import { onNewEvent } from "./APIs/websocket/on-new-event.js";
+import { eventDelivered } from "./APIs/websocket/event-delivered.js";
+import { onMessagesRead } from "./APIs/websocket/message-read.js";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -79,7 +79,7 @@ io.on("connection", async (socket) => {
   //set as "currently connected" + deliver undelivered events
   socket.on("setCurrentlyConnected", setCurrentlyConnected);
   //client sent an event to the server
-  socket.on("newEvent", onNewEvent);
+  socket.on("newEvent", () => onNewEvent);
   //client confirmed that the event was delivered
   socket.on("eventDelivered", eventDelivered);
   //client confirmed that he read the message while he was in the chat

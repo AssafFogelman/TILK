@@ -3,6 +3,7 @@
     "Assaf's",
     "assaffogelman",
     "chatbox",
+    "codepaths",
     "deepkfiz",
     "Entypo",
     "ethersproject",
@@ -26,5 +27,8 @@
     "Tilk",
     "Yagur",
     "Yonatan"
-  ]
+  ],
+  "search.exclude": {
+    "": true
+  }
 }

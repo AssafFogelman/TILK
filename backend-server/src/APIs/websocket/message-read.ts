@@ -1,8 +1,14 @@
-import { io } from "../..";
+import { io } from "../../index.js";
 import { and, eq, inArray } from "drizzle-orm";
-import { chatMessages, chats, unreadEvents, users } from "../../drizzle/schema";
-import { db } from "../../drizzle/db";
-import { MessageType, TilkEventType } from "../../../../types/types";
+import {
+  chatMessages,
+  chats,
+  unreadEvents,
+  users,
+} from "../../drizzle/schema.js";
+import { db } from "../../drizzle/db.js";
+import { MessageType } from "../../../../types/types.js";
+import { TilkEventType } from "../../backend-types/TilkEventType.js";
 
 export async function onMessagesRead(
   {
@@ -15,6 +21,8 @@ export async function onMessagesRead(
   callback: (error: Error | null, response?: { success: boolean }) => void
 ) {
   try {
+    callback(null, { success: true }); // does not indicate the data is ok. only that the server received the event
+
     if (!messageIds.length)
       callback(new Error("no unread messages detected"), { success: false });
     // Mark chat messages in DB table as read
@@ -65,9 +73,8 @@ export async function onMessagesRead(
     }
     // If websocket is offline, forget about it. we will not send a notification that the message has been read.
     // the user will get it through axios when they load the app
-    callback(null, { success: true });
   } catch (error) {
     console.log("error marking message as read:", error);
-    callback(new Error("error marking messages as read"), { success: false });
+    callback(error as Error);
   }
 }

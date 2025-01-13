@@ -1,16 +1,16 @@
 import {
   MessageType,
   SendMessageResponseType,
-  TilkEventType,
-} from "../../../../types/types";
-import { onNewMessage as onNewMessage } from "./on-new-message";
+} from "../../../../types/types.js";
+import { TilkEventType } from "../../backend-types/TilkEventType.js";
+import { onNewMessage as onNewMessage } from "./on-new-message.js";
 
 export async function onNewEvent(
   {
-    message,
+    newMessage,
     eventType,
   }: {
-    message: MessageType;
+    newMessage: MessageType;
     eventType: keyof typeof TilkEventType;
   },
   callback: (error: Error | null, response?: SendMessageResponseType) => void
@@ -18,10 +18,16 @@ export async function onNewEvent(
   try {
     switch (eventType) {
       case TilkEventType.MESSAGE:
-        onNewMessage(message, callback);
+        await onNewMessage(newMessage, callback);
         break;
+      default:
+        console.error("unknown event type:", eventType);
+        callback(new Error("Unknown event type"));
     }
   } catch (error) {
     console.log("error sending event:", error);
+    callback(
+      error instanceof Error ? error : new Error("Unknown error occurred")
+    );
   }
 }

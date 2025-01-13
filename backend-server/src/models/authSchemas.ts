@@ -1,6 +1,6 @@
 import { validator } from "hono/validator";
 import { z } from "zod";
-import { verifyToken } from "../config/jwt";
+import { verifyToken } from "../config/jwt.js";
 import { Context, Next } from "hono";
 
 //*"send-sms" route

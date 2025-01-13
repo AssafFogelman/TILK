@@ -1,15 +1,7 @@
-import {
-  Image,
-  Pressable,
-  Text,
-  View,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
-import React, { useContext } from "react";
+import { Pressable, Text, View, StyleSheet } from "react-native";
+import React from "react";
 import { MessageType } from "../types/types";
 import { useAuthState } from "../AuthContext";
-// import { UserContext } from "../UserContext";
 
 const ChatMessage = ({
   chatMessage,
@@ -38,8 +30,9 @@ const ChatMessage = ({
     }
   };
 
-  const formatTime = (time: string) => {
-    return new Date(time).toLocaleString("en-US", {
+  const formatTime = (time: Date | string) => {
+    const date = typeof time === "string" ? new Date(time) : time;
+    return date.toLocaleString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,

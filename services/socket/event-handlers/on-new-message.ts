@@ -29,7 +29,7 @@ export function onNewMessage(
 
   // Optimistically add the message to the chat messages query (if it exists)
   queryClient.setQueryData(
-    ["chatMessages", message.chatId],
+    ["chatMessages", newMessage.chatId],
     (oldData: MessageType[] = []) => {
       if (!oldData.length) return [];
       return [...oldData, newMessage];
@@ -40,15 +40,15 @@ export function onNewMessage(
   queryClient.setQueryData(["chatsList"], (oldData: ChatType[] = []) => {
     if (!oldData.length) return oldData;
     return oldData.map((chat) =>
-      chat.chatId === message.chatId
+      chat.chatId === newMessage.chatId
         ? {
             ...chat,
             //if the user is currently in the chat, mark the chat as read
             unread:
-              currentVisibleChatRef.chatId === message.chatId ? false : true,
+              currentVisibleChatRef.chatId === newMessage.chatId ? false : true,
             //if the user is currently in the chat, reset the unread count
             unreadCount:
-              currentVisibleChatRef.chatId === message.chatId
+              currentVisibleChatRef.chatId === newMessage.chatId
                 ? 0
                 : chat.unreadCount + 1,
             lastMessageDate: receivedDate,
@@ -63,19 +63,21 @@ export function onNewMessage(
     );
   });
 
-  // Optimistically update the unread events query
-  queryClient.setQueryData(["unreadEvents"], (oldData: TilkEvents) => {
-    if (!oldData) return oldData;
-    const newData = {
-      ...oldData,
-      [TilkEventType.MESSAGE]: [
-        ...(oldData[TilkEventType.MESSAGE] || []),
-        message,
-      ],
-    };
-    return newData;
-  });
-
+  //if the user is not in the chat, add the message to the unread events query
+  if (newMessage.chatId !== currentVisibleChatRef.chatId) {
+    // Optimistically update the unread events query
+    queryClient.setQueryData(["unreadEvents"], (oldData: TilkEvents) => {
+      if (!oldData) return oldData;
+      const newData = {
+        ...oldData,
+        [TilkEventType.MESSAGE]: [
+          ...(oldData[TilkEventType.MESSAGE] || []),
+          newMessage,
+        ],
+      };
+      return newData;
+    });
+  }
   //set the last received event id so that if the user temporarily disconnects, they can resume from the last event id
   socket.auth = {
     ...socket.auth,
@@ -83,11 +85,13 @@ export function onNewMessage(
   } as {
     lastReceivedEventId?: string;
   };
+  console.log("we are emitting to the server that the message was delivered!");
   //emit the event as delivered
   emit(socket, "eventDelivered", {
     receivedDate,
-    messageId: message.messageId,
-    chatId: message.chatId,
+    messageId: newMessage.messageId,
+    chatId: newMessage.chatId,
+    eventType: TilkEventType.MESSAGE,
   });
 
   //if the chat is currently visible, mark the message as read

@@ -1,7 +1,8 @@
 import { and, eq, gt } from "drizzle-orm";
-import { chatMessages } from "../../drizzle/schema";
-import { db } from "../../drizzle/db";
-import { TilkEvent, TilkEventType } from "../../../../types/types";
+import { chatMessages } from "../../drizzle/schema.js";
+import { db } from "../../drizzle/db.js";
+import { TilkEvent } from "../../../../types/types.js";
+import TilkEventType from "../../backend-types/TilkEventType.js";
 
 export async function fetchUndeliveredEventsFromDatabase(
   userId: string,

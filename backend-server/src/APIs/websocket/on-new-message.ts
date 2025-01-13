@@ -2,14 +2,14 @@ import { eq } from "drizzle-orm";
 import {
   chatMessages,
   /*undeliveredEvents,*/ users,
-} from "../../drizzle/schema";
-import { db } from "../../drizzle/db";
+} from "../../drizzle/schema.js";
+import { db } from "../../drizzle/db.js";
 import {
   MessageType,
   SendMessageResponseType,
-  TilkEventType,
-} from "../../../../types/types";
-import { io } from "../..";
+} from "../../../../types/types.js";
+import { io } from "../../index.js";
+import { TilkEventType } from "../../backend-types/TilkEventType.js";
 const messageSequences = new Map<string, number>();
 
 export async function onNewMessage(
@@ -17,15 +17,22 @@ export async function onNewMessage(
   callback: (error: Error | null, response?: SendMessageResponseType) => void
 ) {
   try {
+    if (!message) {
+      throw new Error("Message object is required");
+    }
     const { sentDate, text, senderId, chatId, recipientId } = message;
+    //for some reason, sentDate is a string. we need to convert it to a date.
+    //you would think websocket would conserve the date as a date, but it doesn't.
+    const formattedSentDate = new Date(sentDate);
     // Save message to database
     const gotToServer = new Date().getTime();
+
     const { eventId, ...savedMessage } = (
       await db
         .insert(chatMessages)
         .values({
           chatId,
-          sentDate,
+          sentDate: formattedSentDate,
           text,
           senderId,
           recipientId,
@@ -43,7 +50,10 @@ export async function onNewMessage(
       where: eq(users.userId, recipientId),
       columns: { currentlyConnected: true },
     });
-
+    console.log(
+      "recipient is currently connected:",
+      recipient?.currentlyConnected
+    );
     if (recipient?.currentlyConnected) {
       // If online, emit immediately
       //we assigned him to a room whose name is his user Id when he connected.
@@ -58,6 +68,7 @@ export async function onNewMessage(
     }
   } catch (error) {
     console.log("error sending message:", error);
+    callback(new Error("Error sending message at onNewMessage"));
   }
 }
 

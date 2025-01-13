@@ -1,15 +1,21 @@
-import { io } from "../..";
+import { io } from "../../index.js";
 import { and, eq, sql } from "drizzle-orm";
-import { chatMessages, chats, unreadEvents, users } from "../../drizzle/schema";
-import { db } from "../../drizzle/db";
-import { MessageType, TilkEventType } from "../../../../types/types";
+import {
+  chatMessages,
+  chats,
+  unreadEvents,
+  users,
+} from "../../drizzle/schema.js";
+import { db } from "../../drizzle/db.js";
+import { MessageType } from "../../../../types/types.js";
+import { TilkEventType } from "../../backend-types/TilkEventType.js";
 
 export async function messageDelivered({
   receivedDate,
   messageId,
   chatId,
 }: {
-  receivedDate: Date;
+  receivedDate: string;
   messageId: string;
   chatId: string;
 }) {
@@ -18,7 +24,7 @@ export async function messageDelivered({
     const deliveredMessage: MessageType = (
       await db
         .update(chatMessages)
-        .set({ receivedDate })
+        .set({ receivedDate: new Date(receivedDate) })
         .where(
           and(
             eq(chatMessages.chatId, chatId),
@@ -34,7 +40,7 @@ export async function messageDelivered({
       .set({
         unread: true,
         unreadCount: sql`${chats.unreadCount} + 1`,
-        lastMessageDate: receivedDate,
+        lastMessageDate: new Date(receivedDate),
         lastMessageSender: deliveredMessage.senderId,
         lastMessageText: deliveredMessage.text,
       })
@@ -48,7 +54,7 @@ export async function messageDelivered({
         eventType: TilkEventType.MESSAGE,
         chatId: chatId,
         messageId: messageId,
-        receivedDate: receivedDate,
+        receivedDate: new Date(receivedDate),
       })
       .onConflictDoNothing();
 

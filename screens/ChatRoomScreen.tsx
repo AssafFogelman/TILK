@@ -1,58 +1,40 @@
 import {
   I18nManager,
   KeyboardAvoidingView,
-  Modal,
   Pressable,
-  ScrollView,
   TextInput,
   View,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Entypo } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
-import {
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   ChatRoomScreenRouteProp,
   ChatRoomScreenNavigationProp,
   UserType,
   MessageType,
-  ChatType,
-  ConnectionsScreenUser,
 } from "../types/types";
-import * as ImagePicker from "expo-image-picker";
-import ChatMessage from "../components/chatMessage";
-import ChatTimestamp from "../components/chat-room-components/ChatTimestamp";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ChatRoomHeader } from "../components/chat-room-components/ChatRoomHeader";
-import { socket } from "../services/socket/socket";
-import { queryClient } from "../services/queryClient";
 import { fetchChatMessages } from "../APIs/chatAPIs";
 import {
   ErrorView,
   LoadingView,
 } from "../components/chat-room-components/StatusViewsChatRoom";
-import { Text } from "react-native-paper";
 import { useAuthState } from "../AuthContext";
-import { emit } from "../APIs/emit";
-import { isAxiosError } from "axios";
 import { useSetFocusBlurListener } from "../hooks/chat-room-hooks/useSetFocusBlurListener";
 import { FlashList } from "@shopify/flash-list";
 import { Separator } from "../components/chat-room-components/Separator";
 import { ListHeader } from "../components/chat-room-components/ListHeader";
 import { handleSendMessage } from "../hooks/chat-room-hooks/handleSendMessage";
-const SOCKET_TIMEOUT = 5000; // 5 seconds
+import { Text } from "react-native-paper";
 
 const ChatRoomScreen = () => {
   const [textInput, setTextInput] = useState("");
   const [showEmojiSelector, setShowEmojiSelector] = useState(false);
-  const [modalVisible, setModalVisible] = useState(() => Math.random() < 0.5);
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
-  const scrollViewRef = useRef<null | ScrollView>(null);
 
   const navigation = useNavigation<ChatRoomScreenNavigationProp>();
   const route = useRoute<ChatRoomScreenRouteProp>();
@@ -78,6 +60,7 @@ const ChatRoomScreen = () => {
     queryFn: () => fetchChatMessages(chatId),
     // Initialize with previous data if available
     placeholderData: (previousData) => previousData,
+    staleTime: Infinity,
   });
 
   //set that once the user exits the chat room, "currentVisibleChatRef" will be false (and true if focused)
@@ -138,7 +121,6 @@ const ChatRoomScreen = () => {
                 isFirstMessage: !!chatMessages[0],
               })
             }
-            extraData={modalVisible}
           />
         )}
 
@@ -247,7 +229,10 @@ const ChatRoomScreen = () => {
   }) {
     return (
       <View style={{ paddingTop: 10 }}>
-        <ChatTimestamp
+        <Text>{message.text}</Text>
+        <Text>sent Date: {message.sentDate.toLocaleString()}</Text>
+        <Text>received Date: {message.receivedDate?.toLocaleString()}</Text>
+        {/* <ChatTimestamp
           chatMessage={message}
           index={index}
           previousMessage={index > 0 ? chatMessages[index - 1] : null}
@@ -256,7 +241,7 @@ const ChatRoomScreen = () => {
           chatMessage={message}
           selectedMessages={selectedMessages}
           setSelectedMessages={setSelectedMessages}
-        />
+        /> */}
       </View>
     );
   }

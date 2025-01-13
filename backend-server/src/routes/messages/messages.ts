@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 
-import { validateToken } from "../../models/authSchemas";
-import { getChatMessages } from "../../controllers/get-chat-messages";
+import { validateToken } from "../../models/authSchemas.js";
+import { getChatMessages } from "../../controllers/get-chat-messages.js";
 
 export const messages = new Hono().basePath("/messages");
 

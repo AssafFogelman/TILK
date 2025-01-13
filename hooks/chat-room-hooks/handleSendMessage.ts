@@ -56,22 +56,20 @@ export const handleSendMessage = async (
           : chat
       );
     });
-
     //send the message using websocket
     emit<SendMessageResponseType>(
       socket,
       "newEvent",
-      { ...newMessage, eventType: TilkEventType.MESSAGE },
+      { newMessage, eventType: TilkEventType.MESSAGE },
       acknowledgement
     );
-
     setTextInput("");
   } catch (error) {
     // Rollback on error
+    console.log("there was a problem sending the message:", error);
     queryClient.invalidateQueries({
       queryKey: ["chatMessages", chatId],
     });
-    console.log("there was a problem sending the message:", error);
   }
 
   // Acknowledgment callback - update the messageId and gotToServer
