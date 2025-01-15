@@ -6,11 +6,14 @@ import { onMessageDelivered } from "./event-handlers/on-message-delivered";
 import { onMessagesRead } from "./event-handlers/on-message-read";
 import { getItemAsync } from "expo-secure-store";
 import NetInfo from "@react-native-community/netinfo";
+import { useAuthState } from "../../AuthContext";
 
 const MAX_RECONNECT_ATTEMPTS = 10;
 const INITIAL_RETRY_INTERVAL = 2000;
 
 export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
+  const { userId } = useAuthState();
+  const noInternetRef = useRef(false);
   //websocket event listeners and cleanup
   useEffect(() => {
     //if already connected, and this is the first time the component is mounted, run connection function
@@ -19,8 +22,10 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
     }
 
     function onDisconnect() {
-      //something that should happen if the server goes down
+      //reconnect to the socket
       reconnectToSocket();
+      //once the socket is connected, a listener will run the onConnect function
+      //and set the user as currently connected.
     }
 
     //listen to events and run functions accordingly
@@ -32,11 +37,19 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
     socket.on("messageDelivered", onMessageDelivered);
     //the message the user sent was read
     socket.on("messagesRead", onMessagesRead);
-    const unsubscribe = NetInfo.addEventListener((state) => {
-      if (state.isConnected) {
-        connectSocket();
-      } else {
-        disconnectSocket();
+
+    //if internet connection is regained, reconnect to the socket
+    const unsubscribeNetInfo = NetInfo.addEventListener((state) => {
+      // Only proceed if user is logged in
+      if (!userId) return;
+
+      if (!state.isConnected) {
+        socket.disconnect();
+        noInternetRef.current = true;
+      } else if (noInternetRef.current) {
+        // Reconnect only if we previously lost connection
+        onDisconnect();
+        noInternetRef.current = false;
       }
     });
     return () => {
@@ -51,7 +64,7 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
       //disconnect the socket
       socket.disconnect();
 
-      unsubscribe();
+      unsubscribeNetInfo();
     };
   }, []);
 
@@ -59,6 +72,14 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
 
   function reconnectToSocket() {
     if (socket.connected) return;
+
+    // Check internet connectivity before attempting reconnection
+    NetInfo.fetch().then((state) => {
+      if (!state.isConnected) {
+        console.log("Skipping reconnection attempt - No internet connection");
+        return;
+      }
+    });
 
     // attempts count
     let reconnectAttempts = 0;
