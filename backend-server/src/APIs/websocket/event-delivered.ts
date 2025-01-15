@@ -16,7 +16,7 @@ export async function eventDelivered(
   callback: (error: Error | null, response?: { success: boolean }) => void
 ) {
   try {
-    callback(null, { success: true });
+    callback(null, { success: true }); //just to acknowledge the event was emitted successfully
     switch (eventType) {
       case TilkEventType.MESSAGE:
         await messageDelivered({ receivedDate, messageId, chatId });

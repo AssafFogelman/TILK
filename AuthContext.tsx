@@ -174,7 +174,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             user = await axios
               .get("/user/user-data")
               .then((response) => response.data.user);
-            console.log("user:", user);
             //if everything is OK, update the state. this also makes "isLoading" false.
             const data = {
               userToken,

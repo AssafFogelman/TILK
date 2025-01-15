@@ -50,11 +50,10 @@ export async function onNewMessage(
       where: eq(users.userId, recipientId),
       columns: { currentlyConnected: true },
     });
-    console.log(
-      "recipient is currently connected:",
-      recipient?.currentlyConnected
-    );
+
     if (recipient?.currentlyConnected) {
+      console.log(`Attempting to emit message to recipient ${recipientId}`);
+      console.log(`Active socket rooms:`, io.sockets.adapter.rooms);
       // If online, emit immediately
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly
@@ -62,7 +61,10 @@ export async function onNewMessage(
         eventType: TilkEventType.MESSAGE, //"MESSAGE",
         eventId: eventId,
       });
+      console.log("--------------------------------");
+      console.log(`Message emission attempted to ${recipientId}`);
     } else {
+      console.log(`Recipient ${recipientId} is not currently connected`);
       // TODO: If websocket offline, try to send a notification to the user.
       // if that doesn't work, the user's phone is off. In that case, the message stays undelivered until they load the app and get it through axios
     }

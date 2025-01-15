@@ -26,7 +26,7 @@ export function onNewMessage(
     chatId: message.chatId,
     recipientId: message.recipientId,
   };
-
+  console.log("new message received!");
   // Optimistically add the message to the chat messages query (if it exists)
   queryClient.setQueryData(
     ["chatMessages", newMessage.chatId],
@@ -85,7 +85,6 @@ export function onNewMessage(
   } as {
     lastReceivedEventId?: string;
   };
-  console.log("we are emitting to the server that the message was delivered!");
   //emit the event as delivered
   emit(socket, "eventDelivered", {
     receivedDate,

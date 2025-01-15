@@ -232,6 +232,7 @@ const ChatRoomScreen = () => {
         <Text>{message.text}</Text>
         <Text>sent Date: {message.sentDate.toLocaleString()}</Text>
         <Text>received Date: {message.receivedDate?.toLocaleString()}</Text>
+        <Text>unread: {message.unread ? "true" : "false"}</Text>
         {/* <ChatTimestamp
           chatMessage={message}
           index={index}

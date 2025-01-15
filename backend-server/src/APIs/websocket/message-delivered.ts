@@ -58,16 +58,6 @@ export async function messageDelivered({
       })
       .onConflictDoNothing();
 
-    // // If delivered successfully, remove from undelivered events
-    // await db
-    //   .delete(undeliveredEvents)
-    //   .where(
-    //     and(
-    //       eq(undeliveredEvents.eventType, TilkEventType.MESSAGE)
-    //       eq(undeliveredEvents.messageId, savedMessage.messageId),
-    //     )
-    //   );
-
     //inform the sender that the message was delivered
     // Check if sender is online
     const sender = await db.query.users.findFirst({
@@ -76,6 +66,14 @@ export async function messageDelivered({
     });
 
     if (sender?.currentlyConnected) {
+      console.log(
+        "sender is online, emitting that the sent message was delivered"
+      );
+      console.log(
+        `Attempting to emit confirmation to sender ${deliveredMessage.senderId}`
+      );
+      console.log("");
+      console.log(`Active socket rooms:`, io.sockets.adapter.rooms);
       // If online, emit immediately
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly

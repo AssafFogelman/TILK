@@ -1,4 +1,3 @@
-import React, { useCallback } from "react";
 import {
   Pressable,
   FlatList,
@@ -67,7 +66,7 @@ export const UserCard = ({
   );
 
   return (
-    <Card>
+    <Card style={{ marginVertical: 5, marginHorizontal: 3 }}>
       <Card.Title
         title={user.nickname}
         subtitle={`${user.gender}${

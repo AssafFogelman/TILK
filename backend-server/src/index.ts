@@ -74,12 +74,12 @@ export const io = new Server(server as HttpServer, {
 });
 io.on("error", (err) => console.log("error: ", err));
 io.on("connection", async (socket) => {
-  console.log(`new client connected to websocket!`);
+  console.log(`new client connected to websocket!!`);
 
   //set as "currently connected" + deliver undelivered events
   socket.on("setCurrentlyConnected", setCurrentlyConnected);
   //client sent an event to the server
-  socket.on("newEvent", () => onNewEvent);
+  socket.on("newEvent", onNewEvent);
   //client confirmed that the event was delivered
   socket.on("eventDelivered", eventDelivered);
   //client confirmed that he read the message while he was in the chat
@@ -88,27 +88,52 @@ io.on("connection", async (socket) => {
   socket.on("disconnect", registerAsUnconnected);
 });
 
-/*
+// Graceful shutdown - mark all users as currently not connected + close the websocket and server
+process.on("SIGTERM", gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
 
+async function gracefulShutdown() {
+  console.log("Signal received: closing HTTP server");
 
-// Graceful shutdown - Freeing the port once we exit the editor
-process.on('SIGTERM', gracefulShutdown)
-process.on('SIGINT', gracefulShutdown)
+  try {
+    // Notify all connected clients about the shutdown
+    //io.emit("server:intentionalShutdown"); //TODO: someday distinguish between intentional and unintentional shutdowns on the client side.
 
-function gracefulShutdown() {
-  console.log('Signal received: closing HTTP server')
+    //at server shutdown, we want to make sure that no user is set to "currently connected"
+    setNoUserIsCurrentlyConnected();
 
-  // Close socket.io server
-  io.close(() => {
-    console.log('Socket.io server closed')
-  })
-  // Then close http server
-  server.close(() => {
-    console.log('HTTP server closed')
-    process.exit(0)
-  })
+    // Close socket.io server
+    const socketClosePromise = new Promise((resolve) => {
+      io.close(() => {
+        console.log("Socket.io server closed");
+        resolve(true);
+      });
+    });
+
+    // Close http server
+    const httpClosePromise = new Promise((resolve) => {
+      server.close(() => {
+        console.log("HTTP server closed");
+        resolve(true);
+      });
+    });
+
+    // Wait for both to close with a timeout
+    await Promise.race([
+      Promise.all([socketClosePromise, httpClosePromise]),
+      new Promise((_, reject) =>
+        setTimeout(() => reject("Shutdown timeout"), 5000)
+      ),
+    ]);
+
+    //close the node process with exit code 0 (success)
+    process.exit(0);
+  } catch (error) {
+    console.error("Error during shutdown:", error);
+    //close the node process with exit code 1 (error)
+    process.exit(1);
+  }
 }
-*/
 
 //if address is already in use (last session did not close properly), restart the session
 server.on("error", (e) => {
@@ -120,9 +145,6 @@ server.on("error", (e) => {
     }, 1000);
   }
 });
-
-//at server startup, we want to make sure that no user is set to "currently connected"
-setNoUserIsCurrentlyConnected();
 
 //at server startup, we want to make sure that no user is set to "currently connected"
 async function setNoUserIsCurrentlyConnected() {

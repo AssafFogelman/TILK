@@ -12,38 +12,46 @@ export function emit<T>(
   arg: unknown,
   onAcknowledgement?: EmitCallback<T>
 ) {
-  //how many times we should check the connection before giving up
-  let count = 0;
-  //emit only if the websocket is connected
-  checkConnection();
+  let attempts = 0;
+  const MAX_ATTEMPTS = 100;
 
-  //check if the websocket is connected, if not, wait for 1 second and check again
-  function checkConnection() {
-    if (!socket.connected) {
-      //on the tenth time, give up
-      if (count > 9) {
-        console.log("socket is not connected, giving up");
-        return;
-      }
-      //wait for 1 second and check connection again
-      setTimeout(() => {
-        count++;
-        checkConnection();
-      }, 1000);
-      //we have a connection. Let's emit the event
-    } else tryEmit();
-  }
+  tryEmit();
 
   function tryEmit() {
+    // If we've exceeded max attempts, stop trying
+    if (attempts >= MAX_ATTEMPTS) {
+      console.log(`Failed to emit ${event} after ${MAX_ATTEMPTS} attempts`);
+      onAcknowledgement?.(
+        new Error(`Failed to emit after ${MAX_ATTEMPTS} attempts`)
+      );
+      return;
+    }
+
+    // If socket is disconnected, wait for reconnection
+    if (!socket.connected) {
+      console.log(
+        `Socket disconnected, waiting for reconnection before emitting ${event}`
+      );
+
+      //listen for reconnection only once
+      socket.once("connect", reconnectHandler);
+      return;
+
+      function reconnectHandler() {
+        console.log("Socket reconnected, retrying emit");
+        socket.off("connect", reconnectHandler);
+        setTimeout(() => tryEmit(), 100); // Small delay to ensure socket is ready
+      }
+    }
+
+    attempts++;
     socket
       .timeout(5000)
       .emit(event, arg, (error: Error | null, response?: T) => {
         if (error) {
-          console.log(error, " retrying emit");
-          //no acknowledgement received from the server in the given time. let's retry indefinitely
+          console.log(`Emit attempt ${attempts} failed for ${event}:`, error);
           tryEmit();
         } else {
-          // the server has received the event, let's call the callback with either the error or response from the server
           onAcknowledgement?.(error, response);
         }
       });

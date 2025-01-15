@@ -9,7 +9,10 @@ const URL =
 //TODO: we will have to see whether setting the URL to undefined in production indeed works
 export const socket = io(URL, {
   path: "/ws/",
-  autoConnect: false,
+  autoConnect: false, //do not connect on app startup
+  reconnection: true, //try to reconnect if the connection is lost
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
   //delivery guarantee method - storing the last received event id
   auth: { lastReceivedEventId: undefined },
 });

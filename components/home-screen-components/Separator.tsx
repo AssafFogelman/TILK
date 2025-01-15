@@ -13,6 +13,9 @@ export const Separator = ({
 }) => {
   const theme = useTheme();
 
+  if (!distanceMessage(leadingItem.distance, trailingItem.distance))
+    return null;
+
   return (
     <View style={{ flex: 1, alignSelf: "center", marginVertical: 5 }}>
       <Chip
