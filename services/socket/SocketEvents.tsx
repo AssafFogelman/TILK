@@ -6,6 +6,7 @@ import { onMessageDelivered } from "./event-handlers/on-message-delivered";
 import { onMessagesRead } from "./event-handlers/on-message-read";
 import { getItemAsync } from "expo-secure-store";
 import { useAuthState } from "../../AuthContext";
+import NetInfo from "@react-native-community/netinfo";
 
 const MAX_RECONNECT_ATTEMPTS = 10;
 const INITIAL_RETRY_INTERVAL = 2000;
@@ -37,20 +38,20 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
     //the message the user sent was read
     socket.on("messagesRead", onMessagesRead);
 
-    // //if internet connection is regained, reconnect to the socket
-    // const unsubscribeNetInfo = NetInfo.addEventListener((state) => {
-    //   // Only proceed if user is logged in
-    //   if (!userId) return;
+    //if internet connection is regained, reconnect to the socket
+    const unsubscribeNetInfo = NetInfo.addEventListener((state) => {
+      // Only proceed if user is logged in
+      if (!userId) return;
 
-    //   if (!state.isConnected) {
-    //     socket.disconnect();
-    //     noInternetRef.current = true;
-    //   } else if (noInternetRef.current) {
-    //     // Reconnect only if we previously lost connection
-    //     onDisconnect();
-    //     noInternetRef.current = false;
-    //   }
-    // });
+      if (!state.isConnected) {
+        socket.disconnect();
+        noInternetRef.current = true;
+      } else if (noInternetRef.current) {
+        // Reconnect only if we previously lost connection
+        onDisconnect();
+        noInternetRef.current = false;
+      }
+    });
     return () => {
       //when the component unmounts (the app closes), disconnect the socket and close the event listeners
 
@@ -63,7 +64,7 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
       //disconnect the socket
       socket.disconnect();
 
-      // unsubscribeNetInfo();
+      unsubscribeNetInfo();
     };
   }, []);
 
@@ -73,12 +74,12 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
     if (socket.connected) return;
 
     // Check internet connectivity before attempting reconnection
-    // NetInfo.fetch().then((state) => {
-    //   if (!state.isConnected) {
-    //     console.log("Skipping reconnection attempt - No internet connection");
-    //     return;
-    //   }
-    // });
+    NetInfo.fetch().then((state) => {
+      if (!state.isConnected) {
+        console.log("Skipping reconnection attempt - No internet connection");
+        return;
+      }
+    });
 
     // attempts count
     let reconnectAttempts = 0;

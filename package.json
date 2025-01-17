@@ -57,7 +57,8 @@
     "react-native-toast-message": "^2.2.0",
     "react-native-vector-icons": "^10.1.0",
     "socket.io-client": "^4.7.5",
-    "twilio": "^5.1.0"
+    "twilio": "^5.1.0",
+    "@react-native-community/netinfo": "11.4.1"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",
