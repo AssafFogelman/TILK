@@ -20,6 +20,9 @@ export async function fetchChatMessages(
       }) => ({
         ...message,
         sentDate: new Date(message.sentDate),
+        receivedDate: message.receivedDate
+          ? new Date(message.receivedDate)
+          : null,
       })
     );
   } catch (error) {

@@ -231,7 +231,9 @@ const ChatRoomScreen = () => {
       <View style={{ paddingTop: 10 }}>
         <Text>{message.text}</Text>
         <Text>sent Date: {message.sentDate.toLocaleString()}</Text>
+        <Text>type of sent Date: {typeof message.sentDate}</Text>
         <Text>received Date: {message.receivedDate?.toLocaleString()}</Text>
+        <Text>type of received Date: {typeof message.receivedDate}</Text>
         <Text>unread: {message.unread ? "true" : "false"}</Text>
         {/* <ChatTimestamp
           chatMessage={message}
