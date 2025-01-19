@@ -63,8 +63,8 @@ const ChatRoomScreen = () => {
     staleTime: Infinity,
   });
 
-  //set that once the user exits the chat room, "currentVisibleChatRef" will be false (and true if focused)
-  useSetFocusBlurListener(chatId, userId, chatMessages);
+  //set that once the user exits the chat room, "currentVisibleChatRef" will be undefined (and with the chatId if focused)
+  useSetFocusBlurListener(chatId);
 
   //set the header
   useEffect(() => {
@@ -220,13 +220,7 @@ const ChatRoomScreen = () => {
     </>
   );
 
-  function renderItem({
-    item: message,
-    index,
-  }: {
-    item: MessageType;
-    index: number;
-  }) {
+  function renderItem({ item: message }: { item: MessageType; index: number }) {
     return (
       <View style={{ paddingTop: 10 }}>
         <Text>{message.text}</Text>

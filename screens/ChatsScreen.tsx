@@ -1,16 +1,14 @@
 import { View } from "react-native";
-import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
-import { List } from "react-native-paper";
 
 import { ChatsScreenNavigationProp, ChatsType, ChatType } from "../types/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import axios, { isAxiosError } from "axios";
 import { queryClient } from "../services/queryClient";
 import { UserCard } from "../components/chats-screen-components/UserCardChats";
 import { UserInfoModal } from "../components/chats-screen-components/UserInfoModalChats";
-import { useQueryClient } from "@tanstack/react-query";
 import { fetchChatMessages } from "../APIs/chatAPIs";
 import {
   ErrorView,
@@ -100,7 +98,11 @@ export const ChatsScreen = ({ searchQuery }: { searchQuery: string }) => {
 
       return chats;
     } catch (error) {
-      console.error("Error sending location to server:", error);
+      if (isAxiosError(error)) {
+        console.error("Error fetching chats:", error.response?.data);
+      } else {
+        console.error("Error fetching chats:", error);
+      }
       return []; // Return an empty array in case of error
     }
   }

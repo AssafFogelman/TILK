@@ -21,7 +21,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import Entypo from "@expo/vector-icons/Entypo";
 import { useQuery } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, isAxiosError } from "axios";
 import * as Location from "expo-location";
 // regardless of the location changes, perform the KNN query every LOCATION_INTERVAL
 const LOCATION_INTERVAL = 2 * 60 * 1000; // 2 minutes in milliseconds
@@ -140,7 +140,11 @@ const HomeScreen = () => {
 
       return data.knn;
     } catch (error) {
-      console.error("Error sending location to server:", error);
+      if (isAxiosError(error)) {
+        console.error("Error fetching knn data:", error.response?.data);
+      } else {
+        console.error("Error fetching knn data:", error);
+      }
       return []; // Return an empty array in case of error
     }
   }
