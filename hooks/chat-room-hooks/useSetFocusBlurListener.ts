@@ -9,28 +9,6 @@ export function useSetFocusBlurListener(chatId: string) {
   const markAsReadOnChatEntrance = useMarkAsReadOnChatEntrance(chatId);
   const navigation = useNavigation<ChatRoomScreenNavigationProp>();
 
-  //on focus, set the chat to read
-  // useFocusEffect(
-  //   //the useCallback is to prevent the useFocusEffect from running too many times
-  //   useCallback(() => {
-  //     currentVisibleChatRef.chatId = chatId;
-  //     console.log(
-  //       "focus - currentVisibleChatRef.chatId",
-  //       currentVisibleChatRef.chatId
-  //     );
-  //     markAsReadOnChatEntrance();
-
-  //     // on blur, mark the chat as exited.
-  //     return () => {
-  //       currentVisibleChatRef.chatId = undefined;
-  //       console.log(
-  //         "blur - currentVisibleChatRef.chatId",
-  //         currentVisibleChatRef.chatId
-  //       );
-  //     };
-  //   }, [chatId, markAsReadOnChatEntrance])
-  // );
-
   /*
   why i chose to not use useFocusEffect:
   https://reactnavigation.org/docs/6.x/use-focus-effect?config=static#when-to-use-focus-and-blur-events-instead
@@ -39,10 +17,7 @@ export function useSetFocusBlurListener(chatId: string) {
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       currentVisibleChatRef.chatId = chatId;
-      console.log(
-        "focus - currentVisibleChatRef.chatId",
-        currentVisibleChatRef.chatId
-      );
+      console.log("we are in the focus event! chatId:", chatId);
       markAsReadOnChatEntrance();
     });
 
@@ -53,10 +28,7 @@ export function useSetFocusBlurListener(chatId: string) {
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", () => {
       currentVisibleChatRef.chatId = undefined;
-      console.log(
-        "blur - currentVisibleChatRef.chatId",
-        currentVisibleChatRef.chatId
-      );
+      console.log("we are in the beforeRemove event! chatId:", chatId);
     });
 
     return unsubscribe;
@@ -70,16 +42,9 @@ export function useSetFocusBlurListener(chatId: string) {
     const subscription = AppState.addEventListener("change", (status) => {
       if (status === "background" || status === "inactive") {
         currentVisibleChatRef.chatId = undefined;
-        console.log(
-          "background/inactive - currentVisibleChatRef.chatId",
-          currentVisibleChatRef.chatId
-        );
       } else if (status === "active") {
         currentVisibleChatRef.chatId = chatId;
-        console.log(
-          "active - currentVisibleChatRef.chatId",
-          currentVisibleChatRef.chatId
-        );
+
         markAsReadOnChatEntrance();
       }
     });

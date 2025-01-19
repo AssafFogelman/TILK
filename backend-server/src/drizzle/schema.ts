@@ -258,10 +258,6 @@ export const chats = pgTable(
     readByParticipant2: boolean("read_by_participant2")
       .default(false)
       .notNull(),
-    unread: boolean("unread").default(false).notNull(),
-    //if the message is sent by the user, and then becomes read, that means that the other user read it
-    //if the message is sent by the other user, and then becomes read, that means that the user read it
-    //and so, when sending a message, it initially is unread, but should still look in the UI as a read sent message.
     unreadCount: integer("unread_count").default(0).notNull(),
     lastReadMessageId: uuid("last_read_message_id"),
   },

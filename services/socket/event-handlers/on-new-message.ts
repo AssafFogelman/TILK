@@ -20,13 +20,12 @@ export function onNewMessage(
     text: message.text,
     sentDate: message.sentDate,
     receivedDate: receivedDate,
-    unread: true,
+    unread: currentVisibleChatRef.chatId === message.chatId ? false : true,
     senderId: message.senderId,
     gotToServer: message.gotToServer,
     chatId: message.chatId,
     recipientId: message.recipientId,
   };
-  console.log("new message received!");
   // Optimistically add the message to the chat messages query (if it exists)
   queryClient.setQueryData(
     ["chatMessages", newMessage.chatId],
@@ -55,9 +54,10 @@ export function onNewMessage(
             lastMessageSender: newMessage.senderId,
             lastMessageText: newMessage.text,
             //if the user is currently in the chat, save the incoming message as the last read message
-            ...(currentVisibleChatRef.chatId === message.chatId && {
-              lastReadMessageId: newMessage.messageId,
-            }),
+            lastReadMessageId:
+              currentVisibleChatRef.chatId === message.chatId
+                ? newMessage.messageId
+                : chat.lastReadMessageId,
           }
         : chat
     );

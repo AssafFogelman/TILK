@@ -18,34 +18,32 @@ export function useMarkAsReadOnChatEntrance(chatId: string) {
     queryClient.getQueryData<MessageType[]>(["chatMessages", chatId]) ?? [];
 
   return function markAsReadOnChatEntrance() {
-    //get the Ids of the unread messages, in the reverse order
-    let i = chatMessages.length;
-    let unreadMessagesIds: string[] = [];
-    //while the index isn't 0
-    while (i !== 0) {
-      //decrease the index by 1
-      i--;
-      //if the message is not sent by the user
-      if (chatMessages[i].senderId !== userId) {
-        //if the message is unread
-        if (chatMessages[i].unread) {
-          //add the message id to the unread messages ids array
-          unreadMessagesIds.push(chatMessages[i].messageId);
-        } else break;
-        //if we find a read message, break the loop.
-      }
-    }
+    // //get the Ids of the unread messages, in the reverse order
+    // let i = chatMessages.length;
+    // let unreadMessagesIds: string[] = [];
+    // //while the index isn't 0
+    // while (i !== 0) {
+    //   //decrease the index by 1
+    //   i--;
+    //   //if the message is not sent by the user
+    //   if (chatMessages[i].senderId !== userId) {
+    //     //if the message is unread
+    //     if (chatMessages[i].unread) {
+    //       //add the message id to the unread messages ids array
+    //       unreadMessagesIds.push(chatMessages[i].messageId);
+    //     } else break;
+    //     //if we find a read message, break the loop.
+    //   }
+    // }
 
     try {
-      if (!unreadMessagesIds.length) return;
-
       // Optimistically update the chat messages query to read
       queryClient.setQueryData(
         ["chatMessages", chatId],
         (oldData: MessageType[] = []) => {
           if (!oldData.length) return [];
           return oldData.map((message) =>
-            unreadMessagesIds.includes(message.messageId)
+            message.unread && message.senderId !== userId
               ? { ...message, unread: false }
               : message
           );
@@ -61,7 +59,11 @@ export function useMarkAsReadOnChatEntrance(chatId: string) {
                 ...chat,
                 unread: false,
                 unreadCount: 0,
-                lastReadMessageId: unreadMessagesIds[0],
+                lastReadMessageId:
+                  chatMessages[chatMessages.length - 1].messageId,
+                // mind you that the last read message id could be an unread message sent by the user.
+                //of course if he sent it, he read it.
+                //this will be used only for a "new messages" separator.
               }
             : chat
         );
@@ -82,7 +84,6 @@ export function useMarkAsReadOnChatEntrance(chatId: string) {
             message.eventType === TilkEventType.MESSAGE &&
             message.chatId !== chatId
         );
-        console.log("filteredMessages", filteredMessages);
         // If no messages left, remove the key entirely
         if (!filteredMessages || !filteredMessages.length) {
           const { [TilkEventType.MESSAGE]: _, ...rest } = oldData;
@@ -101,7 +102,6 @@ export function useMarkAsReadOnChatEntrance(chatId: string) {
         "messagesRead",
         {
           chatId,
-          messageIds: unreadMessagesIds,
         },
         (error) => {
           if (error) throw error;

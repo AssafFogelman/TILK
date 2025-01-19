@@ -232,6 +232,13 @@
       "when": 1735831276007,
       "tag": "0033_faithful_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "5",
+      "when": 1737297931798,
+      "tag": "0034_misty_thanos",
+      "breakpoints": true
     }
   ]
 }

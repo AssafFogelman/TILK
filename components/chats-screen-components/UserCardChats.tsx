@@ -78,13 +78,3 @@ export const UserCard = ({
     </Pressable>
   );
 };
-
-function unreadCount(messages: MessageType[]) {
-  const unreadMessageCount = messages.filter(
-    (message) => message.unread === true
-  ).length;
-  if (unreadMessageCount > 0) {
-    return unreadMessageCount;
-  }
-  return null;
-}
