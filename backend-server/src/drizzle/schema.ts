@@ -252,14 +252,12 @@ export const chats = pgTable(
       () => users.userId
     ),
     lastMessageText: text("last_message_text"),
-    readByParticipant1: boolean("read_by_participant1")
-      .default(false)
-      .notNull(),
-    readByParticipant2: boolean("read_by_participant2")
-      .default(false)
-      .notNull(),
-    unreadCount: integer("unread_count").default(0).notNull(),
-    lastReadMessageId: uuid("last_read_message_id"),
+    readByP1: boolean("read_by_p1").default(false).notNull(),
+    readByP2: boolean("read_by_p2").default(false).notNull(),
+    unreadCountP1: integer("unread_count_p1").default(0).notNull(),
+    unreadCountP2: integer("unread_count_p2").default(0).notNull(),
+    lastReadMessageP1: uuid("last_read_message_p1"),
+    lastReadMessageP2: uuid("last_read_message_p2"),
   },
   (table) => {
     return {
