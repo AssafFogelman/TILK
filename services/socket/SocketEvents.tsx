@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { socket } from "./socket";
 import { emit } from "../../APIs/emit";
-import { onNewEvent } from "./event-handlers/on-new-event";
+import { onNewEvent } from "./event-handlers/on-new-event-client";
 import { onMessageDelivered } from "./event-handlers/on-message-delivered";
 import { onMessagesRead } from "./event-handlers/on-message-read";
 import { getItemAsync } from "expo-secure-store";

@@ -70,7 +70,9 @@ export async function onNewMessage(
     }
   } catch (error) {
     console.log("error sending message:", error);
-    callback(new Error("Error sending message at onNewMessage"));
+    callback(
+      new Error("Error sending message at onNewMessage", { cause: error })
+    );
   }
 }
 

@@ -1,37 +1,38 @@
 import { currentVisibleChatRef } from "../../../APIs/chatAPIs";
 import { emit } from "../../../APIs/emit";
 import {
+  AMessageEvent,
   ChatType,
   MessageType,
+  TilkEvent,
   TilkEvents,
   TilkEventType,
 } from "../../../types/types";
 import { queryClient } from "../../queryClient";
 import { socket } from "../socket";
 
-export function onNewMessage(
-  message: MessageType,
-  eventId: string,
-  receivedDate: Date
-) {
-  //create a new message just in case this function gets an event type in the future.
-  const newMessage: MessageType = {
-    messageId: message.messageId,
-    text: message.text,
-    sentDate: message.sentDate,
+export function onNewMessage(event: AMessageEvent) {
+  //create a message out of the event
+  const receivedDate = new Date();
+
+  const message: MessageType = {
+    messageId: event.messageId,
+    text: event.text,
+    sentDate: event.sentDate,
     receivedDate: receivedDate,
-    unread: currentVisibleChatRef.chatId === message.chatId ? false : true,
-    senderId: message.senderId,
-    gotToServer: message.gotToServer,
-    chatId: message.chatId,
-    recipientId: message.recipientId,
+    unread: currentVisibleChatRef.chatId === event.chatId ? false : true,
+    recipientId: event.recipientId,
+    senderId: event.otherUserId,
+    gotToServer: +event.eventId.split(":")[1],
+    chatId: event.chatId,
   };
+
   // Optimistically add the message to the chat messages query (if it exists)
   queryClient.setQueryData(
-    ["chatMessages", newMessage.chatId],
+    ["chatMessages", message.chatId],
     (oldData: MessageType[] = []) => {
       if (!oldData.length) return [];
-      return [...oldData, newMessage];
+      return [...oldData, message];
     }
   );
 
@@ -39,24 +40,24 @@ export function onNewMessage(
   queryClient.setQueryData(["chatsList"], (oldData: ChatType[] = []) => {
     if (!oldData.length) return oldData;
     return oldData.map((chat) =>
-      chat.chatId === newMessage.chatId
+      chat.chatId === message.chatId
         ? {
             ...chat,
             //if the user is currently in the chat, mark the chat as read
             unread:
-              currentVisibleChatRef.chatId === newMessage.chatId ? false : true,
+              currentVisibleChatRef.chatId === message.chatId ? false : true,
             //if the user is currently in the chat, reset the unread count
             unreadCount:
-              currentVisibleChatRef.chatId === newMessage.chatId
+              currentVisibleChatRef.chatId === message.chatId
                 ? 0
                 : chat.unreadCount + 1,
             lastMessageDate: receivedDate,
-            lastMessageSender: newMessage.senderId,
-            lastMessageText: newMessage.text,
+            lastMessageSender: message.senderId,
+            lastMessageText: message.text,
             //if the user is currently in the chat, save the incoming message as the last read message
             lastReadMessageId:
               currentVisibleChatRef.chatId === message.chatId
-                ? newMessage.messageId
+                ? message.messageId
                 : chat.lastReadMessageId,
           }
         : chat
@@ -64,7 +65,7 @@ export function onNewMessage(
   });
 
   //if the user is not in the chat, add the message to the unread events query
-  if (newMessage.chatId !== currentVisibleChatRef.chatId) {
+  if (message.chatId !== currentVisibleChatRef.chatId) {
     // Optimistically update the unread events query
     queryClient.setQueryData(["unreadEvents"], (oldData: TilkEvents) => {
       if (!oldData) return oldData;
@@ -72,7 +73,7 @@ export function onNewMessage(
         ...oldData,
         [TilkEventType.MESSAGE]: [
           ...(oldData[TilkEventType.MESSAGE] || []),
-          newMessage,
+          message,
         ],
       };
       return newData;
@@ -81,15 +82,15 @@ export function onNewMessage(
   //set the last received event id so that if the user temporarily disconnects, they can resume from the last event id
   socket.auth = {
     ...socket.auth,
-    lastReceivedEventId: eventId,
+    lastReceivedEventId: event.eventId,
   } as {
     lastReceivedEventId?: string;
   };
   //emit the event as delivered
   emit(socket, "eventDelivered", {
     receivedDate,
-    messageId: newMessage.messageId,
-    chatId: newMessage.chatId,
+    messageId: message.messageId,
+    chatId: message.chatId,
     eventType: TilkEventType.MESSAGE,
   });
 

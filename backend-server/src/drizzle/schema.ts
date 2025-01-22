@@ -316,7 +316,7 @@ export const chatMessages = pgTable(
     gotToServer: bigint("got_to_server", { mode: "number" })
       .notNull()
       .default(0), //new Date().getTime();  // returns number like 1677123456789
-    eventId: text("event_id").notNull(), //the receiving userId:0:gotToServer(in milliseconds).sequence number.
+    eventId: text("event_id").notNull(), //the receiving userId:gotToServer(in milliseconds).sequence number:0.
   },
   (table) => {
     return {
@@ -376,29 +376,6 @@ export const unreadEvents = pgTable(
     };
   }
 );
-
-// export const undeliveredEvents = pgTable(
-//   "undelivered_events",
-//   {
-//     recipientId: uuid("recipient_id")
-//       .notNull()
-//       .references(() => users.userId),
-//     senderId: uuid("sender_id").references(() => users.userId), //optional
-//     eventType: eventsEnum("events_enum").notNull(),
-//     chatId: uuid("chat_id").references(() => chats.chatId),
-//     messageId: uuid("message_id").references(() => chatMessages.messageId),
-//     offset: timestamp("offset", { withTimezone: true, mode: "date" }).notNull(),
-//     //the offset is a way to know which events the client has already received
-//   },
-//   (table) => {
-//     return {
-//       undeliveredEventsIndex: index("undelivered_events_index").on(
-//         table.recipientId,
-//         table.offset
-//       ),
-//     };
-//   }
-// );
 
 //notification templates
 export const notificationTemplates = pgTable("notification_templates", {

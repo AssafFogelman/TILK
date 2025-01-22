@@ -2,7 +2,7 @@ import { TilkEventType } from "../../../types/types";
 
 import { MessageType } from "../../../types/types";
 import { queryClient } from "../../queryClient";
-import { onNewMessage } from "./on-new-message";
+import { onNewMessage } from "./on-new-message-client";
 
 //informing the sender that his message was delivered
 export function onMessageDelivered(deliveredMessage: MessageType) {

@@ -50,6 +50,11 @@ export async function setCurrentlyConnected(
       "error trying to set currentlyConnected or deliver pending messages from the database: ",
       error
     );
-    callback(error as Error);
+    callback(
+      new Error(
+        "error trying to set currentlyConnected or deliver pending messages from the database: ",
+        { cause: error }
+      )
+    );
   }
 }

@@ -26,8 +26,6 @@ export async function onNewEvent(
     }
   } catch (error) {
     console.log("error sending event:", error);
-    callback(
-      error instanceof Error ? error : new Error("Unknown error occurred")
-    );
+    callback(new Error("error sending event", { cause: error }));
   }
 }

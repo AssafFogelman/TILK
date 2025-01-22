@@ -321,17 +321,18 @@ export const TilkEventType = {
 } as const;
 
 type BaseEvent = {
-  offset: Date;
-  userId: string;
-  otherUserId: string;
+  eventId: string;
+  recipientId: string;
+  otherUserId: string | null;
 };
 
-type MessageEvent = BaseEvent & {
+export type AMessageEvent = BaseEvent & {
   eventType: typeof TilkEventType.MESSAGE;
   chatId: string;
   messageId: string;
   text: string;
   sentDate: Date;
+  otherUserId: string; //if it is a message, then there must be a sender.
 };
 
 //i will later want to add types to other unread events
@@ -339,7 +340,7 @@ type OtherEvent = BaseEvent & {
   eventType: Exclude<typeof TilkEventType, typeof TilkEventType.MESSAGE>;
 };
 //individual events
-export type TilkEvent = MessageEvent | OtherEvent;
+export type TilkEvent = AMessageEvent | OtherEvent;
 //when you want to get all the unread events sorted by event types
 export type TilkEvents = Partial<
   Record<keyof typeof TilkEventType, TilkEvent[]>

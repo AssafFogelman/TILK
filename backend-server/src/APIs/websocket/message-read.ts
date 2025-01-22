@@ -104,12 +104,17 @@ export async function onMessagesRead(
       // If online, emit immediately
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly
-      io.to(lastReadMessage.senderId).emit("messagesRead", lastReadMessage);
+      io.to(lastReadMessage.senderId).emit(
+        "messagesRead",
+        lastReadMessage.chatId,
+        lastReadMessage.sentDate,
+        lastReadMessage.senderId
+      );
     }
     // If websocket is offline, forget about it. we will not send a notification that the message has been read.
     // the user will get it through axios when they load the app
   } catch (error) {
     console.log("error marking message as read:", error);
-    callback(error as Error);
+    callback(new Error("error marking message as read", { cause: error }));
   }
 }
