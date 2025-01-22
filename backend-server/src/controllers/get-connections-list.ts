@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { db } from "../drizzle/db";
+import { db } from "../drizzle/db.js";
 import { and, eq, or, not, inArray, desc, isNull, sql } from "drizzle-orm";
 import {
   connections,
@@ -10,14 +10,14 @@ import {
   tags,
   chats,
   chatMessages,
-} from "../drizzle/schema";
+} from "../drizzle/schema.js";
 import {
   SeparatorItem,
   ConnectionsListType,
   ReceivedRequestsQueryResult,
   ConnectedUsersQueryResult,
   SentRequestsQueryResult,
-} from "../../../types/types";
+} from "../../../types/types.js";
 /*
   get user connections, received connections requests,and sent connections requests
 
@@ -202,7 +202,10 @@ export const getConnectionsList = async (c: Context) => {
         END`.as("otherUserId"),
         lastMessageSender: chats.lastMessageSender,
         lastMessageText: chats.lastMessageText,
-        unread: chats.unread,
+        unread: sql<boolean>`CASE 
+        WHEN ${chats.participant1} = ${userId} THEN ${!chats.readByP1}
+        ELSE ${!chats.readByP2}
+      END`.as("unread"),
       })
       .from(chats)
       .where(

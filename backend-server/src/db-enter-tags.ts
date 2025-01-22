@@ -1,11 +1,11 @@
-import { db } from "./drizzle/db";
+import { db } from "./drizzle/db.js";
 import {
   tagCategories,
   tags,
   tagsTagCats,
   tagsUsers,
 } from "./drizzle/schema.js";
-import data from "../data/categories_and_tags.json";
+import data from "../data/categories_and_tags.json" assert { type: "json" };
 import { sql } from "drizzle-orm";
 /*
  * mind you that there may very well be duplicate categories and duplicate tags of different categories.

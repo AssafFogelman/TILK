@@ -1,5 +1,5 @@
 import TilkEventType from "../../backend-types/TilkEventType.js";
-import { messageDelivered } from "./message-delivered.js";
+import { messageDelivered } from "./message-delivered-server.js";
 
 export async function eventDelivered(
   {

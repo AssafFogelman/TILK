@@ -9,17 +9,23 @@ import {
 import { db } from "../../drizzle/db.js";
 import { MessageType } from "../../../../types/types.js";
 import { TilkEventType } from "../../backend-types/TilkEventType.js";
+import { Socket } from "socket.io";
 
-export async function messageDelivered({
-  receivedDate,
-  messageId,
-  chatId,
-}: {
-  receivedDate: string;
-  messageId: string;
-  chatId: string;
-}) {
+export async function messageDelivered(
+  this: Socket,
+  {
+    receivedDate,
+    messageId,
+    chatId,
+  }: {
+    receivedDate: string;
+    messageId: string;
+    chatId: string;
+  }
+) {
   try {
+    const socket = this;
+    const userId = socket.data.userId;
     // Mark chat message as delivered
     const deliveredMessage: MessageType = (
       await db
@@ -35,11 +41,22 @@ export async function messageDelivered({
     )[0];
 
     //update the chats table
+
+    //who is participant1 of the chat?
+    const chat = await db.query.chats.findFirst({
+      where: eq(chats.chatId, chatId),
+      columns: { participant1: true },
+    });
+
     await db
       .update(chats)
       .set({
-        unread: true,
-        unreadCount: sql`${chats.unreadCount} + 1`,
+        ...(userId === chat?.participant1
+          ? { readByP1: false, unreadCountP1: sql`${chats.unreadCountP1} + 1` }
+          : {
+              readByP2: false,
+              unreadCountP2: sql`${chats.unreadCountP2} + 1`,
+            }),
         lastMessageDate: new Date(receivedDate),
         lastMessageSender: deliveredMessage.senderId,
         lastMessageText: deliveredMessage.text,

@@ -1,8 +1,8 @@
-import { eq, or, desc, isNotNull, and, asc, sql } from "drizzle-orm";
+import { eq, or, desc } from "drizzle-orm";
 import { Context } from "hono";
-import { chats, chatMessages } from "../drizzle/schema";
-import { db } from "../drizzle/db";
-import { ChatType, MessageType, UserType } from "../../../types/types";
+import { chats } from "../drizzle/schema.js";
+import { db } from "../drizzle/db.js";
+import { ChatType, UserType } from "../../../types/types.js";
 
 //get the chats list
 export async function getChatsList(c: Context) {
@@ -68,13 +68,20 @@ export async function getChatsList(c: Context) {
 
       return {
         otherUser,
-        unread: chat.unread,
+        ...(chat.participant1.userId === userId
+          ? {
+              unread: !chat.readByP1,
+              unreadCount: chat.unreadCountP1,
+            }
+          : {
+              unread: !chat.readByP2,
+              unreadCount: chat.unreadCountP2,
+            }),
         lastMessageDate: chat.lastMessageDate?.toISOString() ?? null,
+        chatId: chat.chatId,
         lastMessageSender: chat.lastMessageSender,
         lastMessageText: chat.lastMessageText,
-        chatId: chat.chatId,
-        lastReadMessageId: chat.lastReadMessageId,
-        unreadCount: chat.unreadCount, //TODO: may be redundant
+        lastReadMessageId: chat.lastReadMessageP1,
       };
     });
 
