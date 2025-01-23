@@ -3,7 +3,7 @@ import TilkEventType from "../../backend-types/TilkEventType.js";
 import { messageDelivered } from "./message-delivered-server.js";
 import {
   EmitResponse,
-  MessageDeliveredPayload as EventDeliveredPayload,
+  EventDeliveredPayload,
   MessageDeliveredResponseType,
 } from "../../../../types/types.js";
 

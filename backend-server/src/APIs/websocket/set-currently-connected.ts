@@ -6,13 +6,14 @@ import { fetchUndeliveredEventsFromDatabase as fetchMissedEventsFromDatabase } f
 import { verifyToken } from "../../config/jwt.js";
 import {
   EmitResponse,
+  SetCurrentlyConnectedPayload,
   SetCurrentlyConnectedResponseType,
 } from "../../../../types/types.js";
 
 //set as "currently connected" + join a room + if this is a reconnection, deliver the missed events
 export async function setCurrentlyConnected(
   this: Socket,
-  token: string,
+  { token }: SetCurrentlyConnectedPayload,
   callback: (
     emitResponse: EmitResponse<SetCurrentlyConnectedResponseType>
   ) => void

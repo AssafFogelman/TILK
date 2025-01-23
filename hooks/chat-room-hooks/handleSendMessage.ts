@@ -81,9 +81,13 @@ export const handleSendMessage = async (
     error: Error | null;
     response?: { success: boolean; messageId?: string };
   }) {
-    console.log("the error is:", error);
-    console.log("success is:", response?.success);
-    console.log("messageId is:", response?.messageId);
+    if (!error || response?.success) {
+      console.log("message text is:", textInput);
+      console.log("new messageId from the server:", response?.messageId);
+    } else {
+      console.log("the error is:", error);
+      console.log("success is:", response?.success);
+    }
 
     if (error || !response?.success || !response?.messageId) {
       //we received this error from the server, meaning that the message arrived but
