@@ -5,8 +5,9 @@ import {
 } from "../../drizzle/schema.js";
 import { db } from "../../drizzle/db.js";
 import {
+  EmitResponse,
   MessageType,
-  SendMessageResponseType,
+  NewEventResponseType,
 } from "../../../../types/types.js";
 import { io } from "../../index.js";
 import { TilkEventType } from "../../backend-types/TilkEventType.js";
@@ -14,7 +15,7 @@ const messageSequences = new Map<string, number>();
 
 export async function onNewMessage(
   message: MessageType,
-  callback: (error: Error | null, response?: SendMessageResponseType) => void
+  callback: (emitResponse: EmitResponse<NewEventResponseType>) => void
 ) {
   try {
     if (!message) {
@@ -43,7 +44,10 @@ export async function onNewMessage(
     )[0];
 
     //return the new messageId to the sender
-    callback(null, { success: true, messageId: savedMessage.messageId });
+    callback({
+      error: null,
+      response: { success: true, messageId: savedMessage.messageId },
+    });
 
     // Check if recipient is currently online
     const recipient = await db.query.users.findFirst({
@@ -68,9 +72,11 @@ export async function onNewMessage(
     }
   } catch (error) {
     console.log("error sending message:", error);
-    callback(
-      new Error("Error sending message at onNewMessage", { cause: error })
-    );
+    callback({
+      error: new Error("Error sending message at onNewMessage", {
+        cause: error,
+      }),
+    });
   }
 }
 

@@ -348,7 +348,51 @@ export type TilkEvents = Partial<
 
 /********************************* send message types *********************************/
 
-export type SendMessageResponseType = {
+export type NewEventResponseType = {
   success: boolean;
+  messageId?: string;
+};
+
+export type EmitResponse<T = unknown> = {
+  error: Error | null;
+  response?: T;
+};
+
+export type NewEventPayload = {
+  newMessage: MessageType;
+  eventType: keyof typeof TilkEventType;
+};
+
+export type MessagesReadPayload = {
+  chatId: string;
+};
+
+export type MessagesReadResponseType = {
+  success: boolean;
+};
+
+export type SetCurrentlyConnectedResponseType = {
+  success: boolean;
+};
+
+export type SetCurrentlyConnectedPayload = {
+  token: string;
+};
+
+
+export type MessageDeliveredResponseType = {
+  success: boolean;
+};
+
+export type EventDeliveredPayload = {
+  receivedDate: Date;
   messageId: string;
+  chatId: string;
+  eventType: keyof typeof TilkEventType;
+};
+
+export type MessageDeliveredPayload = {
+  receivedDate: Date;
+  messageId: string;
+  chatId: string;
 };

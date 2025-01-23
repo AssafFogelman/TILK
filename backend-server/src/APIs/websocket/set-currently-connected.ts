@@ -4,15 +4,20 @@ import { users } from "../../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import { fetchUndeliveredEventsFromDatabase as fetchMissedEventsFromDatabase } from "./fetch-undelivered-events-from-database.js";
 import { verifyToken } from "../../config/jwt.js";
+import {
+  EmitResponse,
+  SetCurrentlyConnectedResponseType,
+} from "../../../../types/types.js";
 
 //set as "currently connected" + join a room + if this is a reconnection, deliver the missed events
 export async function setCurrentlyConnected(
   this: Socket,
   token: string,
-  callback: (error: Error | null, response?: { success: boolean }) => void
+  callback: (
+    emitResponse: EmitResponse<SetCurrentlyConnectedResponseType>
+  ) => void
 ) {
   try {
-    callback(null, { success: true }); // does not indicate the data is ok. only that the server received the event
     const payload = (await verifyToken(token)) as { userId: string };
     if (!payload || !payload.userId) throw new Error("Invalid token");
     const userId = payload.userId;
@@ -45,16 +50,18 @@ export async function setCurrentlyConnected(
     } else {
       // this is a first connection. do nothing. The client will get his data using axios.
     }
+    // indicates everything is ok
+    callback({ error: null, response: { success: true } });
   } catch (error) {
     console.log(
       "error trying to set currentlyConnected or deliver pending messages from the database: ",
       error
     );
-    callback(
-      new Error(
+    callback({
+      error: new Error(
         "error trying to set currentlyConnected or deliver pending messages from the database: ",
         { cause: error }
-      )
-    );
+      ),
+    });
   }
 }

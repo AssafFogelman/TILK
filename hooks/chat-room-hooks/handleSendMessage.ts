@@ -4,7 +4,8 @@ import { socket } from "../../services/socket/socket";
 import {
   ChatType,
   MessageType,
-  SendMessageResponseType,
+  NewEventPayload,
+  NewEventResponseType,
   TilkEventType,
 } from "../../types/types";
 
@@ -57,10 +58,10 @@ export const handleSendMessage = async (
       );
     });
     //send the message using websocket
-    emit<SendMessageResponseType>(
+    emit<NewEventResponseType>(
       socket,
       "newEvent",
-      { newMessage, eventType: TilkEventType.MESSAGE },
+      { newMessage, eventType: TilkEventType.MESSAGE } as NewEventPayload,
       acknowledgement
     );
     setTextInput("");
@@ -73,14 +74,18 @@ export const handleSendMessage = async (
   }
 
   // Acknowledgment callback - update the messageId and gotToServer
-  function acknowledgement(
-    error: Error | null,
-    response?: SendMessageResponseType
-  ) {
+  function acknowledgement({
+    error,
+    response,
+  }: {
+    error: Error | null;
+    response?: { success: boolean; messageId?: string };
+  }) {
     console.log("the error is:", error);
-    console.log("the response is:", JSON.stringify(response));
+    console.log("success is:", response?.success);
+    console.log("messageId is:", response?.messageId);
 
-    if (error || !response?.success) {
+    if (error || !response?.success || !response?.messageId) {
       //we received this error from the server, meaning that the message arrived but
       // something is off or the message was already sent by us earlier. roll back the optimistic update
       console.log("could not send message:", error);
@@ -88,35 +93,34 @@ export const handleSendMessage = async (
       queryClient.invalidateQueries({ queryKey: ["chatsList"] });
       return;
     }
-    if (response?.success) {
-      // Update the temporary ID with the real one - important for selecting and deleting messages later
-      queryClient.setQueryData(["chatsList"], (oldData: ChatType[] = []) => {
-        if (!oldData.length) return oldData;
-        oldData?.map((chat) =>
-          chat.chatId === chatId
-            ? {
-                ...chat,
-                lastReadMessageId: response.messageId,
-              }
-            : chat
-        );
-      });
-      //optimistically update the chat message as gotToServer
-      queryClient.setQueryData(
-        ["chatMessages", chatId],
-        (oldData: MessageType[] = []) => {
-          if (!oldData.length) return oldData;
-          return oldData.map((message) =>
-            message.messageId === tempId
-              ? {
-                  ...message,
-                  messageId: response.messageId,
-                  gotToServer: true,
-                }
-              : message
-          );
-        }
+
+    // Update the temporary ID with the real one - important for selecting and deleting messages later
+    queryClient.setQueryData(["chatsList"], (oldData: ChatType[] = []) => {
+      if (!oldData.length) return oldData;
+      oldData?.map((chat) =>
+        chat.chatId === chatId
+          ? {
+              ...chat,
+              lastReadMessageId: response.messageId,
+            }
+          : chat
       );
-    }
+    });
+    //optimistically update the chat message as gotToServer
+    queryClient.setQueryData(
+      ["chatMessages", chatId],
+      (oldData: MessageType[] = []) => {
+        if (!oldData.length) return oldData;
+        return oldData.map((message) =>
+          message.messageId === tempId
+            ? {
+                ...message,
+                messageId: response.messageId,
+                gotToServer: true,
+              }
+            : message
+        );
+      }
+    );
   }
 };

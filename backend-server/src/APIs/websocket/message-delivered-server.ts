@@ -7,21 +7,19 @@ import {
   users,
 } from "../../drizzle/schema.js";
 import { db } from "../../drizzle/db.js";
-import { MessageType } from "../../../../types/types.js";
+import {
+  EmitResponse,
+  MessageDeliveredPayload,
+  MessageDeliveredResponseType,
+  MessageType,
+} from "../../../../types/types.js";
 import { TilkEventType } from "../../backend-types/TilkEventType.js";
 import { Socket } from "socket.io";
 
 export async function messageDelivered(
   this: Socket,
-  {
-    receivedDate,
-    messageId,
-    chatId,
-  }: {
-    receivedDate: string;
-    messageId: string;
-    chatId: string;
-  }
+  { receivedDate, messageId, chatId }: MessageDeliveredPayload,
+  callback: (emitResponse: EmitResponse<MessageDeliveredResponseType>) => void
 ) {
   try {
     const socket = this;
@@ -101,7 +99,11 @@ export async function messageDelivered(
     }
     // If websocket is offline, forget about it. we will not send a notification that the message has been delivered.
     // the user will get it through axios when they load the app
+    callback({ error: null, response: { success: true } });
   } catch (error) {
     console.log("error marking message as delivered:", error);
+    callback({
+      error: new Error("Error marking message as delivered"),
+    });
   }
 }

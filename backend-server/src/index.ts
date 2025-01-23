@@ -15,7 +15,7 @@ import * as os from "node:os";
 import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected.js";
 import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected.js";
 import { onNewEvent } from "./APIs/websocket/on-new-event-server.js";
-import { eventDelivered } from "./APIs/websocket/event-delivered.js";
+import { eventDelivered } from "./APIs/websocket/event-delivered-server.js";
 import { onMessagesRead } from "./APIs/websocket/message-read.js";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
@@ -70,11 +70,13 @@ export const io = new Server(server as HttpServer, {
   cors: {
     origin: process.env.NODE_ENV === "production" ? false : "*",
   },
-});
-
-// Log when WebSocket server is ready
-io.engine.on("initial", () => {
-  console.log(`WebSocket server is running on: http://${serverIP}:${port}/ws/`);
+  //if the user disconnects abruptly, save his data (state) for 2 minutes
+  connectionStateRecovery: {
+    // the backup duration of the sessions and the packets
+    maxDisconnectionDuration: 2 * 60 * 1000,
+    // whether to skip middlewares upon successful recovery
+    skipMiddlewares: true,
+  },
 });
 
 io.on("error", (err) => console.error("websocket error: ", err));

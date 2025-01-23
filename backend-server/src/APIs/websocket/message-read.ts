@@ -7,21 +7,22 @@ import {
   users,
 } from "../../drizzle/schema.js";
 import { db } from "../../drizzle/db.js";
-import { MessageType } from "../../../../types/types.js";
+import {
+  EmitResponse,
+  MessagesReadPayload,
+  MessagesReadResponseType,
+  MessageType,
+} from "../../../../types/types.js";
 import { TilkEventType } from "../../backend-types/TilkEventType.js";
 import { Socket } from "socket.io";
 
 export async function onMessagesRead(
   this: Socket,
-  {
-    chatId,
-  }: {
-    chatId: string;
-  },
-  callback: (error: Error | null, response?: { success: boolean }) => void
+  { chatId }: MessagesReadPayload,
+  callback: (emitResponse: EmitResponse<MessagesReadResponseType>) => void
 ) {
   try {
-    callback(null, { success: true }); // does not indicate the data is ok. only that the server received the event
+    callback({ error: null, response: { success: true } }); // does not indicate the data is ok. only that the server received the event
     const userId = this.data.userId;
     // Mark all received chat messages of the specific chat as read and return the last received message that was read
 
@@ -115,6 +116,8 @@ export async function onMessagesRead(
     // the user will get it through axios when they load the app
   } catch (error) {
     console.log("error marking message as read:", error);
-    callback(new Error("error marking message as read", { cause: error }));
+    callback({
+      error: new Error("error marking message as read", { cause: error }),
+    });
   }
 }

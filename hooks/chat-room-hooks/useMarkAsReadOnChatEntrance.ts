@@ -1,5 +1,7 @@
 import {
   ChatType,
+  MessagesReadPayload,
+  MessagesReadResponseType,
   MessageType,
   TilkEvents,
   TilkEventType,
@@ -80,13 +82,13 @@ export function useMarkAsReadOnChatEntrance(chatId: string) {
       });
 
       //emit the event to the server to mark the messages+chat+events as read
-      emit<{ success: boolean }>(
+      emit<MessagesReadResponseType>(
         socket,
         "messagesRead",
         {
           chatId,
-        },
-        (error) => {
+        } as MessagesReadPayload,
+        ({ error, response }) => {
           if (error) throw error;
         }
       );

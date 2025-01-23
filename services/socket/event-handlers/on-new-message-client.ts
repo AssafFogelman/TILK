@@ -3,6 +3,7 @@ import { emit } from "../../../APIs/emit";
 import {
   AMessageEvent,
   ChatType,
+  MessageDeliveredPayload,
   MessageType,
   TilkEvent,
   TilkEvents,
@@ -87,12 +88,23 @@ export function onNewMessage(event: AMessageEvent) {
     lastReceivedEventId?: string;
   };
   //emit the event as delivered
-  emit(socket, "eventDelivered", {
-    receivedDate,
-    messageId: message.messageId,
-    chatId: message.chatId,
-    eventType: TilkEventType.MESSAGE,
-  });
+  emit<{ success: boolean }>(
+    socket,
+    "eventDelivered",
+    {
+      receivedDate,
+      messageId: message.messageId,
+      chatId: message.chatId,
+      eventType: TilkEventType.MESSAGE,
+    } as MessageDeliveredPayload,
+    ({ error, response }) => {
+      if (error)
+        console.error(
+          "the server had a problem processing our report that the message was received",
+          error
+        );
+    }
+  );
 
   //if the chat is currently visible, mark the message as read
   if (currentVisibleChatRef.chatId === message.chatId) {

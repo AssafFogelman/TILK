@@ -10,7 +10,7 @@ const URL =
 export const socket = io(URL, {
   path: "/ws/",
   autoConnect: false, //do not connect on app startup
-  reconnection: true, //try to reconnect if the connection is lost
+  reconnection: true, //try to reconnect if the connection is lost - already default and so redundant
   reconnectionAttempts: Infinity,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000, // max delay for exponential backoff
@@ -20,44 +20,3 @@ export const socket = io(URL, {
   //delivery guarantee method - storing the last received event id
   auth: { lastReceivedEventId: undefined },
 });
-
-// debug websocket listeners
-if (process.env.EXPO_PUBLIC_NODE_ENV !== "production") {
-  socket.on("connect", () => {
-    console.log("Socket connected:", socket.id);
-  });
-
-  socket.on("disconnect", (reason) => {
-    console.log("Socket disconnected. Reason:", reason);
-    console.log("Socket state:", {
-      connected: socket.connected,
-      disconnected: socket.disconnected,
-      id: socket.id,
-      active: socket.active,
-    });
-  });
-
-  socket.on("reconnect", (attemptNumber) => {
-    console.log("Socket reconnected after", attemptNumber, "attempts");
-  });
-
-  socket.on("reconnect_attempt", (attemptNumber) => {
-    console.log("Reconnection attempt:", attemptNumber);
-  });
-
-  socket.on("reconnect_error", (error) => {
-    console.log("Reconnection error:", error);
-  });
-
-  socket.on("reconnect_failed", () => {
-    console.log("Reconnection failed");
-  });
-
-  socket.on("ping", () => {
-    console.log("Ping sent to server");
-  });
-
-  socket.on("pong", (latency) => {
-    console.log("Pong received from server. Latency:", latency, "ms");
-  });
-}
