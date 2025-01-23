@@ -4,7 +4,7 @@ import { chats, chatMessages, users } from "../drizzle/schema.js";
 import { db } from "../drizzle/db.js";
 import { MessageType } from "../../../types/types.js";
 
-//get the chats list
+//get the chat messages
 export async function getChatMessages(c: Context) {
   try {
     const { userId } = c.get("tokenPayload");

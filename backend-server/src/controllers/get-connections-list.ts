@@ -9,14 +9,12 @@ import {
   tagsUsers,
   tags,
   chats,
-  chatMessages,
 } from "../drizzle/schema.js";
 import {
   SeparatorItem,
   ConnectionsListType,
   ReceivedRequestsQueryResult,
   ConnectedUsersQueryResult,
-  SentRequestsQueryResult,
 } from "../../../types/types.js";
 /*
   get user connections, received connections requests,and sent connections requests

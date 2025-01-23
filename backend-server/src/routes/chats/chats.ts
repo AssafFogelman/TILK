@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 
-import { validateToken } from "../../models/authSchemas";
-import { getChatMessages } from "../../controllers/get-chat-messages";
-import { getChatsList } from "../../controllers/get-chats-list";
+import { validateToken } from "../../models/authSchemas.js";
+import { getChatMessages } from "../../controllers/get-chat-messages.js";
+import { getChatsList } from "../../controllers/get-chats-list.js";
 
 export const chats = new Hono().basePath("/chats");
 
