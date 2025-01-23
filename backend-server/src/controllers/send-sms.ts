@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { createHash } from "../config/bcrypt";
+import { createHash } from "../config/bcrypt.js";
 import twilio from "twilio";
 import "dotenv/config";
 
@@ -23,7 +23,6 @@ returns the hash
 
 export const sendSms = async (c: Context) => {
   try {
-    console.log("we are in 'send-sms'");
     const {
       phoneNumber,
       uniqueOSCode,
@@ -35,7 +34,7 @@ export const sendSms = async (c: Context) => {
     ];
 
     //exclude (don't limit) the requests from the developer's 2 phones
-    if (process.env.NODE_ENV?.toLowerCase() != "production") {
+    if (process.env.NODE_ENV?.toLowerCase() !== "production") {
       if (
         uniqueOSCode === "82a517fa0d9bfe4b" ||
         uniqueOSCode === "e35e4cf2794eed31"

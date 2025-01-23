@@ -77,6 +77,9 @@ export const handleSendMessage = async (
     error: Error | null,
     response?: SendMessageResponseType
   ) {
+    console.log("the error is:", error);
+    console.log("the response is:", JSON.stringify(response));
+
     if (error || !response?.success) {
       //we received this error from the server, meaning that the message arrived but
       // something is off or the message was already sent by us earlier. roll back the optimistic update

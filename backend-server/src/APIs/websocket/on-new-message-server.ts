@@ -52,8 +52,6 @@ export async function onNewMessage(
     });
 
     if (recipient?.currentlyConnected) {
-      console.log(`Attempting to emit message to recipient ${recipientId}`);
-      console.log(`Active socket rooms:`, io.sockets.adapter.rooms);
       // If online, emit immediately
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly

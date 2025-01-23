@@ -14,7 +14,7 @@ import { users } from "./drizzle/schema.js";
 import * as os from "node:os";
 import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected.js";
 import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected.js";
-import { onNewEvent } from "./APIs/websocket/on-new-event.js";
+import { onNewEvent } from "./APIs/websocket/on-new-event-server.js";
 import { eventDelivered } from "./APIs/websocket/event-delivered.js";
 import { onMessagesRead } from "./APIs/websocket/message-read.js";
 
@@ -40,8 +40,7 @@ app.use("*", logger());
 //   cors({ origin: process.env.NODE_ENV === "production" ? "*" : "" })
 // );
 
-// app.use(cors({ origin: "*" }));
-app.use("*", cors());
+app.use("*", cors({ origin: "*" }));
 //! Is the cors setting needed? It seems to work without CORS.. does this work?! if so, add it to the notebook
 
 app.route("/", routes); // Handle routes
@@ -72,7 +71,16 @@ export const io = new Server(server as HttpServer, {
     origin: process.env.NODE_ENV === "production" ? false : "*",
   },
 });
-io.on("error", (err) => console.log("error: ", err));
+
+// Log when WebSocket server is ready
+io.engine.on("initial", () => {
+  console.log(`WebSocket server is running on: http://${serverIP}:${port}/ws/`);
+});
+
+io.on("error", (err) => console.error("websocket error: ", err));
+io.engine.on("connection_error", (err) => {
+  console.error("WebSocket connection error:", err);
+});
 io.on("connection", async (socket) => {
   console.log(`new client connected to websocket!!`);
 
@@ -86,6 +94,10 @@ io.on("connection", async (socket) => {
   socket.on("messagesRead", onMessagesRead);
   //client exited the chat and the chatsList and unreadEvents queries should be updated
   socket.on("disconnect", registerAsUnconnected);
+
+  socket.on("error", (error) => {
+    console.error(`Socket ${socket.id} error:`, error);
+  });
 });
 
 // Graceful shutdown - mark all users as currently not connected + close the websocket and server
