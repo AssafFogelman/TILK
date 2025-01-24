@@ -115,8 +115,9 @@ export function onNewMessage(event: AMessageEvent) {
         chatId: message.chatId,
         messageIds: [message.messageId],
       },
-      (error) => {
-        if (error) console.error(error);
+      ({ error }) => {
+        if (error)
+          console.error("couldnt emit that the message was read: ", error);
       }
     );
   }

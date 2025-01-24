@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
+    "@socket.io/admin-ui": "^0.5.1",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.30.8",

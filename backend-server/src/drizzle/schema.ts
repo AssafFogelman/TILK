@@ -308,7 +308,7 @@ export const chatMessages = pgTable(
     recipientId: uuid("recipient_id")
       .notNull()
       .references(() => users.userId),
-    text: text("text"),
+    text: text("text").notNull(),
     unread: boolean("unread").default(true).notNull(),
     //if the message is sent by the user, and then becomes read, that means that the other user read it
     //if the message is sent by the other user, and then becomes read, that means that the user read it

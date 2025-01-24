@@ -257,7 +257,7 @@ export type MessageType = {
   messageId: string;
   sentDate: Date;
   receivedDate: Date | null;
-  text: string | null;
+  text: string;
   unread: boolean;
   //if the message is sent by the user, and then becomes read, that means that the other user read it
   //if the message is sent by the other user, and then becomes read, that means that the user read it
@@ -346,7 +346,7 @@ export type TilkEvents = Partial<
   Record<keyof typeof TilkEventType, TilkEvent[]>
 >;
 
-/********************************* send message types *********************************/
+/********************************* send message types (emit) *********************************/
 
 export type NewEventResponseType = {
   success: boolean;
@@ -378,7 +378,6 @@ export type SetCurrentlyConnectedResponseType = {
 export type SetCurrentlyConnectedPayload = {
   token: string;
 };
-
 
 export type MessageDeliveredResponseType = {
   success: boolean;

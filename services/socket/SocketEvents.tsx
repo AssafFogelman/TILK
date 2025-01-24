@@ -55,6 +55,8 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
       socket.on("reconnect_failed", handleReconnectFailed);
       socket.on("ping", handlePing);
       socket.on("pong", handlePong);
+      socket.on("connecting", stateListener);
+      socket.on("reconnecting", stateListener);
     }
     return () => {
       //when the component unmounts (the app closes), disconnect the socket and close the event listeners
@@ -73,6 +75,8 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
         socket.off("reconnect_failed", handleReconnectFailed);
         socket.off("ping", handlePing);
         socket.off("pong", handlePong);
+        socket.off("connecting", stateListener);
+        socket.off("reconnecting", stateListener);
       }
       unsubscribeNetInfo();
       //disconnect the socket
@@ -204,3 +208,12 @@ export const SocketEvents = ({ children }: { children: React.ReactNode }) => {
     console.log("Pong received from server. Latency:", latency, "ms");
   }
 };
+
+function stateListener() {
+  console.log("=== SOCKET STATE CHANGED ===", {
+    connected: socket.connected,
+    disconnected: socket.disconnected,
+    id: socket.id,
+    active: socket.active,
+  });
+}

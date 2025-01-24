@@ -8,6 +8,7 @@ import {
   EmitResponse,
   MessageType,
   NewEventResponseType,
+  TilkEvent,
 } from "../../../../types/types.js";
 import { io } from "../../index.js";
 import { TilkEventType } from "../../backend-types/TilkEventType.js";
@@ -55,14 +56,20 @@ export async function onNewMessage(
       columns: { currentlyConnected: true },
     });
 
+    const event: TilkEvent = {
+      eventType: TilkEventType.MESSAGE,
+      ...savedMessage,
+      eventId: eventId,
+      otherUserId: senderId,
+      text: savedMessage.text || "", // Convert null to empty string
+    };
+
     if (recipient?.currentlyConnected) {
       // If online, emit immediately
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly
-      io.to(recipientId).emit("newEvent", savedMessage, {
-        eventType: TilkEventType.MESSAGE, //"MESSAGE",
-        eventId: eventId,
-      });
+      io.to(recipientId).emit("newEvent", event);
+
       console.log("--------------------------------");
       console.log(`Message emission attempted to ${recipientId}`);
     } else {

@@ -17,6 +17,7 @@ import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected.
 import { onNewEvent } from "./APIs/websocket/on-new-event-server.js";
 import { eventDelivered } from "./APIs/websocket/event-delivered-server.js";
 import { onMessagesRead } from "./APIs/websocket/message-read.js";
+import { instrument } from "@socket.io/admin-ui";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -34,14 +35,11 @@ app.use(secureHeaders());
 //logger - console logs all the actions
 app.use("*", logger());
 
-//enable cors if we are not in production mode
-// app.use(
-//   "*",
-//   cors({ origin: process.env.NODE_ENV === "production" ? "*" : "" })
-// );
-
-app.use("*", cors({ origin: "*" }));
-//! Is the cors setting needed? It seems to work without CORS.. does this work?! if so, add it to the notebook
+// enable cors if we are not in production mode
+app.use(
+  "*",
+  cors({ origin: process.env.NODE_ENV === "production" ? "*" : "" })
+);
 
 app.route("/", routes); // Handle routes
 
@@ -70,13 +68,20 @@ export const io = new Server(server as HttpServer, {
   cors: {
     origin: process.env.NODE_ENV === "production" ? false : "*",
   },
-  //if the user disconnects abruptly, save his data (state) for 2 minutes
+  //if the user disconnects abruptly, save his data (state) for 10 minutes
   connectionStateRecovery: {
     // the backup duration of the sessions and the packets
-    maxDisconnectionDuration: 2 * 60 * 1000,
+    maxDisconnectionDuration: 10 * 60 * 1000,
     // whether to skip middlewares upon successful recovery
     skipMiddlewares: true,
   },
+});
+
+//TODO: remove this and uninstall the package. I couldn't get it to work. something with cors or something
+//instrument the websocket server with the admin-ui
+instrument(io, {
+  auth: false,
+  mode: "development",
 });
 
 io.on("error", (err) => console.error("websocket error: ", err));

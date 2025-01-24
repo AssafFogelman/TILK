@@ -29,6 +29,7 @@ export function emit<T>(
     }
 
     // If socket is disconnected, wait for reconnection
+    console.log("in emit.ts - socket is connected:", socket.connected);
     if (!socket.connected) {
       console.log(
         `Socket disconnected, waiting for reconnection before emitting ${event}`,
