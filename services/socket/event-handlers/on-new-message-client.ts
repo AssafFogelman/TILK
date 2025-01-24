@@ -5,7 +5,6 @@ import {
   ChatType,
   MessageDeliveredPayload,
   MessageType,
-  TilkEvent,
   TilkEvents,
   TilkEventType,
 } from "../../../types/types";
@@ -117,7 +116,7 @@ export function onNewMessage(event: AMessageEvent) {
       },
       ({ error }) => {
         if (error)
-          console.error("couldnt emit that the message was read: ", error);
+          console.error("couldn't emit that the message was read: ", error);
       }
     );
   }
