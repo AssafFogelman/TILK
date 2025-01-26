@@ -4,6 +4,8 @@ import {
   AMessageEvent,
   ChatType,
   MessageDeliveredPayload,
+  MessagesReadPayload,
+  MessagesReadResponseType,
   MessageType,
   TilkEvents,
   TilkEventType,
@@ -86,6 +88,7 @@ export function onNewMessage(event: AMessageEvent) {
   } as {
     lastReceivedEventId?: string;
   };
+
   //emit the event as delivered
   emit<{ success: boolean }>(
     socket,
@@ -107,16 +110,16 @@ export function onNewMessage(event: AMessageEvent) {
 
   //if the chat is currently visible, mark the message as read
   if (currentVisibleChatRef.chatId === message.chatId) {
-    emit(
+    //emit the event to the server to mark the messages+chat+events as read
+    emit<MessagesReadResponseType>(
       socket,
       "messagesRead",
       {
         chatId: message.chatId,
-        messageIds: [message.messageId],
-      },
-      ({ error }) => {
-        if (error)
-          console.error("couldn't emit that the message was read: ", error);
+        lastUnreadMessageReceivedDate: message.receivedDate!.toISOString(),
+      } as MessagesReadPayload,
+      ({ error, response }) => {
+        if (error) throw error;
       }
     );
   }

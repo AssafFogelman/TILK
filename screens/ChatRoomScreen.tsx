@@ -65,11 +65,6 @@ const ChatRoomScreen = () => {
     staleTime: Infinity,
   });
 
-  // Scroll when new messages arrive
-  useEffect(() => {
-    scrollToFirstUnreadMessage();
-  }, [chatMessages.length]);
-
   //set that once the user enters, marks the chat as read. and once he exits the chat room, "currentVisibleChatRef" will be undefined (and with the chatId if focused)
   useSetFocusBlurListener(chatId);
 
@@ -108,12 +103,12 @@ const ChatRoomScreen = () => {
         }
       }, 50);
     }
-  }, [chatMessages.length]);
+  }, [chatMessages, userId]);
 
   // Scroll when new messages arrive
   useEffect(() => {
     scrollToFirstUnreadMessage();
-  }, [chatMessages.length]);
+  }, [chatMessages.length, scrollToFirstUnreadMessage]);
   /* we have a problem that if we don't put "recipientData" as a dependency of the "useEffect", 
   it will not load besides the first time we enter the chat screen. however, this makes it much slower. 
   there might be a faster way. try to solve this in the future. */

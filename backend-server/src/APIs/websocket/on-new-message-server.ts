@@ -22,10 +22,10 @@ export async function onNewMessage(
     if (!message) {
       throw new Error("Message object is required");
     }
-    const { sentDate, text, senderId, chatId, recipientId } = message;
+    const { text, senderId, chatId, recipientId } = message;
     //for some reason, sentDate is a string. we need to convert it to a date.
     //you would think websocket would conserve the date as a date, but it doesn't.
-    const formattedSentDate = new Date(sentDate);
+    const sentDate = new Date(message.sentDate);
     // Save message to database
     const gotToServer = new Date().getTime();
 
@@ -34,7 +34,7 @@ export async function onNewMessage(
         .insert(chatMessages)
         .values({
           chatId,
-          sentDate: formattedSentDate,
+          sentDate,
           text,
           senderId,
           recipientId,
@@ -47,7 +47,11 @@ export async function onNewMessage(
     //return the new messageId to the sender
     callback({
       error: null,
-      response: { success: true, messageId: savedMessage.messageId },
+      response: {
+        success: true,
+        messageId: savedMessage.messageId,
+        gotToServer,
+      },
     });
 
     // Check if recipient is currently online

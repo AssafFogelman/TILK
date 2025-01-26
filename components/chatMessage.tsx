@@ -42,7 +42,6 @@ const ChatMessage = ({
   };
 
   const isMessageSelected = selectedMessages.includes(chatMessage.messageId);
-  const isPending = !chatMessage.gotToServer;
 
   return (
     <Pressable

@@ -22,6 +22,9 @@ export function useMarkAsReadOnChatEntrance(chatId: string) {
   const lastReceivedUnreadMessage = chatMessages.findLast(
     (message) => message.unread && message.senderId !== userId
   );
+  //TODO: we seem to have an issue - the last received message has an undefined receivedDate.
+  //this is a problem because the server will not accept an undefined receivedDate.
+  //we need to find out why the receivedDate is undefined and fix it.
 
   return function markAsReadOnChatEntrance() {
     try {

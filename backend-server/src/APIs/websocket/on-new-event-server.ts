@@ -11,6 +11,9 @@ export async function onNewEvent(
   { newMessage, eventType }: NewEventPayload,
   callback: (emitResponse: EmitResponse<NewEventResponseType>) => void
 ) {
+  //because it is inside an object, sentDate and receivedDate are strings. we need to convert them to a date.
+  //you would think websocket would conserve the date as a date, but it doesn't.
+
   try {
     switch (eventType) {
       case TilkEventType.MESSAGE:

@@ -1,5 +1,3 @@
-import { ChatType, TilkEventType } from "../../../types/types";
-
 import { MessageType } from "../../../types/types";
 import { queryClient } from "../../queryClient";
 

@@ -1,5 +1,5 @@
 import { io } from "../../index.js";
-import { and, eq, gte, lte, ne, sql } from "drizzle-orm";
+import { and, eq, lte, ne, sql } from "drizzle-orm";
 import {
   chatMessages,
   chats,

@@ -79,7 +79,7 @@ export const handleSendMessage = async (
     response,
   }: {
     error: Error | null;
-    response?: { success: boolean; messageId?: string };
+    response?: NewEventResponseType;
   }) {
     if (!error || response?.success) {
       console.log("message text is:", textInput);
@@ -89,7 +89,12 @@ export const handleSendMessage = async (
       console.log("success is:", response?.success);
     }
 
-    if (error || !response?.success || !response?.messageId) {
+    if (
+      error ||
+      !response?.success ||
+      !response?.messageId ||
+      !response?.gotToServer
+    ) {
       //we received this error from the server, meaning that the message arrived but
       // something is off or the message was already sent by us earlier. roll back the optimistic update
       console.log("could not send message:", error);
@@ -120,7 +125,7 @@ export const handleSendMessage = async (
             ? {
                 ...message,
                 messageId: response.messageId,
-                gotToServer: true,
+                gotToServer: response.gotToServer,
               }
             : message
         );

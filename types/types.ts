@@ -351,6 +351,7 @@ export type TilkEvents = Partial<
 export type NewEventResponseType = {
   success: boolean;
   messageId?: string;
+  gotToServer?: number;
 };
 
 export type EmitResponse<T = unknown> = {
