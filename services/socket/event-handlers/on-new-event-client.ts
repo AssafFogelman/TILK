@@ -1,6 +1,5 @@
 import { AMessageEvent, TilkEvent, TilkEventType } from "../../../types/types";
 
-import { MessageType } from "../../../types/types";
 import { onNewMessage } from "./on-new-message-client";
 
 export function onNewEvent(event: TilkEvent) {

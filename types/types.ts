@@ -365,6 +365,7 @@ export type NewEventPayload = {
 
 export type MessagesReadPayload = {
   chatId: string;
+  lastUnreadMessageReceivedDate: string;
 };
 
 export type MessagesReadResponseType = {

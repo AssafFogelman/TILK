@@ -19,8 +19,14 @@ export function useMarkAsReadOnChatEntrance(chatId: string) {
   const chatMessages =
     queryClient.getQueryData<MessageType[]>(["chatMessages", chatId]) ?? [];
 
+  const lastReceivedUnreadMessage = chatMessages.findLast(
+    (message) => message.unread && message.senderId !== userId
+  );
+
   return function markAsReadOnChatEntrance() {
     try {
+      if (!lastReceivedUnreadMessage) return; //if there is no unread message, we do nothing
+
       // Optimistically update the chat messages query to read
       queryClient.setQueryData(
         ["chatMessages", chatId],
@@ -87,16 +93,13 @@ export function useMarkAsReadOnChatEntrance(chatId: string) {
         "messagesRead",
         {
           chatId,
+          lastUnreadMessageReceivedDate:
+            lastReceivedUnreadMessage.receivedDate!.toISOString(),
         } as MessagesReadPayload,
         ({ error, response }) => {
           if (error) throw error;
         }
       );
-
-      //invalidate the queries - //TODO: check if this is needed
-      queryClient.invalidateQueries({ queryKey: ["chatsList"] });
-      queryClient.invalidateQueries({ queryKey: ["chatMessages", chatId] });
-      queryClient.invalidateQueries({ queryKey: ["unreadEvents"] });
     } catch (error) {
       console.error(
         "error marking unread messages as read",

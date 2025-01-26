@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import TilkEventType from "../../backend-types/TilkEventType.js";
-import { messageDelivered } from "./message-delivered-server.js";
+import { messageDelivered } from "./on-message-delivered-server.js";
 import {
   EmitResponse,
   EventDeliveredPayload,

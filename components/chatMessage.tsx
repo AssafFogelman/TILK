@@ -2,6 +2,7 @@ import { Pressable, Text, View, StyleSheet } from "react-native";
 import React from "react";
 import { MessageType } from "../types/types";
 import { useAuthState } from "../AuthContext";
+import { useTheme } from "react-native-paper";
 
 const ChatMessage = ({
   chatMessage,
@@ -13,7 +14,8 @@ const ChatMessage = ({
   setSelectedMessages: React.Dispatch<React.SetStateAction<string[]>>;
 }) => {
   const { userId } = useAuthState();
-
+  const theme = useTheme();
+  const styles = getStyles();
   const handleSelectMessage = (chatMessage: MessageType) => {
     //check if the message is already selected (in the selected messages array)
 
@@ -40,7 +42,7 @@ const ChatMessage = ({
   };
 
   const isMessageSelected = selectedMessages.includes(chatMessage.messageId);
-  const isPending = !chatMessage.receivedDate;
+  const isPending = !chatMessage.gotToServer;
 
   return (
     <Pressable
@@ -53,7 +55,6 @@ const ChatMessage = ({
           ? styles.userMessage
           : styles.recipientMessage,
         isMessageSelected && styles.selectedMessage,
-        isPending && styles.pendingMessage,
       ]}
     >
       {chatMessage.senderId === userId &&
@@ -68,8 +69,34 @@ const ChatMessage = ({
         ))}
 
       <View style={styles.messageContent}>
-        <Text style={styles.messageText}>{chatMessage.text}</Text>
-        <Text style={styles.timeText}>{formatTime(chatMessage.sentDate)}</Text>
+        <Text
+          style={
+            chatMessage.senderId === userId
+              ? styles.userMessageText
+              : styles.recipientMessageText
+          }
+        >
+          {chatMessage.text}
+        </Text>
+        <Text
+          style={[
+            chatMessage.senderId === userId
+              ? styles.userMessageText
+              : styles.recipientMessageText,
+            styles.debugText,
+          ]}
+        >
+          {JSON.stringify(chatMessage, null, 2)}
+        </Text>
+        <Text
+          style={
+            chatMessage.senderId === userId
+              ? styles.userIdTimeText
+              : styles.recipientTimeText
+          }
+        >
+          {formatTime(chatMessage.sentDate)}
+        </Text>
         {/* the order of the messages is determined either by when the user sent the message 
           for a sent message, and when the user received the message, for a received message 
           
@@ -79,46 +106,61 @@ const ChatMessage = ({
       </View>
     </Pressable>
   );
-};
 
-const styles = StyleSheet.create({
-  messageContainer: {
-    maxWidth: "80%",
-    marginVertical: 4,
-    marginHorizontal: 8,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  userMessage: {
-    alignSelf: "flex-end",
-    backgroundColor: "#E7FFDB", // WhatsApp light green
-    borderTopRightRadius: 4,
-  },
-  recipientMessage: {
-    alignSelf: "flex-start",
-    backgroundColor: "white",
-    borderTopLeftRadius: 4,
-  },
-  selectedMessage: {
-    backgroundColor: "#DCF8C6", // lighter green when selected
-  },
-  messageContent: {
-    flexDirection: "column",
-  },
-  messageText: {
-    fontSize: 15,
-    color: "#000000",
-    marginBottom: 2,
-  },
-  timeText: {
-    fontSize: 11,
-    color: "#8E8E8E",
-    alignSelf: "flex-end",
-  },
-  pendingMessage: {
-    backgroundColor: "#FFE4E1", // light red for pending messages
-  },
-});
+  function getStyles() {
+    return StyleSheet.create({
+      messageContainer: {
+        maxWidth: "80%",
+        marginVertical: 4,
+        marginHorizontal: 8,
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+      },
+      userMessage: {
+        alignSelf: "flex-end",
+        backgroundColor: theme.colors.primaryContainer,
+        borderTopRightRadius: 4,
+      },
+      recipientMessage: {
+        alignSelf: "flex-start",
+        backgroundColor: theme.colors.tertiaryContainer,
+        borderTopLeftRadius: 4,
+      },
+      selectedMessage: {
+        backgroundColor: theme.colors.surfaceVariant,
+      },
+      messageContent: {
+        flexDirection: "column",
+      },
+      userMessageText: {
+        fontSize: 15,
+        color: theme.colors.onPrimaryContainer,
+        marginBottom: 2,
+      },
+      recipientMessageText: {
+        fontSize: 15,
+        color: theme.colors.onTertiaryContainer,
+        marginBottom: 2,
+      },
+      userIdTimeText: {
+        fontSize: 11,
+        color: theme.colors.onSurfaceVariant,
+        alignSelf: "flex-end",
+      },
+      recipientTimeText: {
+        fontSize: 11,
+        color: theme.colors.onTertiaryContainer,
+        alignSelf: "flex-end",
+      },
+      debugText: {
+        fontFamily: "monospace",
+        fontSize: 12,
+        opacity: 0.7,
+        marginVertical: 4,
+      },
+    });
+  }
+};
 
 export default ChatMessage;

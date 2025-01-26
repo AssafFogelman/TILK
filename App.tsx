@@ -31,7 +31,7 @@ import { socket } from "./services/socket/socket";
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 
 export default function App() {
-  //use tanstack query devtools
+  //use the tanstack query devtool
   useReactQueryDevTools(queryClient);
 
   //is websocket connected

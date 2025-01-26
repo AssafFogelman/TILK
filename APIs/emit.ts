@@ -58,7 +58,10 @@ export function emit<T>(
         (error: Error | null, emitResponse: EmitResponse<T>) => {
           if (error) {
             // no ack arrived from the server until the timeout, let's retry
-            console.log(`Emit attempt ${attempts} failed for ${event}:`, error);
+            console.log(
+              `Emit attempt ${attempts} failed for event "${event}":`,
+              error
+            );
             tryEmit();
           } else {
             // the response from the server (which includes an error property that might be null)

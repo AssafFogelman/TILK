@@ -1,5 +1,5 @@
 import { io } from "../../index.js";
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, eq, gte, lte, ne, sql } from "drizzle-orm";
 import {
   chatMessages,
   chats,
@@ -18,14 +18,16 @@ import { Socket } from "socket.io";
 
 export async function onMessagesRead(
   this: Socket,
-  { chatId }: MessagesReadPayload,
+  { chatId, lastUnreadMessageReceivedDate }: MessagesReadPayload,
   callback: (emitResponse: EmitResponse<MessagesReadResponseType>) => void
 ) {
   try {
-    callback({ error: null, response: { success: true } }); // does not indicate the data is ok. only that the server received the event
+    if (!lastUnreadMessageReceivedDate)
+      throw new Error("no unread message received date"); //if there is no unread message, report an error
+    if (!chatId) throw new Error("no chatId"); //if there is no chatId, report an error
+
     const userId = this.data.userId;
     // Mark all received chat messages of the specific chat as read and return the last received message that was read
-
     const lastReadMessage: MessageType = (
       await db
         .update(chatMessages)
@@ -33,7 +35,12 @@ export async function onMessagesRead(
         .where(
           and(
             eq(chatMessages.chatId, chatId),
-            ne(chatMessages.senderId, userId)
+            ne(chatMessages.senderId, userId),
+            lte(
+              chatMessages.receivedDate,
+              new Date(lastUnreadMessageReceivedDate)
+            ),
+            eq(chatMessages.unread, true) //target only the received message that was unread
           )
         )
         .returning({
@@ -66,11 +73,11 @@ export async function onMessagesRead(
       .set({
         ...(isParticipant1
           ? {
-              readByParticipant1: true,
+              readByP1: true,
               unreadCountP1: 0,
             }
           : {
-              readByParticipant2: true,
+              readByP2: true,
               unreadCountP2: 0,
             }),
         // update lastReadMessage only if there are chat messages
@@ -80,6 +87,9 @@ export async function onMessagesRead(
         }),
       })
       .where(eq(chats.chatId, chatId));
+
+    //indicate that the server received the event
+    callback({ error: null, response: { success: true } });
 
     if (!lastReadMessage) return; //no message was read. no need to update.
 
@@ -105,13 +115,14 @@ export async function onMessagesRead(
       // If online, emit immediately
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly
-      io.to(lastReadMessage.senderId).emit(
-        "messagesRead",
-        lastReadMessage.chatId,
-        lastReadMessage.sentDate,
-        lastReadMessage.senderId
-      );
+      console.log("we want to tell the sender that his messages were read ");
+      io.to(lastReadMessage.senderId).emit("messagesRead", {
+        chatId: lastReadMessage.chatId,
+        sentDate: lastReadMessage.sentDate,
+        senderId: lastReadMessage.senderId,
+      });
     }
+
     // If websocket is offline, forget about it. we will not send a notification that the message has been read.
     // the user will get it through axios when they load the app
   } catch (error) {

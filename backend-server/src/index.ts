@@ -15,9 +15,9 @@ import * as os from "node:os";
 import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected.js";
 import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected.js";
 import { onNewEvent } from "./APIs/websocket/on-new-event-server.js";
-import { eventDelivered } from "./APIs/websocket/event-delivered-server.js";
-import { onMessagesRead } from "./APIs/websocket/message-read.js";
 import { instrument } from "@socket.io/admin-ui";
+import { onMessagesRead } from "./APIs/websocket/on-message-read-server.js";
+import { eventDelivered } from "./APIs/websocket/on-event-delivered-server.js";
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
