@@ -352,7 +352,7 @@ export const eventsEnum = pgEnum("events_enum", [
 export const unreadEvents = pgTable(
   "unread_events",
   {
-    id: uuid("id").primaryKey().defaultRandom().notNull(),
+    id: uuid("id").primaryKey().unique().defaultRandom().notNull(),
     userId: uuid("user_id").references(() => users.userId),
     eventType: eventsEnum("events_enum").notNull(),
     chatId: uuid("chat_id").references(() => chats.chatId),
@@ -573,25 +573,6 @@ export const unreadEventsRelations = relations(unreadEvents, ({ one }) => ({
     references: [chatMessages.messageId],
   }),
 }));
-
-// //undelivered events relations
-// export const undeliveredEventsRelations = relations(
-//   undeliveredEvents,
-//   ({ one }) => ({
-//     user: one(users, {
-//       fields: [undeliveredEvents.recipientId],
-//       references: [users.userId],
-//     }),
-//     chat: one(chats, {
-//       fields: [undeliveredEvents.chatId],
-//       references: [chats.chatId],
-//     }),
-//     message: one(chatMessages, {
-//       fields: [undeliveredEvents.messageId],
-//       references: [chatMessages.messageId],
-//     }),
-//   })
-// );
 
 //past events - the server records things that happen. relations
 export const pastEventsRelations = relations(pastEvents, ({ one }) => ({

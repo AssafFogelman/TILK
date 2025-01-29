@@ -253,6 +253,34 @@
       "when": 1737707400145,
       "tag": "0036_wooden_carmella_unuscione",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "5",
+      "when": 1738136457184,
+      "tag": "0037_dashing_whistler",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1738136538121,
+      "tag": "0038_sour_sunfire",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "5",
+      "when": 1738136994707,
+      "tag": "0039_slimy_whiplash",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "5",
+      "when": 1738137082908,
+      "tag": "0040_hot_silverclaw",
+      "breakpoints": true
     }
   ]
 }

@@ -1,8 +1,8 @@
 import { Context } from "hono";
-import { compareHash } from "../config/bcrypt";
-import { db } from "../drizzle/db";
-import { users } from "../drizzle/schema";
-import { generateToken } from "../config/jwt";
+import { compareHash } from "../config/bcrypt.js";
+import { db } from "../drizzle/db.js";
+import { users } from "../drizzle/schema.js";
+import { generateToken } from "../config/jwt.js";
 
 /*  
     the user sends the server the code that he got+phone number+the hash. 
@@ -67,7 +67,7 @@ export const createToken = async (c: Context) => {
     }
     const userId = newUser ? newUser[0].userId : existingUser?.userId;
     // create token
-    const token = await generateToken({ userId: userId }, "2d");
+    const token = await generateToken({ userId: userId }, "15d");
     console.log("the token:", token);
     return c.json({
       token: token,
