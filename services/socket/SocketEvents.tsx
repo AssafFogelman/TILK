@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { socket } from "./socket";
 import { onNewEvent } from "./event-handlers/on-new-event-client";
 import { onMessageDelivered } from "./event-handlers/on-message-delivered";
-import { useAuthState } from "../../AuthContext";
+import { useAuthState } from "../../context/AuthContext";
 import {
   handlePing,
   handlePong,

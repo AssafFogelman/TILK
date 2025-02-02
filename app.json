@@ -30,7 +30,8 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.CAMERA"
       ],
-      "package": "il.co.elobby.tilk"
+      "package": "il.co.elobby.tilk",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/tilk_icon.png"

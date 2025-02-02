@@ -20,7 +20,7 @@ import { osName } from "expo-device";
 import { getIosIdForVendorAsync, getAndroidId } from "expo-application";
 import OTP from "../components/OTP";
 import { setItemAsync, getItemAsync } from "expo-secure-store";
-import { useAuthDispatch } from "../AuthContext";
+import { useAuthDispatch } from "../context/AuthContext";
 import { useScreenOrder } from "../hooks/useScreenOrder";
 
 const PhoneVerificationScreen = () => {

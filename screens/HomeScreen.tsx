@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, StyleSheet, AppState, I18nManager } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { FAB } from "react-native-paper";
-import { useLocation } from "../LocationContext";
+import { useLocation } from "../context/LocationContext";
 import {
   ConnectionsListType,
   HomeScreenNavigationProp,

@@ -7,7 +7,7 @@ import SelectAvatarScreen from "./screens/SelectAvatarScreen";
 import PersonalDetailsScreen from "./screens/personalDetailsScreen";
 import LookingToScreen from "./screens/LookingToScreen";
 import SplashScreen from "./screens/SplashScreen";
-import { useAuthState } from "./AuthContext";
+import { useAuthState } from "./context/AuthContext";
 import { useScreenOrder } from "./hooks/useScreenOrder";
 import Tabs from "./screens/Tabs";
 

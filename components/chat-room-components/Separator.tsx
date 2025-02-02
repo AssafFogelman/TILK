@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { Chip, useTheme } from "react-native-paper";
 import { MessageType } from "../../types/types";
-import { useAuthState } from "../../AuthContext";
+import { useAuthState } from "../../context/AuthContext";
 
 export const Separator = ({
   leadingItem,

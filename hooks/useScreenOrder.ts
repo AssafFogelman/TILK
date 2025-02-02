@@ -1,4 +1,4 @@
-import { useAuthState } from "../AuthContext";
+import { useAuthState } from "../context/AuthContext";
 
 export const useScreenOrder = () => {
   const { chosenAvatar, chosenBio, chosenTags } = useAuthState();

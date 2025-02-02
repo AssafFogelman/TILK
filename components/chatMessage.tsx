@@ -1,7 +1,7 @@
 import { Pressable, Text, View, StyleSheet } from "react-native";
 import React from "react";
 import { MessageType } from "../types/types";
-import { useAuthState } from "../AuthContext";
+import { useAuthState } from "../context/AuthContext";
 import { useTheme } from "react-native-paper";
 
 const ChatMessage = ({

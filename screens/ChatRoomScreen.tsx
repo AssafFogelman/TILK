@@ -23,7 +23,7 @@ import {
   ErrorView,
   LoadingView,
 } from "../components/chat-room-components/StatusViewsChatRoom";
-import { useAuthState } from "../AuthContext";
+import { useAuthState } from "../context/AuthContext";
 import { useSetFocusBlurListener } from "../hooks/chat-room-hooks/useSetFocusBlurListener";
 import { FlashList } from "@shopify/flash-list";
 import { Separator } from "../components/chat-room-components/Separator";
@@ -91,12 +91,20 @@ const ChatRoomScreen = () => {
       //we will wait a short time to make sure the messages are loaded
       setTimeout(() => {
         //find the first received unread message
-        const index = chatMessages.findIndex(
-          (message) => message.senderId !== userId && message.unread
+        const lastReadMessageIndex = chatMessages.findIndex(
+          (message) => message.messageId === lastReadMessageId
         );
-        if (index !== -1) {
+
+        //if the last read message is not the last message, scroll to it
+        if (
+          lastReadMessageIndex !== -1 &&
+          lastReadMessageIndex < chatMessages.length - 1
+        ) {
           //scroll to it
-          flashListRef.current?.scrollToIndex({ animated: true, index: index });
+          flashListRef.current?.scrollToIndex({
+            animated: true,
+            index: lastReadMessageIndex + 1,
+          });
         } else {
           //scroll to the end
           flashListRef.current?.scrollToEnd({ animated: false });

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useLocation } from "../LocationContext";
+import { useLocation } from "../context/LocationContext";
 import { AppState, AppStateStatus } from "react-native";
 import * as Location from "expo-location";
 import Toast from "react-native-toast-message";

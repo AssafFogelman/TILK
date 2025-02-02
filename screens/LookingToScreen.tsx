@@ -4,7 +4,7 @@ import { Searchbar, Chip, Text, useTheme } from "react-native-paper";
 import axios, { AxiosError } from "axios";
 import { FlashList } from "@shopify/flash-list";
 import { FAB } from "react-native-paper";
-import { useAuthDispatch, useAuthState } from "../AuthContext";
+import { useAuthDispatch, useAuthState } from "../context/AuthContext";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import { LookingToScreenNavigationProp } from "../types/types";
 

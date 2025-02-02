@@ -10,7 +10,7 @@ import { queryClient } from "../../services/queryClient";
 import { isAxiosError } from "axios";
 import { socket } from "../../services/socket/socket";
 import { emit } from "../../APIs/emit";
-import { useAuthState } from "../../AuthContext";
+import { useAuthState } from "../../context/AuthContext";
 
 //function to mark the messages as read on chat entrance
 export function useMarkAsReadOnChatEntrance(chatId: string) {

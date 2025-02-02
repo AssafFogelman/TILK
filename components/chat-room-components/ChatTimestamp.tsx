@@ -3,7 +3,7 @@ import React from "react";
 import { MessageType } from "../../types/types";
 import { formatDate2 } from "../../utils/dateUtils";
 import { Chip, useTheme } from "react-native-paper";
-import { useAuthState } from "../../AuthContext";
+import { useAuthState } from "../../context/AuthContext";
 
 const ChatTimestamp = ({
   chatMessage,

@@ -38,5 +38,6 @@ yarn-error.*
 # firebase
 tilk-54bf5-firebase-adminsdk-fbsvc-ad91bf0c2a.json
 
-# google
-google-services.json
+
+/ios
+/android

@@ -6,7 +6,7 @@ import {
   useMemo,
   useReducer,
 } from "react";
-import { ACTIONS, AuthAction, AuthState, SignUpType } from "./types/types";
+import { ACTIONS, AuthAction, AuthState, SignUpType } from "../types/types";
 import { deleteItemAsync, getItemAsync } from "expo-secure-store";
 import axios, { AxiosError } from "axios";
 

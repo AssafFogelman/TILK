@@ -50,6 +50,7 @@ export const users = pgTable("users", {
     withTimezone: true,
     mode: "date",
   }),
+  expoPushToken: text("expo_push_token"),
 });
 /*
 uuid - a long long string for Ids

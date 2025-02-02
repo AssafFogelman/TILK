@@ -10,7 +10,7 @@ import { Button, Text } from "react-native-paper";
 import { Camera } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import axios, { isAxiosError } from "axios";
-import { useAuthDispatch, useAuthState } from "../AuthContext";
+import { useAuthDispatch, useAuthState } from "../context/AuthContext";
 import Toast from "react-native-toast-message";
 import placeholderImage from "../assets/Profile_avatar_placeholder_large.png";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";

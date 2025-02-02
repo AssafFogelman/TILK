@@ -17,7 +17,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import moment from "moment";
 import { AntDesign } from "@expo/vector-icons";
-import { useAuthDispatch, useAuthState } from "../AuthContext";
+import { useAuthDispatch, useAuthState } from "../context/AuthContext";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 import { PersonalDetailsScreenNavigationProp } from "../types/types";
