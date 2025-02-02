@@ -2,6 +2,9 @@ import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import { users } from "../backend-server/src/drizzle/schema";
+import { db } from "../backend-server/src/drizzle/db";
+import axios from "axios";
 
 export async function registerForPushNotificationsAsync() {
   //in android you need to first establish a "channel" for the push notifications:
@@ -56,6 +59,7 @@ export async function registerForPushNotificationsAsync() {
       if (process.env.NODE_ENV === "development") {
         console.log("Push token for debugging: ", pushTokenString);
       }
+
       return pushTokenString;
     } catch (error: unknown) {
       throw new Error(`error getting push token: ${error}`);

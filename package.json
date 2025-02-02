@@ -63,7 +63,8 @@
     "expo-notifications": "~0.29.13",
     "expo-constants": "~17.0.5",
     "expo-modules-core": "~2.2.0",
-    "expo-splash-screen": "~0.29.21"
+    "expo-splash-screen": "~0.29.21",
+    "expo-task-manager": "~12.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",

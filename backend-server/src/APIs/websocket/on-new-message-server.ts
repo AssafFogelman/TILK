@@ -12,7 +12,8 @@ import {
 } from "../../../../types/types.js";
 import { io } from "../../index.js";
 import { TilkEventType } from "../../backend-types/TilkEventType.js";
-import Expo from "expo-server-sdk";
+import { Expo } from "expo-server-sdk";
+import { expo } from "../expo-server-sdk.js";
 const messageSequences = new Map<string, number>();
 
 export async function onNewMessage(
@@ -25,7 +26,9 @@ export async function onNewMessage(
     }
     const { text, senderId, chatId, recipientId } = message;
     //for some reason, sentDate is a string. we need to convert it to a date.
-    //you would think websocket would conserve the date as a date, but it doesn't.
+    //you would think websocket would conserve the date as a date, but it doesn't
+    //because it is inside an object.
+
     const sentDate = new Date(message.sentDate);
     // Save message to database
     const gotToServer = new Date().getTime();
@@ -74,51 +77,55 @@ export async function onNewMessage(
       //we assigned him to a room whose name is his user Id when he connected.
       //so we can emit to him directly
       io.to(recipientId).emit("newEvent", event);
-    } else {
-      console.log(`Recipient ${recipientId} is not currently connected`);
-      //If websocket is offline, try to send a notification to the user.
-
-      // Get recipient's push token from database
-      const recipientUser = await db.query.users.findFirst({
-        where: eq(users.userId, recipientId),
-        columns: {
-          expoPushToken: true,
-          nickname: true,
-        },
-      });
-
-      if (recipientUser?.expoPushToken) {
-        // Validate the push token
-        if (!Expo.isExpoPushToken(recipientUser.expoPushToken)) {
-          console.error(
-            `Invalid Expo push token ${recipientUser.expoPushToken}`
-          );
-          return;
-        }
-
-        // Create the notification
-        const notification = {
-          to: recipientUser.expoPushToken,
-          sound: "default",
-          title: `New message from ${recipientUser.firstName}`,
-          body: text.length > 100 ? text.substring(0, 97) + "..." : text,
-          data: {
-            eventType: TilkEventType.MESSAGE,
-            chatId,
-            senderId,
-            messageId: savedMessage.messageId,
-          },
-        };
-
-        try {
-          const tickets = await expo.sendPushNotificationsAsync([notification]);
-          console.log("Push notification sent:", tickets);
-        } catch (error) {
-          console.error("Error sending push notification:", error);
-        }
-      }
-      // if that doesn't work, the user's phone is off. In that case, the message stays undelivered until they load the app and get it through axios
     }
+
+    // Get recipient's push token from database
+    const recipientUser = await db.query.users.findFirst({
+      where: eq(users.userId, recipientId),
+      columns: {
+        expoPushToken: true,
+      },
+    });
+
+    //get the sender's nickname
+    const sender = await db.query.users.findFirst({
+      where: eq(users.userId, senderId),
+      columns: {
+        nickname: true,
+      },
+    });
+
+    if (recipientUser?.expoPushToken) {
+      // Validate the push token
+      if (!Expo.isExpoPushToken(recipientUser.expoPushToken)) {
+        throw new Error(
+          `Invalid Expo push token ${recipientUser.expoPushToken}`
+        );
+      }
+
+      // Create the notification
+      const notification = {
+        to: recipientUser.expoPushToken,
+        sound: "default",
+        title: `New message from ${sender?.nickname}`,
+        body: text.length > 100 ? text.substring(0, 97) + "..." : text,
+        data: {
+          eventType: TilkEventType.MESSAGE,
+          chatId,
+          senderId,
+          messageId: savedMessage.messageId,
+        },
+      };
+
+      try {
+        const tickets = await expo.sendPushNotificationsAsync([notification]);
+        //TODO: handle the ticket errors in the future - https://docs.expo.dev/push-notifications/sending-notifications/#individual-errors
+        console.log("Push notification sent:", tickets);
+      } catch (error) {
+        console.error("Error sending push notification:", error);
+      }
+    }
+    // if that doesn't work, the user's phone is off. In that case, the message stays undelivered until they load the app and get it through axios
   } catch (error) {
     console.log("error sending message:", error);
     callback({

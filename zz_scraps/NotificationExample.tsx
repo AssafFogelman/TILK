@@ -1,12 +1,4 @@
-import { useEffect, useState } from "react";
-import {
-  Alert,
-  Button,
-  Platform,
-  SafeAreaView,
-  StatusBar,
-  View,
-} from "react-native";
+import { Platform, SafeAreaView, StatusBar, View } from "react-native";
 import { useNotification } from "../context/NotificationContext";
 import { Text } from "react-native-paper";
 
@@ -16,7 +8,6 @@ export default function HomeScreen() {
   if (error) {
     return <Text>Error: {error.message}</Text>;
   }
-  console.log("notification", JSON.stringify(notification, null, 2));
   return (
     <View
       style={{

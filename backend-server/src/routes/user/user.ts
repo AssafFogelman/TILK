@@ -1,16 +1,17 @@
 import { Hono } from "hono";
 
-import { validateToken } from "../../models/authSchemas";
-import { userData } from "../../controllers/user-data";
-import { avatarLinks } from "../../controllers/avatar-links";
-import { postAvatars } from "../../controllers/post-avatars";
-import { postBio } from "../../controllers/post-bio";
-import { getTags } from "../../controllers/get-tags";
-import { postTags } from "../../controllers/post-tags";
-import { activateUser } from "../../controllers/activate-user";
-import { getConnectionsList } from "../../controllers/get-connections-list";
-import { userSelectedTags } from "../../controllers/user-selected-tags";
-import { markAsRead } from "../../controllers/mark-as-read";
+import { validateToken } from "../../models/authSchemas.js";
+import { userData } from "../../controllers/user-data.js";
+import { avatarLinks } from "../../controllers/avatar-links.js";
+import { postAvatars } from "../../controllers/post-avatars.js";
+import { postBio } from "../../controllers/post-bio.js";
+import { getTags } from "../../controllers/get-tags.js";
+import { postTags } from "../../controllers/post-tags.js";
+import { activateUser } from "../../controllers/activate-user.js";
+import { getConnectionsList } from "../../controllers/get-connections-list.js";
+import { userSelectedTags } from "../../controllers/user-selected-tags.js";
+import { markAsRead } from "../../controllers/mark-as-read.js";
+import { upsertExpoPushToken } from "../../controllers/upsert-expo-push-token.js";
 
 export const user = new Hono().basePath("/user");
 
@@ -67,3 +68,6 @@ user.get("/get-connections-list", validateToken, getConnectionsList);
 
 //mark unread connection requests as read
 user.post("/mark-as-read", validateToken, markAsRead);
+
+//upload the expo push token to the database
+user.post("/upsert-expo-push-token", validateToken, upsertExpoPushToken);

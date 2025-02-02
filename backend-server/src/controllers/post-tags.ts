@@ -1,6 +1,11 @@
 import { Context } from "hono";
-import { db } from "../drizzle/db";
-import { tagCategories, tags, tagsTagCats, tagsUsers } from "../drizzle/schema";
+import { db } from "../drizzle/db.js";
+import {
+  tagCategories,
+  tags,
+  tagsTagCats,
+  tagsUsers,
+} from "../drizzle/schema.js";
 import { and, eq, inArray, sql } from "drizzle-orm";
 
 export const postTags = async (c: Context) => {

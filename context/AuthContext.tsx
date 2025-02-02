@@ -235,13 +235,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 /*
 
-Now, in your components, you can use these contexts like this:
-javascript
-function SomeComponent() {
+
   const { userToken, userId } = useAuthState();
   const { signOut } = useAuthDispatch();
 
-  // Use userToken, userId, and signOut as needed
 }
 
 

@@ -23,6 +23,9 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { useQuery } from "@tanstack/react-query";
 import axios, { AxiosError, isAxiosError } from "axios";
 import * as Location from "expo-location";
+import { useNotification } from "../context/NotificationContext";
+import { useAuthState } from "../context/AuthContext";
+import { uploadExpoPushToken } from "../services/uploadExpoPushToken";
 // regardless of the location changes, perform the KNN query every LOCATION_INTERVAL
 const LOCATION_INTERVAL = 2 * 60 * 1000; // 2 minutes in milliseconds
 
@@ -31,14 +34,20 @@ const HomeScreen = () => {
     null
   );
   const [showModal, setShowModal] = useState(false);
-
+  const { expoPushToken } = useNotification();
   const { subscribe, currentLocation } = useLocation();
   const navigation = useNavigation<HomeScreenNavigationProp>();
-
   // Set up location subscription
   useEffect(() => {
     subscribe();
   });
+
+  //upload the expo push token to the database
+  useEffect(() => {
+    if (expoPushToken) {
+      uploadExpoPushToken(expoPushToken);
+    }
+  }, [expoPushToken]);
 
   const {
     data: knnData,

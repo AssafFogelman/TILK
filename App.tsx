@@ -29,20 +29,50 @@ import { socket } from "./services/socket/socket";
 import { NotificationProvider } from "./context/NotificationContext";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
+import NotificationExample from "./zz_scraps/NotificationExample";
+import * as TaskManager from "expo-task-manager";
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 
 //prevent splash screen from auto hiding
 SplashScreen.preventAutoHideAsync();
 
-//notifications settings for when the app is running
+//notifications settings for when the app is in the foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: false,
+    shouldShowAlert: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),
 });
+
+//define a task for when notifications are received in the background
+const BACKGROUND_NOTIFICATION_TASK = "BACKGROUND-NOTIFICATION-TASK";
+
+TaskManager.defineTask(
+  BACKGROUND_NOTIFICATION_TASK,
+  async ({ data, error, executionInfo }) => {
+    if (error) {
+      console.error("Background notification task error:", error);
+      return;
+    }
+
+    // Handle the notification data
+    if (data) {
+      const { eventType, chatId, senderId, messageId } = data as any;
+      // You can perform any background tasks here
+      console.log("Background notification received:", {
+        eventType,
+        chatId,
+        senderId,
+        messageId,
+      });
+    }
+    // Do something with the notification data
+  }
+);
+
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
 
 export default function App() {
   //use the tanstack query devtool
@@ -50,7 +80,6 @@ export default function App() {
 
   //is websocket connected
   const isConnected = useIsWebSocketConnected();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
   //set theme
   const theme = useSetTheme();
