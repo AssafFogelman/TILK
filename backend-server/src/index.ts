@@ -15,9 +15,11 @@ import * as os from "node:os";
 import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected.js";
 import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected.js";
 import { onNewEvent } from "./APIs/websocket/on-new-event-server.js";
-import { instrument } from "@socket.io/admin-ui";
 import { onMessagesRead } from "./APIs/websocket/on-message-read-server.js";
 import { eventDelivered } from "./APIs/websocket/on-event-delivered-server.js";
+
+// ignore "punycode deprecated" warnings that come from "expo-server-sdk" since they are irrelevant.
+ignorePennycode();
 
 //"strict: false" means that "api/" and "api" will reach the same end-point
 const app = new Hono({ strict: false });
@@ -75,13 +77,6 @@ export const io = new Server(server as HttpServer, {
     // whether to skip middlewares upon successful recovery
     skipMiddlewares: true,
   },
-});
-
-//TODO: remove this and uninstall the package. I couldn't get it to work. something with cors or something
-//instrument the websocket server with the admin-ui
-instrument(io, {
-  auth: false,
-  mode: "development",
 });
 
 io.on("error", (err) => console.error("websocket error: ", err));
@@ -190,4 +185,18 @@ function getServerIP() {
     }
   }
   return "127.0.0.1"; // Fallback to localhost if no suitable IP is found
+}
+
+function ignorePennycode() {
+  process.removeAllListeners("warning");
+
+  process.on("warning", (warning) => {
+    if (
+      warning.name === "DeprecationWarning" &&
+      warning.message.includes("punycode")
+    ) {
+      return;
+    }
+    console.warn(warning);
+  });
 }

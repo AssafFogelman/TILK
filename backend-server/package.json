@@ -26,10 +26,10 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
-    "@socket.io/admin-ui": "^0.5.1",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.30.8",
+    "expo-server-sdk": "^3.13.0",
     "hono": "^4.4.13",
     "jsonwebtoken": "^9.0.2",
     "latest": "^0.2.0",
