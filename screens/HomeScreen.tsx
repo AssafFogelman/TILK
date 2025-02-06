@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, StyleSheet, AppState, I18nManager } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { FAB } from "react-native-paper";
@@ -26,6 +26,7 @@ import * as Location from "expo-location";
 import { useNotification } from "../context/NotificationContext";
 import { useAuthState } from "../context/AuthContext";
 import { uploadExpoPushToken } from "../services/uploadExpoPushToken";
+import * as SplashScreen from "expo-splash-screen";
 // regardless of the location changes, perform the KNN query every LOCATION_INTERVAL
 const LOCATION_INTERVAL = 2 * 60 * 1000; // 2 minutes in milliseconds
 
@@ -36,7 +37,10 @@ const HomeScreen = () => {
   const [showModal, setShowModal] = useState(false);
   const { expoPushToken } = useNotification();
   const { subscribe, currentLocation } = useLocation();
+  const isSplashHidden = useRef(false);
+
   const navigation = useNavigation<HomeScreenNavigationProp>();
+
   // Set up location subscription
   useEffect(() => {
     subscribe();
@@ -49,6 +53,7 @@ const HomeScreen = () => {
     }
   }, [expoPushToken]);
 
+  //query the knn data
   const {
     data: knnData,
     isPending: knnDataIsLoading,
@@ -60,9 +65,21 @@ const HomeScreen = () => {
     enabled: !!currentLocation,
   });
 
+  //keep the splash screen visible until the knnData is loaded
+  //mind you that if there is no saved token, the splash screen will be visible until
+  //the useAuth check is done (in StackNavigator)
+  useEffect(() => {
+    if (!knnDataIsLoading && !isSplashHidden.current) {
+      SplashScreen.hideAsync();
+
+      isSplashHidden.current = true;
+    }
+  }, [knnDataIsLoading]);
+
   // Fetch connections list after knnData is loaded
   useQuery({
     queryKey: ["connectionsList"],
+
     queryFn: fetchConnectionsList,
     //start fetching connections only when knnData is loaded
     enabled: !knnDataIsLoading,

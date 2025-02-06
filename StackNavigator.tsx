@@ -6,16 +6,31 @@ import PhoneVerificationScreen from "./screens/PhoneVerificationScreen";
 import SelectAvatarScreen from "./screens/SelectAvatarScreen";
 import PersonalDetailsScreen from "./screens/personalDetailsScreen";
 import LookingToScreen from "./screens/LookingToScreen";
-import SplashScreen from "./screens/SplashScreen";
 import { useAuthState } from "./context/AuthContext";
 import { useScreenOrder } from "./hooks/useScreenOrder";
 import Tabs from "./screens/Tabs";
+import { useEffect, useRef } from "react";
+import SplashScreen from "./screens/SplashScreen";
+import { hideAsync } from "expo-splash-screen";
+import { AboutScreen } from "./screens/AboutScreen";
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
 const StackNavigator = () => {
   const { isSignOut, isLoading, userToken } = useAuthState();
   const initialRouteFunction = useScreenOrder();
+  const isSplashHidden = useRef(false);
+
+  //keep the splash screen visible until we know there is no token.
+  //mind you that if there is a saved token, the splash screen will be visible until
+  //the user reaches HomeScreen and loads first the knn data
+  useEffect(() => {
+    if (!isLoading && !userToken && !isSplashHidden.current) {
+      hideAsync();
+
+      isSplashHidden.current = true;
+    }
+  }, [isLoading, userToken]);
 
   if (isLoading) {
     // We haven't finished checking for the token yet
@@ -70,6 +85,9 @@ const StackNavigator = () => {
           />
         </>
       )}
+      <Stack.Group navigationKey={userToken ? "user" : "guest"}>
+        <Stack.Screen name="About" component={AboutScreen} />
+      </Stack.Group>
     </Stack.Navigator>
   );
 };

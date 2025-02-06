@@ -33,7 +33,7 @@ import * as TaskManager from "expo-task-manager";
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;
 
-//prevent splash screen from auto hiding
+//prevent splash screen from auto hiding when the app loads and instead hide it manually when loading is complete
 SplashScreen.preventAutoHideAsync();
 
 //notifications settings for when the app is in the foreground

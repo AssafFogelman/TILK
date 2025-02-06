@@ -17,7 +17,6 @@ import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected.
 import { onNewEvent } from "./APIs/websocket/on-new-event-server.js";
 import { onMessagesRead } from "./APIs/websocket/on-message-read-server.js";
 import { eventDelivered } from "./APIs/websocket/on-event-delivered-server.js";
-import * as readline from "readline";
 import process from "node:process";
 
 // ignore "punycode deprecated" warnings that come from "expo-server-sdk" since they are irrelevant.
@@ -117,10 +116,7 @@ httpServer.on("error", (e) => {
 });
 
 //Graceful shutdown - mark all users as currently not connected + close the websocket and server
-process.on(
-  "SIGTERM",
-  () => console.log("works2?") /*gracefulShutdown(httpServer)*/
-);
+process.on("SIGTERM", () => gracefulShutdown(httpServer));
 
 process.on("SIGINT", () => gracefulShutdown(httpServer));
 
@@ -152,12 +148,12 @@ async function gracefulShutdown(httpServer: any) {
         setTimeout(() => reject(new Error("Shutdown timeout")), 5000)
       ),
     ]);
-    //   //close the node process with exit code 0 (success)
-    //   process.exit(0);
+    //close the node process with exit code 0 (success)
+    process.exit(0);
   } catch (error) {
-    //   console.error("Error during shutdown:", error);
-    //   //close the node process with exit code 1 (error)
-    //   process.exit(1);
+    console.error("Error during shutdown:", error);
+    //close the node process with exit code 1 (error)
+    process.exit(1);
   }
 }
 

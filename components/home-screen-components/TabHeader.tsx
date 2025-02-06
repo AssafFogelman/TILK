@@ -3,6 +3,9 @@ import { StyleSheet, View, TouchableOpacity, I18nManager } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import { Text, useTheme, Searchbar } from "react-native-paper";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import { Menu, Divider } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
+import { TabsScreenNavigationProp } from "../../types/types";
 
 type TabHeaderProps = {
   title: string;
@@ -21,6 +24,7 @@ const TabHeader: React.FC<TabHeaderProps> = ({
 }) => {
   const theme = useTheme();
   const [showSearchBar, setShowSearchBar] = useState(false);
+
   return (
     <View
       style={[
@@ -61,19 +65,53 @@ const TabHeader: React.FC<TabHeaderProps> = ({
                 />
               </TouchableOpacity>
             ) : null}
-            <TouchableOpacity onPress={onMenuPress}>
-              <Entypo
-                name="dots-three-vertical"
-                size={20}
-                color={theme.colors.onSurface}
-                style={{ color: theme.colors.onSurface }}
-              />
-            </TouchableOpacity>
+
+            <TabsMenu />
           </View>
         </View>
       )}
     </View>
   );
+};
+
+const TabsMenu: React.FC /*<MenuProps>*/ = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const theme = useTheme();
+  const navigation = useNavigation<TabsScreenNavigationProp>();
+  return (
+    <>
+      <Menu
+        visible={isMenuOpen}
+        onDismiss={closeMenu}
+        anchor={
+          <TouchableOpacity onPress={openMenu}>
+            <Entypo
+              name="dots-three-vertical"
+              size={20}
+              color={theme.colors.onSurface}
+              style={{ color: theme.colors.onSurface }}
+            />
+          </TouchableOpacity>
+        }
+      >
+        <Menu.Item onPress={() => {}} title="personal details" />
+        <Menu.Item onPress={() => {}} title="blocked users" />
+        <Menu.Item
+          onPress={() => {
+            navigation.navigate("About");
+          }}
+          title="About"
+        />
+      </Menu>
+    </>
+  );
+  function openMenu() {
+    setIsMenuOpen(true);
+  }
+
+  function closeMenu() {
+    setIsMenuOpen(false);
+  }
 };
 
 export default TabHeader;

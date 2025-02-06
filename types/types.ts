@@ -23,6 +23,7 @@ export type StackParamList = {
   SelectAvatar: undefined; //there are no params that are sent to this screen
   PersonalDetails: undefined; //there are no params that are sent to this screen
   LookingTo: undefined; //there are no params that are sent to this screen
+  About: undefined; //there are no params that are sent to this screen
 };
 
 export type TabParamList = {
@@ -65,6 +66,12 @@ export type PhoneVerificationScreenNavigationProp = NativeStackNavigationProp<
 export type PersonalDetailsScreenNavigationProp = NativeStackNavigationProp<
   StackParamList,
   "PersonalDetails"
+>;
+
+//this is the type for the useNavigation() in "Tabs" Screen
+export type TabsScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, "Home" | "Chats" | "Connections">,
+  NativeStackNavigationProp<StackParamList>
 >;
 
 //this is the type for the useNavigation() in "Home" Screen

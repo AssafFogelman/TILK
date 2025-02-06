@@ -5,7 +5,7 @@
   "description": "tilk-backend-server",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --quiet --exec \"node --import tsx src/index.ts\"",
+    "dev": "tsx src/index.ts",
     "dev2": "nodemon --quiet --exec \"node --import tsx src/main.ts\"",
     "db:generate": "npx drizzle-kit generate:pg",
     "db:migrate": "node --import tsx src/drizzle/migrate.ts",

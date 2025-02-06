@@ -12,33 +12,9 @@ import { Alert } from "react-native";
 import { ConnectionsScreen } from "./ConnectionsScreen";
 import { useFetchUnreadEvents } from "../hooks/home-screen-hooks/useFetchUnreadEvents";
 import { useSetCurrentlyConnected } from "../hooks/home-screen-hooks/useSetCurrentlyConnected";
+import { initialTabState } from "../constants/initialTabState";
 
 const Tab = createBottomTabNavigator<TabParamList>();
-
-const initialTabState = {
-  index: 0,
-  routes: [
-    {
-      key: "Home",
-      title: "Home",
-      focusedIcon: "home",
-      unfocusedIcon: "home-outline",
-    },
-
-    {
-      key: "Connections",
-      title: "Connections",
-      focusedIcon: "people",
-      unfocusedIcon: "people-outline",
-    },
-    {
-      key: "Chats",
-      title: "Chats",
-      focusedIcon: "chat",
-      unfocusedIcon: "chat-outline",
-    },
-  ] as Route[],
-};
 
 const Tabs = () => {
   const [tabState, setTabState] = useState(initialTabState);
