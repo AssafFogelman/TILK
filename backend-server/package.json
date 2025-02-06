@@ -5,11 +5,11 @@
   "description": "tilk-backend-server",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec \"node --import tsx src/index.ts\"",
-    "dev2": "nodemon --exec \"node --import tsx src/main.ts\"",
+    "dev": "nodemon --quiet --exec \"node --import tsx src/index.ts\"",
+    "dev2": "nodemon --quiet --exec \"node --import tsx src/main.ts\"",
     "db:generate": "npx drizzle-kit generate:pg",
     "db:migrate": "node --import tsx src/drizzle/migrate.ts",
-    "db:execute": "nodemon --exec \"node --import tsx src/drizzle/main.ts\"",
+    "db:execute": "nodemon --quiet --exec \"node --import tsx src/drizzle/main.ts\"",
     "db:upgrade": "npx drizzle-kit up:pg",
     "db:drop": "npx drizzle-kit drop"
   },
