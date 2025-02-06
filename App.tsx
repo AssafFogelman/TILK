@@ -29,7 +29,6 @@ import { socket } from "./services/socket/socket";
 import { NotificationProvider } from "./context/NotificationContext";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
-import NotificationExample from "./zz_scraps/NotificationExample";
 import * as TaskManager from "expo-task-manager";
 /* config axios */
 axios.defaults.baseURL = process.env.EXPO_PUBLIC_SERVER_ADDRESS;

@@ -1,202 +1,221 @@
-import { serve } from "@hono/node-server";
-import { Hono } from "hono";
-import { prettyJSON } from "hono/pretty-json";
-import { secureHeaders } from "hono/secure-headers";
-import { logger } from "hono/logger";
-import { serveStatic } from "@hono/node-server/serve-static";
-import { cors } from "hono/cors";
-import { Server } from "socket.io";
-import { Server as HttpServer } from "http";
-import { routes } from "./routes/routes.js";
-import "dotenv/config";
-import { db } from "./drizzle/db.js";
-import { users } from "./drizzle/schema.js";
-import * as os from "node:os";
-import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected.js";
-import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected.js";
-import { onNewEvent } from "./APIs/websocket/on-new-event-server.js";
-import { onMessagesRead } from "./APIs/websocket/on-message-read-server.js";
-import { eventDelivered } from "./APIs/websocket/on-event-delivered-server.js";
+// import { serve } from "@hono/node-server";
+// import { Hono } from "hono";
+// import { prettyJSON } from "hono/pretty-json";
+// import { secureHeaders } from "hono/secure-headers";
+// import { logger } from "hono/logger";
+// import { serveStatic } from "@hono/node-server/serve-static";
+// import { cors } from "hono/cors";
+// import { Server } from "socket.io";
+// import { Server as HttpServer } from "http";
+// import { routes } from "./routes/routes.js";
+// import "dotenv/config";
+// import { db } from "./drizzle/db.js";
+// import { users } from "./drizzle/schema.js";
+// import * as os from "node:os";
+// import { setCurrentlyConnected } from "./APIs/websocket/set-currently-connected.js";
+// import { registerAsUnconnected } from "./APIs/websocket/register-as-unconnected.js";
+// import { onNewEvent } from "./APIs/websocket/on-new-event-server.js";
+// import { onMessagesRead } from "./APIs/websocket/on-message-read-server.js";
+// import { eventDelivered } from "./APIs/websocket/on-event-delivered-server.js";
+// import * as readline from "readline";
+// import process from "node:process";
 
-// ignore "punycode deprecated" warnings that come from "expo-server-sdk" since they are irrelevant.
-ignorePennycode();
+// // ignore "punycode deprecated" warnings that come from "expo-server-sdk" since they are irrelevant.
+// ignorePunycode();
 
-//"strict: false" means that "api/" and "api" will reach the same end-point
-const app = new Hono({ strict: false });
+// //"strict: false" means that "api/" and "api" will reach the same end-point
 
-/* Pretty JSON middleware enables "JSON pretty print" for JSON response body. 
-  Adding 
-  "?pretty"
-  to url query param, the JSON strings are prettified. */
-//ex. GET /?pretty
-app.use(prettyJSON());
-//like "helmet".
-//conflicts with poweredBy() middleware (adds a header: "X-Powered-By": "Hono").
-//But I frankly don't care
-app.use(secureHeaders());
-//logger - console logs all the actions
-app.use("*", logger());
+// const app = new Hono({ strict: false });
 
-// enable cors if we are not in production mode
-app.use(
-  "*",
-  cors({ origin: process.env.NODE_ENV === "production" ? "*" : "" })
-);
+// /* Pretty JSON middleware enables "JSON pretty print" for JSON response body.
+//   Adding
+//   "?pretty"
+//   to url query param, the JSON strings are prettified. */
+// //ex. GET /?pretty
+// app.use(prettyJSON());
+// //like "helmet".
+// //conflicts with poweredBy() middleware (adds a header: "X-Powered-By": "Hono").
+// //But I frankly don't care
+// app.use(secureHeaders());
+// //logger - console logs all the actions
+// app.use("*", logger());
 
-app.route("/", routes); // Handle routes
+// // enable cors if we are not in production mode
+// app.use(
+//   "*",
+//   cors({ origin: process.env.NODE_ENV === "production" ? "*" : "" })
+// );
 
-//setting a static (public) directory
-app.use("/public/*", serveStatic({ root: "./" }));
+// app.route("/", routes); // Handle routes
 
-//setting up the server listener to the port
-const port = 5000;
-const serverIP = getServerIP();
+// //setting a static (public) directory
+// app.use("/public/*", serveStatic({ root: "./" }));
 
-const server = serve(
-  {
-    fetch: app.fetch,
-    port,
-  },
-  (info) => {
-    console.log(`Server is running on: http://${serverIP}:${info.port}`);
-  }
-);
+// //setting up the server listener to the port
+// const port = 5000;
+// const serverIP = getServerIP();
 
-//websocket
-//http://192.168.1.116:5000/ws/
-export const io = new Server(server as HttpServer, {
-  path: "/ws/",
-  serveClient: true,
-  cors: {
-    origin: process.env.NODE_ENV === "production" ? false : "*",
-  },
-  //if the user disconnects abruptly, save his data (state) for 10 minutes
-  connectionStateRecovery: {
-    // the backup duration of the sessions and the packets
-    maxDisconnectionDuration: 10 * 60 * 1000,
-    // whether to skip middlewares upon successful recovery
-    skipMiddlewares: true,
-  },
-});
+// const httpServer = serve(
+//   {
+//     fetch: app.fetch,
+//     port,
+//   },
+//   (info) => {
+//     console.log(`Server is running on: http://${serverIP}:${info.port}`);
+//   }
+// );
 
-io.on("error", (err) => console.error("websocket error: ", err));
-io.engine.on("connection_error", (err) => {
-  console.error("WebSocket connection error:", err);
-});
-io.on("connection", async (socket) => {
-  console.log(`new client connected to websocket!!`);
+// //websocket
+// //http://192.168.1.116:5000/ws/
+// export const io = new Server(httpServer as HttpServer, {
+//   path: "/ws/",
+//   serveClient: true,
+//   cors: {
+//     origin: process.env.NODE_ENV === "production" ? false : "*",
+//   },
+//   //if the user disconnects abruptly, save his data (state) for 10 minutes
+//   connectionStateRecovery: {
+//     // the backup duration of the sessions and the packets
+//     maxDisconnectionDuration: 10 * 60 * 1000,
+//     // whether to skip middlewares upon successful recovery
+//     skipMiddlewares: true,
+//   },
+// });
 
-  //set as "currently connected" + deliver undelivered events
-  socket.on("setCurrentlyConnected", setCurrentlyConnected);
-  //client sent an event to the server
-  socket.on("newEvent", onNewEvent);
-  //client confirmed that the event was delivered
-  socket.on("eventDelivered", eventDelivered);
-  //client confirmed that he read the message while he was in the chat
-  socket.on("messagesRead", onMessagesRead);
-  //client exited the chat and the chatsList and unreadEvents queries should be updated
-  socket.on("disconnect", registerAsUnconnected);
+// io.on("error", (err) => console.error("websocket error: ", err));
+// io.engine.on("connection_error", (err) => {
+//   console.error("WebSocket connection error:", err);
+// });
+// io.on("connection", async (socket) => {
+//   console.log(`new client connected to websocket!!`);
 
-  socket.on("error", (error) => {
-    console.error(`Socket ${socket.id} error:`, error);
-  });
-});
+//   //set as "currently connected" + deliver undelivered events
+//   socket.on("setCurrentlyConnected", setCurrentlyConnected);
+//   //client sent an event to the server
+//   socket.on("newEvent", onNewEvent);
+//   //client confirmed that the event was delivered
+//   socket.on("eventDelivered", eventDelivered);
+//   //client confirmed that he read the message while he was in the chat
+//   socket.on("messagesRead", onMessagesRead);
+//   //client exited the chat and the chatsList and unreadEvents queries should be updated
+//   socket.on("disconnect", registerAsUnconnected);
 
-// Graceful shutdown - mark all users as currently not connected + close the websocket and server
-process.on("SIGTERM", gracefulShutdown);
-process.on("SIGINT", gracefulShutdown);
+//   socket.on("error", (error) => {
+//     console.error(`Socket ${socket.id} error:`, error);
+//   });
+// });
 
-async function gracefulShutdown() {
-  console.log("Signal received: closing HTTP server");
+// //on server startup, if address is already in use (last session did not close properly), restart the session
+// httpServer.on("error", (e) => {
+//   if (e.code === "EADDRINUSE") {
+//     console.log("Address in use, retrying...");
+//     setTimeout(() => {
+//       httpServer.close();
+//       httpServer.listen(port);
+//     }, 1000);
+//   }
+// });
 
-  try {
-    // Notify all connected clients about the shutdown
-    //io.emit("server:intentionalShutdown"); //TODO: someday distinguish between intentional and unintentional shutdowns on the client side.
+// //Graceful shutdown - mark all users as currently not connected + close the websocket and server
+// process.on(
+//   "SIGTERM",
+//   () => console.log("works2?") /*gracefulShutdown(httpServer)*/
+// );
 
-    //at server shutdown, we want to make sure that no user is set to "currently connected"
-    setNoUserIsCurrentlyConnected();
+// process.on("SIGINT", () => gracefulShutdown(httpServer));
 
-    // Close socket.io server
-    const socketClosePromise = new Promise((resolve) => {
-      io.close(() => {
-        console.log("Socket.io server closed");
-        resolve(true);
-      });
-    });
+// async function gracefulShutdown(httpServer: any) {
+//   try {
+//     console.log("Signal received: closing HTTP server");
+//     //   //at server shutdown, we want to make sure that no user is set to "currently connected"
+//     // await setNoUserIsCurrentlyConnected();
+//     // Close socket.io server
+//     const socketClosePromise = new Promise((resolve) => {
+//       io.close(() => {
+//         console.log("Socket.io server closed");
+//         resolve(true);
+//       });
+//     });
+//     // Close http server
+//     const httpClosePromise = new Promise((resolve) => {
+//       httpServer.close(() => {
+//         console.log("HTTP server closed");
+//         resolve(true);
+//       });
+//     });
+//     // Wait for both to close with a timeout
+//     await Promise.race([
+//       Promise.all([socketClosePromise, httpClosePromise]),
+//       new Promise((_, reject) =>
+//         setTimeout(() => reject(new Error("Shutdown timeout")), 5000)
+//       ),
+//     ]);
+//     //   //close the node process with exit code 0 (success)
+//     //   process.exit(0);
+//   } catch (error) {
+//     //   console.error("Error during shutdown:", error);
+//     //   //close the node process with exit code 1 (error)
+//     //   process.exit(1);
+//   }
+// }
 
-    // Close http server
-    const httpClosePromise = new Promise((resolve) => {
-      server.close(() => {
-        console.log("HTTP server closed");
-        resolve(true);
-      });
-    });
+// //at server shutdown, we want to make sure that no user is set to "currently connected"
+// async function setNoUserIsCurrentlyConnected() {
+//   try {
+//     await db.update(users).set({ currentlyConnected: false });
+//   } catch (error) {
+//     console.log(
+//       "an error occurred while trying to reset the currently connected field of all the users: "
+//     );
+//     console.log(error);
+//   }
+// }
 
-    // Wait for both to close with a timeout
-    await Promise.race([
-      Promise.all([socketClosePromise, httpClosePromise]),
-      new Promise((_, reject) =>
-        setTimeout(() => reject("Shutdown timeout"), 5000)
-      ),
-    ]);
+// //get the server's IP address
+// function getServerIP() {
+//   const networkInterfaces = os.networkInterfaces();
+//   for (const interfaceName in networkInterfaces) {
+//     const someInterface = networkInterfaces[interfaceName];
+//     if (someInterface === undefined) break;
+//     for (const entry of someInterface) {
+//       if (entry.family === "IPv4" && !entry.internal) {
+//         return entry.address;
+//       }
+//     }
+//   }
+//   return "127.0.0.1"; // Fallback to localhost if no suitable IP is found
+// }
 
-    //close the node process with exit code 0 (success)
-    process.exit(0);
-  } catch (error) {
-    console.error("Error during shutdown:", error);
-    //close the node process with exit code 1 (error)
-    process.exit(1);
-  }
-}
+// function ignorePunycode() {
+//   process.removeAllListeners("warning");
 
-//if address is already in use (last session did not close properly), restart the session
-server.on("error", (e) => {
-  if (e.code === "EADDRINUSE") {
-    console.log("Address in use, retrying...");
-    setTimeout(() => {
-      server.close();
-      server.listen(port);
-    }, 1000);
-  }
-});
+//   process.on("warning", (warning) => {
+//     if (
+//       warning.name === "DeprecationWarning" &&
+//       warning.message.includes("punycode")
+//     ) {
+//       return;
+//     }
+//     console.warn(warning);
+//   });
+// }
 
-//at server startup, we want to make sure that no user is set to "currently connected"
-async function setNoUserIsCurrentlyConnected() {
-  try {
-    await db.update(users).set({ currentlyConnected: false });
-  } catch (error) {
-    console.log(
-      "an error occurred while trying to reset the currently connected field of all the users: "
-    );
-    console.log(error);
-  }
-}
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-//get the server's IP address
-function getServerIP() {
-  const networkInterfaces = os.networkInterfaces();
-  for (const interfaceName in networkInterfaces) {
-    const someInterface = networkInterfaces[interfaceName];
-    if (someInterface === undefined) break;
-    for (const entry of someInterface) {
-      if (entry.family === "IPv4" && !entry.internal) {
-        return entry.address;
-      }
-    }
-  }
-  return "127.0.0.1"; // Fallback to localhost if no suitable IP is found
-}
+const cleanup = async () => {
+  console.log("Starting graceful shutdown...");
+  await delay(2000); // Simulate async cleanup
+  console.log("Graceful shutdown complete.");
+  process.exit(0);
+};
 
-function ignorePennycode() {
-  process.removeAllListeners("warning");
+process.on("SIGINT", cleanup);
+process.on("SIGTERM", cleanup);
 
-  process.on("warning", (warning) => {
-    if (
-      warning.name === "DeprecationWarning" &&
-      warning.message.includes("punycode")
-    ) {
-      return;
-    }
-    console.warn(warning);
-  });
-}
+const main = async () => {
+  console.log("Starting async operation...");
+  await delay(10000); // Simulate an async operation
+  console.log("Async operation completed.");
+};
+
+main().catch((err) => console.error("Error in async operation:", err));

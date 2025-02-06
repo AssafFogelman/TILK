@@ -5,11 +5,11 @@
   "description": "tilk-backend-server",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch --clear-screen=false  src/index.ts",
-    "dev2": "tsx watch ./src/main.ts",
+    "dev": "nodemon --exec \"node --import tsx src/index.ts\"",
+    "dev2": "nodemon --exec \"node --import tsx src/main.ts\"",
     "db:generate": "npx drizzle-kit generate:pg",
-    "db:migrate": "tsx src/drizzle/migrate.ts",
-    "db:execute": "tsx watch src/drizzle/main.ts",
+    "db:migrate": "node --import tsx src/drizzle/migrate.ts",
+    "db:execute": "nodemon --exec \"node --import tsx src/drizzle/main.ts\"",
     "db:upgrade": "npx drizzle-kit up:pg",
     "db:drop": "npx drizzle-kit drop"
   },
@@ -19,9 +19,13 @@
     "@tsconfig/node20": "^20.1.4",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.6",
-    "@types/node": "^20.12.8",
+    "@types/node": "^20.17.17",
     "@types/pg": "^8.11.10",
     "drizzle-kit": "^0.20.17",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.19.2",
     "typescript": "^5.4.5"
   },
   "dependencies": {
@@ -37,7 +41,6 @@
     "postgres": "^3.4.4",
     "sharp": "^0.33.4",
     "socket.io": "^4.7.5",
-    "tsx": "^4.19.2",
     "twilio": "^5.1.0",
     "zod": "^3.23.5"
   }
