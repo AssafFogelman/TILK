@@ -29,7 +29,7 @@ export function useMarkAsReadOnChatEntrance(chatId: string) {
   return function markAsReadOnChatEntrance() {
     try {
       if (!lastReceivedUnreadMessage) return; //if there is no unread message, we do nothing
-
+      console.log("lastReceivedUnreadMessage: ", lastReceivedUnreadMessage);
       // Optimistically update the chat messages query to read
       queryClient.setQueryData(
         ["chatMessages", chatId],

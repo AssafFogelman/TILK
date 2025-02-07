@@ -7,7 +7,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Route, TabParamList } from "../types/types";
 import React, { useState } from "react";
 import { getHeaderTitle } from "@react-navigation/elements";
-import TabHeader from "../components/home-screen-components/TabHeader";
+import TabsHeader from "../components/tabs-components/TabsHeader";
 import { Alert } from "react-native";
 import { ConnectionsScreen } from "./ConnectionsScreen";
 import { useFetchUnreadEvents } from "../hooks/home-screen-hooks/useFetchUnreadEvents";
@@ -106,7 +106,7 @@ const Tabs = () => {
             route.name === "Connections" || route.name === "Chats";
 
           return (
-            <TabHeader
+            <TabsHeader
               title={title}
               onMenuPress={handleMenuPress}
               showSearchIcon={showSearchIcon}

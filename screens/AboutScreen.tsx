@@ -1,5 +1,6 @@
 import {
   ImageBackground,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -10,13 +11,14 @@ import { legalPolicy } from "../constants/legalPolicy";
 export const AboutScreen = () => {
   return (
     <ImageBackground
-
       source={require("../assets/background.jpg")}
       style={styles.backgroundImage}
     >
       <View style={styles.container}>
         <Text style={styles.title}>About TILK</Text>
-        <Text style={styles.subtitle}>{legalPolicy}</Text>
+        <ScrollView>
+          <Text style={styles.subtitle}>{legalPolicy}</Text>
+        </ScrollView>
       </View>
     </ImageBackground>
   );

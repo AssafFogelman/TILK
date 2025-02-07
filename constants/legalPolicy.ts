@@ -1,10 +1,14 @@
+import { I18nManager } from "react-native";
+
 export const legalPolicy = `
 Privacy Policy
-Effective Date: [Insert Date]
-Last Updated: [Insert Date]
+Effective Date: ${getDate(new Date())}
+Last Updated: ${getDate(new Date())}
+
+
 
 1. Introduction
-Elobby Inc. (“we,” “us”) operates the [App Name] app (“App”). This Privacy Policy explains how we collect, use, and protect your information. By using the App, you consent to this policy.
+Elobby Inc. (“we,” “us”) operates the TILK app (“App”). This Privacy Policy explains how we collect, use, and protect your information. By using the App, you consent to this policy.
 
 2. Data Collected
 
@@ -32,7 +36,7 @@ Access, correct, or delete your data via the App settings.
 
 Withdraw consent by deleting your account.
 
-GDPR/CCPA rights: Contact us at [Email].
+GDPR/CCPA rights: Contact us at assaf.fogelman@gmail.com.
 
 6. Security
 Data is encrypted in transit and at rest. No method is 100% secure, but we use industry-standard practices.
@@ -43,13 +47,14 @@ The App is not intended for users under 13. We do not knowingly collect data fro
 8. Changes to Policy
 Updates will be posted in the App. Continued use constitutes acceptance.
 
-Contact: [Email/Address]
+Contact: assaf.fogelman@gmail.com
 
 Terms and Conditions
 1. Acceptance
 By using the App, you agree to these Terms.
 
 2. Eligibility
+
 Users must be at least 13 years old.
 
 3. Account Responsibility
@@ -74,13 +79,14 @@ The App is provided “as is.” We disclaim warranties for accuracy or uptime.
 We are not liable for indirect damages arising from App use.
 
 8. Governing Law
-[State/Country] law applies. Disputes resolved in [Jurisdiction].
+Israel law applies. Disputes resolved in Israel.
 
-Contact: [Email/Address]
+Contact: assaf.fogelman@gmail.com
 
 End-User License Agreement (EULA)
 1. License Grant
 Elobby Inc. grants a non-exclusive, revocable license to use the App for personal purposes.
+
 
 2. Restrictions
 
@@ -101,7 +107,8 @@ Cookie Policy
 The App uses one session cookie (userId) for authentication. No third-party or tracking cookies are used. Data is deleted after 6 months of inactivity.
 
 Copyright Notice
-© [Year] Elobby Inc. All rights reserved. Unauthorized copying, distribution, or use of App content is prohibited. Report infringement to [Email].
+© ${new Date().getFullYear()} Elobby Inc. All rights reserved. Unauthorized copying, distribution, or use of App content is prohibited. Report infringement to assaf.fogelman@gmail.com.
+
 
 Children’s Privacy
 The App complies with COPPA and does not target users under 13.
@@ -120,3 +127,20 @@ Apple App Store: Follows App Store Guidelines.
 
 Users must comply with each store’s terms.
 `;
+
+function getDate(dateAsDate: Date) {
+  const day = dateAsDate.getDate();
+  const month = dateAsDate.getMonth() + 1; // Months are 0-indexed
+  if (I18nManager.isRTL) {
+    return `${day.toString().padStart(2, "0")}.${month
+      .toString()
+      .padStart(2, "0")}.${dateAsDate.getFullYear()}`;
+  }
+
+  return `${month
+    .toString()
+    .padStart(
+      2,
+      "0"
+    )}.${day.toString().padStart(2, "0")}.${dateAsDate.getFullYear()}`;
+}

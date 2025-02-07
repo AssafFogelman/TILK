@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -34,23 +34,26 @@ const PersonalDetailsScreen = () => {
 
   const { chosenTags, chosenAvatar } = useAuthState();
 
-  const handleDateChange = (
-    event: DateTimePickerEvent,
-    selectedDate?: Date | undefined
-  ) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setDateOfBirth(selectedDate);
+  //check if there are already personal details on the server and if so, fetch them and update the state
+  useEffect(() => {
+    async function fetchPersonalDetails() {
+      try {
+        const userData = await axios
+          .get("/user/user-data")
+          .then((response) => response.data.user);
+
+        if (userData) {
+          setNickname(userData.nickname);
+          setGender(userData.gender);
+          setDateOfBirth(userData.dateOfBirth);
+          setBiography(userData.biography);
+        }
+      } catch (error) {
+        console.log("error fetching personal details: ", error);
+      }
     }
-  };
-
-  const isFormValid = () => {
-    return nickname.length >= 3 && gender !== "" && biography.length >= 100;
-  };
-
-  const escapeHtml = (unsafeStr: string) => {
-    return unsafeStr.replaceAll("<", "");
-  };
+    fetchPersonalDetails();
+  }, []);
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
@@ -175,6 +178,24 @@ const PersonalDetailsScreen = () => {
         error
       );
     }
+  }
+
+  function handleDateChange(
+    event: DateTimePickerEvent,
+    selectedDate?: Date | undefined
+  ) {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setDateOfBirth(selectedDate);
+    }
+  }
+
+  function isFormValid() {
+    return nickname.length >= 3 && gender !== "" && biography.length >= 100;
+  }
+
+  function escapeHtml(unsafeStr: string) {
+    return unsafeStr.replaceAll("<", "");
   }
 };
 

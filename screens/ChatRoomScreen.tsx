@@ -29,7 +29,6 @@ import { FlashList } from "@shopify/flash-list";
 import { Separator } from "../components/chat-room-components/Separator";
 import { ListHeader } from "../components/chat-room-components/ListHeader";
 import { handleSendMessage } from "../hooks/chat-room-hooks/handleSendMessage";
-import { Text } from "react-native-paper";
 import ChatMessage from "../components/chatMessage";
 import ChatTimestamp from "../components/chat-room-components/ChatTimestamp";
 
@@ -86,48 +85,74 @@ const ChatRoomScreen = () => {
     }
   }, [otherUserData, selectedMessages, navigation]);
 
+  const scrollToBottom = useCallback(() => {
+    flashListRef.current?.scrollToEnd({ animated: true });
+  }, []);
+
   const scrollToFirstUnreadMessage = useCallback(() => {
-    if (flashListRef.current && chatMessages.length > 0) {
-      //we will wait a short time to make sure the messages are loaded
-      setTimeout(() => {
-        //find the first received unread message
-        const lastReadMessageIndex = chatMessages.findIndex(
-          (message) => message.messageId === lastReadMessageId
-        );
+    if (!flashListRef.current || !chatMessages) return;
 
-        //if the last read message is not the last message, scroll to it
-        if (
-          lastReadMessageIndex !== -1 &&
-          lastReadMessageIndex < chatMessages.length - 1
-        ) {
-          //scroll to it
-          flashListRef.current?.scrollToIndex({
-            animated: true,
-            index: lastReadMessageIndex + 1,
-          });
-        } else {
-          //scroll to the end
-          flashListRef.current?.scrollToEnd({ animated: false });
-        }
-      }, 50);
+    //if there is no last read message, scroll to the bottom of the list
+    if (!lastReadMessageId) {
+      scrollToBottom();
+      return;
     }
-  }, [chatMessages, userId]);
 
-  // Scroll when new messages arrive
-  useEffect(() => {
-    scrollToFirstUnreadMessage();
-  }, [chatMessages.length, scrollToFirstUnreadMessage]);
-  /* we have a problem that if we don't put "recipientData" as a dependency of the "useEffect", 
-  it will not load besides the first time we enter the chat screen. however, this makes it much slower. 
-  there might be a faster way. try to solve this in the future. */
+    //find the last read message index (could very well be a message the user sent)
+    const lastReadMessageIndex = chatMessages.findIndex(
+      (message) => message.messageId === lastReadMessageId
+    );
 
-  // const deleteSelectedMessages = (messageIdsToDelete: string[]) => {
-  //   deleteMessagesMutation.mutate(messageIdsToDelete);
-  // };
+    //if the last read message was not found, scroll to the bottom of the list
+    if (lastReadMessageIndex === -1) {
+      scrollToBottom();
+      return;
+    }
+
+    //find the index of the first unread *received* message after the last read message
+    const lastUnreadMessageIndex = chatMessages.findIndex(
+      (message, index) =>
+        index > lastReadMessageIndex && message.senderId !== userId
+    );
+
+    //if the last received unread message was not found, scroll to the bottom of the list
+    if (lastUnreadMessageIndex === -1) {
+      scrollToBottom();
+      return;
+    }
+
+    //scroll to the first unread message
+    flashListRef.current?.scrollToIndex({
+      animated: true,
+      index: lastUnreadMessageIndex,
+      viewPosition: 0.5, // Center the message vertically
+    });
+  }, [chatMessages, lastReadMessageId, userId, scrollToBottom]);
 
   const handleEmojiPress = () => {
     setShowEmojiSelector((currentState) => !currentState);
   };
+
+  // Memoize renderItem to prevent unnecessary re-renders
+  const renderItem = useCallback(
+    ({ item: message, index }: { item: MessageType; index: number }) => {
+      return (
+        <View style={{ paddingTop: 10 }}>
+          <ChatTimestamp
+            chatMessage={message}
+            index={index}
+            previousMessage={index > 0 ? chatMessages[index - 1] : null}
+          />
+          <ChatMessage
+            chatMessage={message}
+            selectedMessages={selectedMessages}
+            setSelectedMessages={setSelectedMessages}
+          />
+        </View>
+      );
+    },
+    [selectedMessages, chatMessages]
+  );
 
   return (
     <>
@@ -142,8 +167,7 @@ const ChatRoomScreen = () => {
             data={chatMessages}
             renderItem={renderItem}
             estimatedItemSize={100}
-            // onContentSizeChange={scrollToFirstUnreadMessage}
-            // onLayout={scrollToFirstUnreadMessage}
+            onContentSizeChange={scrollToBottom}
             ItemSeparatorComponent={(props) =>
               Separator({ ...props, lastReadMessageId })
             }
@@ -154,6 +178,9 @@ const ChatRoomScreen = () => {
                 isFirstMessage: !!chatMessages[0],
               })
             }
+            onLoad={() => {
+              scrollToFirstUnreadMessage();
+            }}
           />
         )}
 
@@ -252,33 +279,6 @@ const ChatRoomScreen = () => {
       )}
     </>
   );
-
-  function renderItem({
-    item: message,
-    index,
-  }: {
-    item: MessageType;
-    index: number;
-  }) {
-    return (
-      <View style={{ paddingTop: 10 }}>
-        {/* <Text>{message.text}</Text>
-        <Text>{message.sentDate.toLocaleString()}</Text>
-        <Text>{message.receivedDate?.toLocaleString()}</Text> */}
-        <ChatTimestamp
-          chatMessage={message}
-          index={index}
-          previousMessage={index > 0 ? chatMessages[index - 1] : null}
-        />
-        <Text>unread: {message.unread ? "true" : "false"}</Text>
-        <ChatMessage
-          chatMessage={message}
-          selectedMessages={selectedMessages}
-          setSelectedMessages={setSelectedMessages}
-        />
-      </View>
-    );
-  }
 };
 
 export default ChatRoomScreen;

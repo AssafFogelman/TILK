@@ -22,6 +22,7 @@ const weekdays = [
   "Saturday",
 ];
 
+//return when a message was received - at which hour / yesterday / which weekday / or which date
 const formatDate = (inputDate: string | null) => {
   if (!inputDate) return "";
   const dateAsDate = new Date(inputDate);
