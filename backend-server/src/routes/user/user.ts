@@ -14,6 +14,8 @@ import { markAsRead } from "../../controllers/mark-as-read.js";
 import { upsertExpoPushToken } from "../../controllers/upsert-expo-push-token.js";
 import { getBlockedUsers } from "../../controllers/get-blocked-users.js";
 import { unblockUser } from "../../controllers/unblock-user.js";
+import { blockUser } from "../../controllers/block-user.js";
+import { disconnectFromUser } from "../../controllers/disconnect-from--user.js";
 
 export const user = new Hono().basePath("/user");
 
@@ -79,3 +81,9 @@ user.get("/blocked-users", validateToken, getBlockedUsers);
 
 //unblock user
 user.post("/unblock-user", validateToken, unblockUser);
+
+//block user
+user.post("/block-user", validateToken, blockUser);
+
+//disconnect from user
+user.post("/disconnect-from-user", validateToken, disconnectFromUser);

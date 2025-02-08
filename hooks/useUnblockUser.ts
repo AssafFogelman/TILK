@@ -15,8 +15,9 @@ export function useUnblockUser() {
   return useMutation({
     mutationFn: unblockUser,
     onMutate(blockedUserId) {
+      //before the mutation, optimistically update the blockedUsers list
       queryClient.setQueryData(["blockedUsers"], (old: BlockedUserType[]) => {
-        return old.filter((user) => user.userId !== blockedUserId);
+        return [...old, blockedUserId];
       });
     },
     onError: () => {

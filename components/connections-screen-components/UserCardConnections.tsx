@@ -10,6 +10,7 @@ import {
   Button,
   Card,
   Chip,
+  Menu,
   useTheme,
 } from "react-native-paper";
 import {
@@ -18,6 +19,9 @@ import {
 } from "../../types/types";
 import { age } from "../../utils/dateUtils";
 import Entypo from "@expo/vector-icons/Entypo";
+import { useBlockUser } from "../../hooks/useBlockUser";
+import { useState } from "react";
+import { useDisconnectFromUser } from "../../hooks/useDisconnectFromUser";
 
 export const UserCard = ({
   user,
@@ -27,6 +31,11 @@ export const UserCard = ({
   onAvatarPress: (user: ConnectionsScreenUser) => void;
 }) => {
   const theme = useTheme();
+  const [visible, setVisible] = useState(false);
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
+  const { mutate: blockUser } = useBlockUser();
+  const { mutate: disconnectFromUser } = useDisconnectFromUser();
   const LeftContent = () => (
     <Pressable onPress={() => onAvatarPress(user)}>
       <Avatar.Image
@@ -54,17 +63,45 @@ export const UserCard = ({
   );
 
   const RightContent = () => (
-    <TouchableOpacity
-      style={{ marginEnd: 10, marginTop: -15 }}
-      onPress={() => {}}
+    <Menu
+      visible={visible}
+      onDismiss={closeMenu}
+      anchor={
+        <TouchableOpacity
+          style={{ marginEnd: 10, marginTop: -15 }}
+          onPress={openMenu}
+        >
+          <Entypo
+            name="dots-three-vertical"
+            size={17}
+            color={theme.colors.onSurface}
+            style={{ color: theme.colors.onSurface }}
+          />
+        </TouchableOpacity>
+      }
     >
-      <Entypo
-        name="dots-three-vertical"
-        size={17}
-        color={theme.colors.onSurface}
-        style={{ color: theme.colors.onSurface }}
+      <Menu.Item
+        onPress={() => {
+          closeMenu();
+          blockUser({
+            userId: user.userId,
+            nickname: user.nickname,
+            smallAvatar: user.smallAvatar,
+          });
+        }}
+        title="Block user"
       />
-    </TouchableOpacity>
+      {/* only show disconnect from user if the user is connected */}
+      {user.userType === "connectedUser" && (
+        <Menu.Item
+          onPress={() => {
+            closeMenu();
+            disconnectFromUser(user);
+          }}
+          title="disconnect from user"
+        />
+      )}
+    </Menu>
   );
 
   return (

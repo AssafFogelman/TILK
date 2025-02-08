@@ -10,11 +10,14 @@ import {
   Button,
   Card,
   Chip,
+  Menu,
   useTheme,
 } from "react-native-paper";
 import { knnDataItemType } from "../../types/types";
 import { age } from "../../utils/dateUtils";
 import Entypo from "@expo/vector-icons/Entypo";
+import { useState } from "react";
+import { useBlockUser } from "../../hooks/useBlockUser";
 
 export const UserCard = ({
   user,
@@ -24,6 +27,10 @@ export const UserCard = ({
   onAvatarPress: (user: knnDataItemType) => void;
 }) => {
   const theme = useTheme();
+  const [visible, setVisible] = useState(false);
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
+  const { mutate: blockUser } = useBlockUser();
 
   const LeftContent = () => (
     <Pressable onPress={() => onAvatarPress(user)}>
@@ -52,17 +59,35 @@ export const UserCard = ({
   );
 
   const RightContent = () => (
-    <TouchableOpacity
-      style={{ marginEnd: 10, marginTop: -15 }}
-      onPress={() => {}}
+    <Menu
+      visible={visible}
+      onDismiss={closeMenu}
+      anchor={
+        <TouchableOpacity
+          style={{ marginEnd: 10, marginTop: -15 }}
+          onPress={openMenu}
+        >
+          <Entypo
+            name="dots-three-vertical"
+            size={17}
+            color={theme.colors.onSurface}
+            style={{ color: theme.colors.onSurface }}
+          />
+        </TouchableOpacity>
+      }
     >
-      <Entypo
-        name="dots-three-vertical"
-        size={17}
-        color={theme.colors.onSurface}
-        style={{ color: theme.colors.onSurface }}
+      <Menu.Item
+        onPress={() => {
+          closeMenu();
+          blockUser({
+            userId: user.user_id,
+            nickname: user.nickname,
+            smallAvatar: user.small_avatar,
+          });
+        }}
+        title="Block user"
       />
-    </TouchableOpacity>
+    </Menu>
   );
 
   return (

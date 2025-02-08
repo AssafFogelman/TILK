@@ -124,6 +124,7 @@ export const ConnectionsScreen = ({ searchQuery }: { searchQuery: string }) => {
     });
   }
 
+  //filter the data based on the search query
   function filteredData() {
     return data?.filter((item) => {
       if ("isSeparator" in item) return true;
