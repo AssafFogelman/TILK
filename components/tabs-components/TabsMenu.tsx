@@ -29,13 +29,21 @@ export const TabsMenu: React.FC /*<MenuProps>*/ = () => {
       >
         <Menu.Item
           onPress={() => {
+            closeMenu();
             navigation.navigate("PersonalDetails");
           }}
           title="personal details"
         />
-        <Menu.Item onPress={() => {}} title="blocked users" />
         <Menu.Item
           onPress={() => {
+            closeMenu();
+            navigation.navigate("BlockedUsers");
+          }}
+          title="blocked users"
+        />
+        <Menu.Item
+          onPress={() => {
+            closeMenu();
             navigation.navigate("About");
           }}
           title="About"

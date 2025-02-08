@@ -13,6 +13,7 @@ import { useEffect, useRef } from "react";
 import SplashScreen from "./screens/SplashScreen";
 import { hideAsync } from "expo-splash-screen";
 import { AboutScreen } from "./screens/AboutScreen";
+import BlockedUsersScreen from "./screens/BlockedUsersScreen";
 
 const Stack = createNativeStackNavigator<StackParamList>();
 
@@ -65,6 +66,7 @@ const StackNavigator = () => {
           />
 
           <Stack.Screen name="ChatRoom" component={ChatRoomScreen} />
+          <Stack.Screen name="BlockedUsers" component={BlockedUsersScreen} />
         </>
       ) : (
         <>

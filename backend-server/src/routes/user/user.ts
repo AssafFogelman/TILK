@@ -12,6 +12,8 @@ import { getConnectionsList } from "../../controllers/get-connections-list.js";
 import { userSelectedTags } from "../../controllers/user-selected-tags.js";
 import { markAsRead } from "../../controllers/mark-as-read.js";
 import { upsertExpoPushToken } from "../../controllers/upsert-expo-push-token.js";
+import { getBlockedUsers } from "../../controllers/get-blocked-users.js";
+import { unblockUser } from "../../controllers/unblock-user.js";
 
 export const user = new Hono().basePath("/user");
 
@@ -71,3 +73,9 @@ user.post("/mark-as-read", validateToken, markAsRead);
 
 //upload the expo push token to the database
 user.post("/upsert-expo-push-token", validateToken, upsertExpoPushToken);
+
+//get blocked users
+user.get("/blocked-users", validateToken, getBlockedUsers);
+
+//unblock user
+user.post("/unblock-user", validateToken, unblockUser);

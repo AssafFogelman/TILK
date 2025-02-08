@@ -24,6 +24,7 @@ export type StackParamList = {
   PersonalDetails: undefined; //there are no params that are sent to this screen
   LookingTo: undefined; //there are no params that are sent to this screen
   About: undefined; //there are no params that are sent to this screen
+  BlockedUsers: undefined; //there are no params that are sent to this screen
 };
 
 export type TabParamList = {
@@ -403,4 +404,12 @@ export type MessageDeliveredPayload = {
   receivedDate: Date;
   messageId: string;
   chatId: string;
+};
+
+/************** blocked users types **************/
+
+export type BlockedUserType = {
+  userId: string;
+  smallAvatar: string | null;
+  nickname: string | null;
 };
