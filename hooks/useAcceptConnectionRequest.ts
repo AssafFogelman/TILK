@@ -9,10 +9,10 @@ import {
 } from "../types/types";
 import { queryClient } from "../services/queryClient";
 
-async function acceptConnectionRequest(recipient: ConnectionsScreenUser) {
+async function acceptConnectionRequest(sender: ConnectionsScreenUser) {
   try {
     await axios.post("/user/accept-connection-request", {
-      recipientId: recipient.userId,
+      senderId: sender.userId,
     });
   } catch (error) {
     if (isAxiosError(error)) {
@@ -34,12 +34,13 @@ export function useAcceptConnectionRequest() {
   return useMutation({
     mutationFn: acceptConnectionRequest,
     // before sending the request, optimistically update the connections list
-    onMutate: (recipient: ConnectionsScreenUser) => {
+    onMutate: (sender: ConnectionsScreenUser) => {
       queryClient.setQueryData(
         ["connectionsList"],
-        (old: ConnectionsScreenUser[]) => changeRecipientStatus(old, recipient)
+        (old: ConnectionsScreenUser[]) => changeSenderStatus(old, sender)
       );
     },
+
     onError: () => {
       console.log("error trying to send connection request");
       //roll back the optimistic update
@@ -52,18 +53,25 @@ export function useAcceptConnectionRequest() {
     },
   });
 
-  function changeRecipientStatus(
+  function changeSenderStatus(
     old: ConnectionsListType = [],
-    recipient: ConnectionsScreenUser
+    sender: ConnectionsScreenUser
   ) {
-    // Remove the recipient if it already exists
+    // Remove the sender's connection request
     const filteredList = old.filter(
-      (connection) => connection.userId !== recipient.userId
+      (connection) => connection.userId !== sender.userId
     );
 
-    // If the list is empty, simply return with the new recipient
+    // we'll change the category of the sender to CONNECTED_USER
+    const connectedSender = {
+      ...sender,
+      category: ConnectionsCategory.CONNECTED_USER,
+    };
+
+    // If the list is empty, simply return with the new sender
+
     if (filteredList.length === 0) {
-      return [recipient];
+      return [connectedSender];
     }
 
     // Find the last CONNECTION_REQUEST index
@@ -78,7 +86,7 @@ export function useAcceptConnectionRequest() {
       // Insert after the last CONNECTION_REQUEST
       return [
         ...filteredList.slice(0, lastConnectionRequestIndex + 1),
-        recipient,
+        connectedSender,
         ...filteredList.slice(lastConnectionRequestIndex + 1),
       ];
     }
@@ -92,7 +100,7 @@ export function useAcceptConnectionRequest() {
       // Insert before the first CONNECTED_USER
       return [
         ...filteredList.slice(0, firstConnectedUserIndex),
-        recipient,
+        connectedSender,
         ...filteredList.slice(firstConnectedUserIndex),
       ];
     }
@@ -106,12 +114,12 @@ export function useAcceptConnectionRequest() {
       // Insert before the first SENT_REQUEST
       return [
         ...filteredList.slice(0, firstSentRequestIndex),
-        recipient,
+        connectedSender,
         ...filteredList.slice(firstSentRequestIndex),
       ];
     }
 
     // If none of the above conditions are met, append to the end
-    return [...filteredList, recipient];
+    return [...filteredList, connectedSender];
   }
 }

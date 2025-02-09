@@ -9,8 +9,8 @@ export const postConnectionRequest = async (c: Context) => {
     const { recipientId }: { recipientId: string } = await c.req.json();
 
     const connectionRequest = await db.insert(connectionRequests).values({
-      recipientId,
-      senderId: userId,
+      recipientId: recipientId < userId ? recipientId : userId,
+      senderId: recipientId < userId ? userId : recipientId,
     });
 
     return c.json(connectionRequest, 200);

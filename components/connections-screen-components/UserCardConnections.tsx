@@ -42,6 +42,7 @@ export const UserCard = ({
   const { mutate: unsendConnectionRequest } = useUnsendConnectionRequest();
   const { mutate: acceptConnectionRequest } = useAcceptConnectionRequest();
   const { mutate: declineConnectionRequest } = useDeclineConnectionRequest();
+  const { mutate: addChat } = useAddChat(); // just check the constraint in the "chats" schema!
 
   const LeftContent = () => (
     <Pressable onPress={() => onAvatarPress(user)}>
@@ -156,7 +157,7 @@ export const UserCard = ({
           </Button>
         );
       case ConnectionsCategory.CONNECTED_USER:
-        return (
+        return [
           <Button
             labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
             style={user.unread ? { borderWidth: 2 } : undefined}
@@ -165,8 +166,17 @@ export const UserCard = ({
             }}
           >
             disconnect from user
-          </Button>
-        );
+          </Button>,
+          <Button
+            labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
+            style={user.unread ? { borderWidth: 2 } : undefined}
+            onPress={() => {
+              addChat(user);
+            }}
+          >
+            chat
+          </Button>,
+        ];
       case ConnectionsCategory.CONNECTION_REQUEST:
         return [
           <Button

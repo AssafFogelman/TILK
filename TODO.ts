@@ -12,8 +12,13 @@
     * blocked users
     
 
+    TODO: make sure that when you create a new chat, participant1 is greater than participant2. because there is a schema check on that.
+    example:
+    const connectionRequest = await db.insert(connectionRequests).values({
+      recipientId: recipientId < userId ? recipientId : userId,
+      senderId: recipientId < userId ? userId : recipientId,
+    });
     
-
     home screen:
     * button for "connect"/"request sent"/"connected"/"request received unread"/"request received read"
     * button for "chat" if user is connected to us
