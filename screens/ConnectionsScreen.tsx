@@ -21,6 +21,8 @@ import { UserInfoModal } from "../components/connections-screen-components/UserI
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axios, { isAxiosError } from "axios";
 import { queryClient } from "../services/queryClient";
+import { Separator } from "../components/connections-screen-components/Separator";
+import { ListHeader } from "../components/connections-screen-components/ListHeader";
 
 // why do we need a "connections" tab?
 // because the user needs to see who sent him a connection request.
@@ -58,10 +60,10 @@ export const ConnectionsScreen = ({ searchQuery }: { searchQuery: string }) => {
         <FlashList
           data={filteredData()}
           renderItem={renderItem}
+          ItemSeparatorComponent={Separator}
+          ListHeaderComponent={Header}
           estimatedItemSize={116}
-          keyExtractor={(item, index) =>
-            "isSeparator" in item ? `${item.title}` : `${item.userId}-${index}`
-          }
+          keyExtractor={(item, index) => `${item.userId}-${index}`}
         />
       </View>
 
@@ -73,6 +75,12 @@ export const ConnectionsScreen = ({ searchQuery }: { searchQuery: string }) => {
     </>
   );
 
+  function Header() {
+    return (
+      <ListHeader firstConnectionCat={filteredData()?.[0].category ?? null} />
+    );
+  }
+
   function handleOpenModal(user: ConnectionsScreenUser) {
     setModalUserInfo(user);
     setShowModal(true);
@@ -83,9 +91,6 @@ export const ConnectionsScreen = ({ searchQuery }: { searchQuery: string }) => {
   }
 
   function renderItem({ item }: { item: ConnectionsListItem }) {
-    if ("isSeparator" in item) {
-      return <List.Subheader>{item.title}</List.Subheader>;
-    }
     return <UserCard user={item} onAvatarPress={handleOpenModal} />;
   }
 

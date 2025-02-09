@@ -56,9 +56,6 @@ export async function registerForPushNotificationsAsync() {
           projectId,
         })
       ).data;
-      if (process.env.NODE_ENV === "development") {
-        console.log("Push token for debugging: ", pushTokenString);
-      }
 
       return pushTokenString;
     } catch (error: unknown) {

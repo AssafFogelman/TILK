@@ -16,6 +16,9 @@ import { getBlockedUsers } from "../../controllers/get-blocked-users.js";
 import { unblockUser } from "../../controllers/unblock-user.js";
 import { blockUser } from "../../controllers/block-user.js";
 import { disconnectFromUser } from "../../controllers/disconnect-from--user.js";
+import { postConnectionRequest } from "../../controllers/post-connection-request.js";
+import { deleteConnectionRequest } from "../../controllers/delete-connection-request.js";
+import { acceptConnectionRequest } from "../../controllers/accept-connection-request.js";
 
 export const user = new Hono().basePath("/user");
 
@@ -70,10 +73,20 @@ user.post("/activate-user", validateToken, activateUser);
 //get connections list
 user.get("/get-connections-list", validateToken, getConnectionsList);
 
+//post connection request
+user.post("/connection-request", validateToken, postConnectionRequest);
+
+//unsend connection request
+user.delete("/connection-request", validateToken, deleteConnectionRequest);
+
+//accept connection request
+user.post("/accept-connection-request", validateToken, acceptConnectionRequest);
+
 //mark unread connection requests as read
 user.post("/mark-as-read", validateToken, markAsRead);
 
 //upload the expo push token to the database
+
 user.post("/upsert-expo-push-token", validateToken, upsertExpoPushToken);
 
 //get blocked users

@@ -14,14 +14,17 @@ import {
   useTheme,
 } from "react-native-paper";
 import {
+  ConnectionsCategory,
   ConnectionsScreenUser,
-  connectionsUserActionsStates,
+  connectionsButtonLabels,
 } from "../../types/types";
 import { age } from "../../utils/dateUtils";
 import Entypo from "@expo/vector-icons/Entypo";
 import { useBlockUser } from "../../hooks/useBlockUser";
 import { useState } from "react";
 import { useDisconnectFromUser } from "../../hooks/useDisconnectFromUser";
+import { useUnsendConnectionRequest } from "../../hooks/useUnsendConnectionRequest";
+import { useAcceptConnectionRequest } from "../../hooks/useAcceptConnectionRequest";
 
 export const UserCard = ({
   user,
@@ -36,6 +39,10 @@ export const UserCard = ({
   const closeMenu = () => setVisible(false);
   const { mutate: blockUser } = useBlockUser();
   const { mutate: disconnectFromUser } = useDisconnectFromUser();
+  const { mutate: unsendConnectionRequest } = useUnsendConnectionRequest();
+  const { mutate: acceptConnectionRequest } = useAcceptConnectionRequest();
+  const { mutate: declineConnectionRequest } = useDeclineConnectionRequest();
+
   const LeftContent = () => (
     <Pressable onPress={() => onAvatarPress(user)}>
       <Avatar.Image
@@ -92,10 +99,11 @@ export const UserCard = ({
         title="Block user"
       />
       {/* only show disconnect from user if the user is connected */}
-      {user.userType === "connectedUser" && (
+      {user.category === ConnectionsCategory.CONNECTED_USER && (
         <Menu.Item
           onPress={() => {
             closeMenu();
+
             disconnectFromUser(user);
           }}
           title="disconnect from user"
@@ -129,17 +137,58 @@ export const UserCard = ({
           showsHorizontalScrollIndicator={false}
         />
       </Card.Content>
-      <Card.Actions>
-        {connectionsUserActionsStates[user.userType].map((action) => (
-          <Button
-            key={action}
-            labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
-            style={user.unread ? { borderWidth: 2 } : undefined}
-          >
-            {action}
-          </Button>
-        ))}
-      </Card.Actions>
+      <Card.Actions>{buttonsForCategory(user.category)}</Card.Actions>
     </Card>
   );
+
+  function buttonsForCategory(category: keyof typeof ConnectionsCategory) {
+    switch (category) {
+      case ConnectionsCategory.SENT_REQUEST:
+        return (
+          <Button
+            labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
+            style={user.unread ? { borderWidth: 2 } : undefined}
+            onPress={() => {
+              unsendConnectionRequest(user.userId);
+            }}
+          >
+            cancel request
+          </Button>
+        );
+      case ConnectionsCategory.CONNECTED_USER:
+        return (
+          <Button
+            labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
+            style={user.unread ? { borderWidth: 2 } : undefined}
+            onPress={() => {
+              disconnectFromUser(user);
+            }}
+          >
+            disconnect from user
+          </Button>
+        );
+      case ConnectionsCategory.CONNECTION_REQUEST:
+        return [
+          <Button
+            labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
+            style={user.unread ? { borderWidth: 2 } : undefined}
+            onPress={() => {
+              acceptConnectionRequest(user);
+            }}
+          >
+            accept
+          </Button>,
+
+          <Button
+            labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
+            style={user.unread ? { borderWidth: 2 } : undefined}
+            onPress={() => {
+              declineConnectionRequest(user.userId);
+            }}
+          >
+            decline
+          </Button>,
+        ];
+    }
+  }
 };

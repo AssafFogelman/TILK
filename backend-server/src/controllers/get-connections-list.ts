@@ -1,6 +1,6 @@
 import { Context } from "hono";
 import { db } from "../drizzle/db.js";
-import { and, eq, or, not, inArray, desc, isNull, sql } from "drizzle-orm";
+import { and, eq, or, not, inArray, isNull, sql, desc } from "drizzle-orm";
 import {
   connections,
   users,
@@ -11,11 +11,13 @@ import {
   chats,
 } from "../drizzle/schema.js";
 import {
-  SeparatorItem,
   ConnectionsListType,
   ReceivedRequestsQueryResult,
   ConnectedUsersQueryResult,
+  SentRequestsQueryResult,
 } from "../../../types/types.js";
+import ConnectionsCategory from "../backend-types/ConnectionsCategory.js";
+
 /*
   get user connections, received connections requests,and sent connections requests
 
@@ -68,6 +70,9 @@ export const getConnectionsList = async (c: Context) => {
           not(isNull(users.gender)),
           not(isNull(users.biography))
         )
+      )
+      .orderBy(
+        desc(connectionRequests.requestDate)
       )) as ReceivedRequestsQueryResult;
 
     // Get connected users
@@ -124,61 +129,63 @@ export const getConnectionsList = async (c: Context) => {
           not(isNull(users.gender)),
           not(isNull(users.biography))
         )
-      )) as ConnectedUsersQueryResult;
+      )
+      .orderBy(desc(connections.connectionDate))) as ConnectedUsersQueryResult;
 
     // Get sent connection requests
-    //TODO: sent requests might be redundant or should be done in a different route.
-    // const sentRequests = (await db
-    //   .select({
-    //     userId: users.userId,
-    //     smallAvatar: users.smallAvatar,
-    //     originalAvatar: users.originalAvatars,
-    //     nickname: users.nickname,
-    //     currentlyConnected: users.currentlyConnected,
-    //     socketId: users.socketId,
-    //     gender: users.gender,
-    //     dateOfBirth: users.dateOfBirth,
-    //     biography: users.biography,
-    //   })
-    //   .from(connectionRequests)
-    //   .innerJoin(users, eq(users.userId, connectionRequests.recipientId))
-    //   .leftJoin(
-    //     blocks,
-    //     or(
-    //       and(
-    //         eq(blocks.blockingUserId, userId),
-    //         eq(blocks.blockedUserId, users.userId)
-    //       ),
-    //       and(
-    //         eq(blocks.blockingUserId, users.userId),
-    //         eq(blocks.blockedUserId, userId)
-    //       )
-    //     )
-    //   )
-    //   .where(
-    //     and(
-    //       eq(connectionRequests.senderId, userId),
-    //       //user isn't blocked or blocking
-    //       isNull(blocks.blockId),
-    //       //retrieve user as long as they are not off-grid
-    //       eq(users.offGrid, false),
-    //       // user must be active
-    //       eq(users.activeUser, true),
-    // // user must have a small avatar, nickname, biography, and gender
-    // // BTW, they can't be null since they are mandatory when the user registers.
-    // // so if you have performance issues, you can remove the not(isNull())s
-    // not(isNull(users.smallAvatar)),
-    // not(isNull(users.nickname)),
-    // not(isNull(users.gender)),
-    // not(isNull(users.biography))
-    //     )
-    //   )) as SentRequestsQueryResult;
+    const sentRequests = (await db
+      .select({
+        userId: users.userId,
+        smallAvatar: users.smallAvatar,
+        originalAvatar: users.originalAvatars,
+        nickname: users.nickname,
+        currentlyConnected: users.currentlyConnected,
+        gender: users.gender,
+        dateOfBirth: users.dateOfBirth,
+        biography: users.biography,
+      })
+      .from(connectionRequests)
+      .innerJoin(users, eq(users.userId, connectionRequests.recipientId))
+      .leftJoin(
+        blocks,
+        or(
+          and(
+            eq(blocks.blockingUserId, userId),
+            eq(blocks.blockedUserId, users.userId)
+          ),
+          and(
+            eq(blocks.blockingUserId, users.userId),
+            eq(blocks.blockedUserId, userId)
+          )
+        )
+      )
+      .where(
+        and(
+          eq(connectionRequests.senderId, userId),
+          //user isn't blocked or blocking
+          isNull(blocks.blockId),
+          //retrieve user as long as they are not off-grid
+          eq(users.offGrid, false),
+          // user must be active
+          eq(users.activeUser, true),
+          // user must have a small avatar, nickname, biography, and gender
+          // BTW, they can't be null since they are mandatory when the user registers.
+          // so if you have performance issues, you can remove the not(isNull())s
+          not(isNull(users.smallAvatar)),
+          not(isNull(users.nickname)),
+          not(isNull(users.gender)),
+          not(isNull(users.biography))
+        )
+      )
+      .orderBy(
+        desc(connectionRequests.requestDate)
+      )) as SentRequestsQueryResult;
 
     //extract all other-users' ids
     const userIds = [
       ...receivedRequests,
       ...connectedUsers,
-      // ...sentRequests,
+      ...sentRequests,
     ].map((u) => u.userId);
 
     // Get tags for all users
@@ -224,49 +231,33 @@ export const getConnectionsList = async (c: Context) => {
       ])
     );
 
-    const connectedUsersSeparator: SeparatorItem = {
-      isSeparator: true,
-      title: "Connected Users",
-    };
-    const receivedRequestsSeparator: SeparatorItem = {
-      isSeparator: true,
-      title: "Received Requests",
-    };
-
-    // const sentRequestsSeparator = {
-    //   isSeparator: true,
-    //   title: "Sent Requests",
-    // };
-
     // Combine all data
     const data: ConnectionsListType = [
-      receivedRequestsSeparator,
       ...receivedRequests.map((request) => ({
         ...request,
-        userType: "connectionRequest" as const,
+        category: ConnectionsCategory.CONNECTION_REQUEST,
         tags: userTags
           .filter((t) => t.userId === request.userId)
           .map((t) => t.tagName),
       })),
 
-      connectedUsersSeparator,
       ...connectedUsers.map((connectedUser) => ({
         ...connectedUser,
-        userType: "connectedUser" as const,
+        category: ConnectionsCategory.CONNECTED_USER,
         tags: userTags
           .filter((t) => t.userId === connectedUser.userId)
           .map((t) => t.tagName),
+
         lastMessage: lastMessagesMap.get(connectedUser.userId) ?? null, //if there is no last message, return null
       })),
 
-      // ...sentRequestsSeparator,
-      // ...sentRequests.map((request) => ({
-      //   ...request,
-      //   userType: "sentRequest",
-      //   tags: userTags
-      //     .filter((t) => t.userId === request.userId)
-      //     .map((t) => t.tagName),
-      // })),
+      ...sentRequests.map((request) => ({
+        ...request,
+        category: ConnectionsCategory.SENT_REQUEST,
+        tags: userTags
+          .filter((t) => t.userId === request.userId)
+          .map((t) => t.tagName),
+      })),
     ];
 
     return c.json(data, 200);

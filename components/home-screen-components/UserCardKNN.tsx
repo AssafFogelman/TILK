@@ -13,11 +13,19 @@ import {
   Menu,
   useTheme,
 } from "react-native-paper";
-import { knnDataItemType } from "../../types/types";
+import {
+  ConnectionsCategory,
+  ConnectionsListItem,
+  knnDataItemType,
+} from "../../types/types";
 import { age } from "../../utils/dateUtils";
 import Entypo from "@expo/vector-icons/Entypo";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useBlockUser } from "../../hooks/useBlockUser";
+import { useUnsendConnectionRequest } from "../../hooks/useUnsendConnectionRequest";
+import { queryClient } from "../../services/queryClient";
+import { useSendConnectionRequest } from "../../hooks/useSendConnectionRequest";
+import { useQuery } from "@tanstack/react-query";
 
 export const UserCard = ({
   user,
@@ -28,66 +36,88 @@ export const UserCard = ({
 }) => {
   const theme = useTheme();
   const [visible, setVisible] = useState(false);
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
   const { mutate: blockUser } = useBlockUser();
+  const { mutate: sendConnectionRequest } = useSendConnectionRequest();
+  const { mutate: unsendConnectionRequest } = useUnsendConnectionRequest();
+  const { data: connectionsList } = useQuery<ConnectionsListItem[]>({
+    queryKey: ["connectionsList"],
+  });
 
-  const LeftContent = () => (
-    <Pressable onPress={() => onAvatarPress(user)}>
-      <Avatar.Image
-        size={40}
-        source={{
-          uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + user.small_avatar,
-        }}
-      />
-      {user.currently_connected && (
-        <Badge
-          size={10}
-          style={[
-            {
-              backgroundColor: "chartreuse",
-              borderWidth: 1,
-              borderColor: "whitesmoke",
-              position: "absolute",
-              top: -2,
-            },
-            I18nManager.isRTL ? { left: 2 } : { right: 2 },
-          ]}
-        />
-      )}
-    </Pressable>
+  const sentRequest = connectionsList?.some(
+    (connection) =>
+      connection.userId === user.user_id &&
+      connection.category === ConnectionsCategory.SENT_REQUEST
   );
 
-  const RightContent = () => (
-    <Menu
-      visible={visible}
-      onDismiss={closeMenu}
-      anchor={
-        <TouchableOpacity
-          style={{ marginEnd: 10, marginTop: -15 }}
-          onPress={openMenu}
-        >
-          <Entypo
-            name="dots-three-vertical"
-            size={17}
-            color={theme.colors.onSurface}
-            style={{ color: theme.colors.onSurface }}
+  const LeftContent = useCallback(
+    () => (
+      <Pressable onPress={() => onAvatarPress(user)}>
+        <Avatar.Image
+          size={40}
+          source={{
+            uri: process.env.EXPO_PUBLIC_SERVER_ADDRESS + user.small_avatar,
+          }}
+        />
+        {user.currently_connected && (
+          <Badge
+            size={10}
+            style={[
+              {
+                backgroundColor: "chartreuse",
+                borderWidth: 1,
+                borderColor: "whitesmoke",
+                position: "absolute",
+                top: -2,
+              },
+              I18nManager.isRTL ? { left: 2 } : { right: 2 },
+            ]}
           />
-        </TouchableOpacity>
-      }
-    >
-      <Menu.Item
-        onPress={() => {
-          closeMenu();
-          blockUser({
-            userId: user.user_id,
-            nickname: user.nickname,
-            smallAvatar: user.small_avatar,
-          });
-        }}
-        title="Block user"
-      />
-    </Menu>
+        )}
+      </Pressable>
+    ),
+    [onAvatarPress, user]
+  );
+
+  const RightContent = useCallback(
+    () => (
+      <Menu
+        visible={visible}
+        onDismiss={() => setVisible(false)}
+        anchor={
+          <TouchableOpacity
+            style={{ marginEnd: 10, marginTop: -15 }}
+            onPress={() => setVisible(true)}
+          >
+            <Entypo
+              name="dots-three-vertical"
+              size={17}
+              color={theme.colors.onSurface}
+              style={{ color: theme.colors.onSurface }}
+            />
+          </TouchableOpacity>
+        }
+      >
+        <Menu.Item
+          onPress={() => {
+            setVisible(false);
+            blockUser({
+              userId: user.user_id,
+              nickname: user.nickname,
+              smallAvatar: user.small_avatar,
+            });
+          }}
+          title="Block user"
+        />
+      </Menu>
+    ),
+    [
+      blockUser,
+      theme.colors.onSurface,
+      visible,
+      user.user_id,
+      user.nickname,
+      user.small_avatar,
+    ]
   );
 
   return (
@@ -114,7 +144,23 @@ export const UserCard = ({
         />
       </Card.Content>
       <Card.Actions>
-        <Button>Connect</Button>
+        {sentRequest ? (
+          <Button
+            onPress={() => {
+              unsendConnectionRequest(user.user_id);
+            }}
+          >
+            Request sent
+          </Button>
+        ) : (
+          <Button
+            onPress={() => {
+              sendConnectionRequest(user);
+            }}
+          >
+            Connect
+          </Button>
+        )}
       </Card.Actions>
     </Card>
   );

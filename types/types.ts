@@ -217,19 +217,21 @@ export type SentRequestsQueryResult = {
   biography: string; // removed null since we filter these out
 }[];
 
-export type ConnectionsScreenUserType =
-  | "connectionRequest"
-  | "connectedUser"
-  | "sentRequest";
+export const ConnectionsCategory = {
+  CONNECTION_REQUEST: "CONNECTION_REQUEST",
+  CONNECTED_USER: "CONNECTED_USER",
+  SENT_REQUEST: "SENT_REQUEST",
+} as const;
 
 export type ConnectionsScreenUser = {
-  userType: ConnectionsScreenUserType;
+  category: keyof typeof ConnectionsCategory;
   userId: string;
   originalAvatar: string[];
   smallAvatar: string;
   nickname: string;
   currentlyConnected: boolean;
   tags: string[];
+
   lastMessage?: {
     lastMessageText: string | null;
     unread: boolean;
@@ -241,24 +243,23 @@ export type ConnectionsScreenUser = {
   biography: string;
 };
 
-export type SeparatorItem = {
-  isSeparator: true;
-  title: string;
-};
-
-export type ConnectionsListItem = ConnectionsScreenUser | SeparatorItem;
+export type ConnectionsListItem = ConnectionsScreenUser;
 
 export type ConnectionsListType = ConnectionsListItem[];
 
 //the buttons that each type of user has:
-export const connectionsUserActionsStates: Record<
-  ConnectionsScreenUserType,
-  string[]
+export const connectionsButtonLabels: Record<
+  keyof typeof ConnectionsCategory,
+  Record<string, string>[]
 > = {
-  connectionRequest: ["accept", "decline"],
-  connectedUser: ["chat"],
-  sentRequest: ["cancel request"],
-};
+  [ConnectionsCategory.CONNECTION_REQUEST]: [
+    { accept: "accept" },
+    { decline: "decline" },
+  ],
+  [ConnectionsCategory.CONNECTED_USER]: [{ chat: "chat" }],
+  [ConnectionsCategory.SENT_REQUEST]: [{ cancelRequest: "cancel request" }],
+} as const;
+
 //************************** chats types **************************
 
 export type MessageType = {
