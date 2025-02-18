@@ -25,6 +25,8 @@ import { useState } from "react";
 import { useDisconnectFromUser } from "../../hooks/useDisconnectFromUser";
 import { useUnsendConnectionRequest } from "../../hooks/useUnsendConnectionRequest";
 import { useAcceptConnectionRequest } from "../../hooks/useAcceptConnectionRequest";
+import { useDeclineConnectionRequest } from "../../hooks/useDeclineConnectionRequest";
+import { useGoToChat } from "../../hooks/useAddChat";
 
 export const UserCard = ({
   user,
@@ -42,7 +44,7 @@ export const UserCard = ({
   const { mutate: unsendConnectionRequest } = useUnsendConnectionRequest();
   const { mutate: acceptConnectionRequest } = useAcceptConnectionRequest();
   const { mutate: declineConnectionRequest } = useDeclineConnectionRequest();
-  const { mutate: addChat } = useAddChat(); // just check the constraint in the "chats" schema!
+  const { mutate: addChat } = useGoToChat(); // just check the constraint in the "chats" schema!
 
   const LeftContent = () => (
     <Pressable onPress={() => onAvatarPress(user)}>
@@ -193,7 +195,7 @@ export const UserCard = ({
             labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
             style={user.unread ? { borderWidth: 2 } : undefined}
             onPress={() => {
-              declineConnectionRequest(user.userId);
+              declineConnectionRequest(user);
             }}
           >
             decline

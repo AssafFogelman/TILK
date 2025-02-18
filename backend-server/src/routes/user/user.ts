@@ -19,6 +19,7 @@ import { disconnectFromUser } from "../../controllers/disconnect-from--user.js";
 import { postConnectionRequest } from "../../controllers/post-connection-request.js";
 import { deleteConnectionRequest } from "../../controllers/delete-connection-request.js";
 import { acceptConnectionRequest } from "../../controllers/accept-connection-request.js";
+import { declineConnectionRequest } from "../../controllers/decline-connection-request.js";
 
 export const user = new Hono().basePath("/user");
 
@@ -81,6 +82,13 @@ user.delete("/connection-request", validateToken, deleteConnectionRequest);
 
 //accept connection request
 user.post("/accept-connection-request", validateToken, acceptConnectionRequest);
+
+//decline connection request
+user.post(
+  "/decline-connection-request",
+  validateToken,
+  declineConnectionRequest
+);
 
 //mark unread connection requests as read
 user.post("/mark-as-read", validateToken, markAsRead);

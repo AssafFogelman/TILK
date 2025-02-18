@@ -94,10 +94,6 @@ export default function App() {
                   <SafeAreaProvider>
                     <SafeAreaView style={{ flex: 1 }}>
                       <PaperProvider theme={theme}>
-                        <Text>
-                          user is {isConnected ? "connected" : "disconnected"}{" "}
-                          to websocket
-                        </Text>
                         <NavigationContainer theme={theme}>
                           <StackNavigator />
                         </NavigationContainer>
@@ -113,25 +109,4 @@ export default function App() {
       </QueryClientProvider>
     </ErrorBoundary>
   );
-
-  //is web socket connected?
-  function useIsWebSocketConnected() {
-    //FIXME - we will remove this functionality in production
-    const [isConnected, setIsConnected] = useState(false);
-    useEffect(() => {
-      //if already connected, run connection function
-      if (socket.connected) {
-        onConnect();
-      }
-
-      function onConnect() {
-        setIsConnected(true);
-      }
-      socket.on("connect", onConnect);
-      return () => {
-        socket.off("connect", onConnect);
-      };
-    }, []);
-    return isConnected;
-  }
 }

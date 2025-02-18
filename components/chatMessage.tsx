@@ -77,16 +77,7 @@ const ChatMessage = ({
         >
           {chatMessage.text}
         </Text>
-        <Text
-          style={[
-            chatMessage.senderId === userId
-              ? styles.userMessageText
-              : styles.recipientMessageText,
-            styles.debugText,
-          ]}
-        >
-          {JSON.stringify(chatMessage, null, 2)}
-        </Text>
+
         <Text
           style={
             chatMessage.senderId === userId

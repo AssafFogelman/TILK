@@ -175,7 +175,7 @@ const ChatRoomScreen = () => {
               ListHeader({
                 ...props,
                 isLastReadMessageId: !!lastReadMessageId,
-                isFirstMessage: !!chatMessages[0],
+                firstMessage: chatMessages[0] ?? null,
               })
             }
             onLoad={() => {

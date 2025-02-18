@@ -16,8 +16,10 @@ export const Separator = ({
   const theme = useTheme();
   const { userId } = useAuthState();
 
-  if (leadingItem.messageId !== lastReadMessageId) return null;
   //it will not show the separator after the last message or before the first message because a separator is only between cells.
+  if (leadingItem.messageId !== lastReadMessageId) return null;
+  //do not show "new messages" if the user sent a message
+  if (trailingItem.senderId === userId) return null;
   return (
     <View
       style={{

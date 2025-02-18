@@ -3,20 +3,24 @@ import { View } from "react-native";
 import { Chip, useTheme } from "react-native-paper";
 import { knnDataItemType, MessageType } from "../../types/types";
 import { distanceMessage } from "../../utils/distanceUtils";
+import { useAuthState } from "../../context/AuthContext";
 
 export const ListHeader = ({
   isLastReadMessageId,
-  isFirstMessage,
+  firstMessage,
 }: {
   isLastReadMessageId: boolean;
-  isFirstMessage: boolean;
+  firstMessage: MessageType | null;
 }) => {
   const theme = useTheme();
+  const { userId } = useAuthState();
 
   //if there is a read message, there is no need to show the header
   if (isLastReadMessageId) return null;
   //if there is no first message, there is no need to show the header
-  if (!isFirstMessage) return null;
+  if (!firstMessage) return null;
+  //if the first message is not from the other user, there is no need to show the header
+  if (firstMessage.senderId === userId) return null;
 
   return (
     <View

@@ -67,7 +67,7 @@ export const createToken = async (c: Context) => {
     }
     const userId = newUser ? newUser[0].userId : existingUser?.userId;
     // create token
-    const token = await generateToken({ userId: userId }, "15d");
+    const token = await generateToken({ userId: userId }, "365d");
     console.log("the token:", token);
     return c.json({
       token: token,

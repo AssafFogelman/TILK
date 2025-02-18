@@ -57,13 +57,13 @@ export const sendSms = async (c: Context) => {
       phoneNumber + code + process.env.VALIDATION_KEY
     );
     //send SMS
-    // await client.messages
-    //   .create({
-    //     body: "enter the following code: " + code,
-    //     from: "TILK",
-    //     to: phoneNumber,
-    //   })
-    //   .then((message) => console.log("SMS sent! Id:", message.sid));
+    await client.messages
+      .create({
+        body: "enter the following code: " + code,
+        from: "TILK",
+        to: phoneNumber,
+      })
+      .then((message) => console.log("SMS sent! Id:", message.sid));
     console.log("the code to be entered: ", code);
     return c.json({ hash: hash }, 201);
   } catch (error) {
