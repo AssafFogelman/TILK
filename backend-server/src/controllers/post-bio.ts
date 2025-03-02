@@ -34,8 +34,8 @@ export const postBio = async (c: Context) => {
       throw { message: "invalid gender supplied" };
     }
 
-    //verify biography is at least 100 characters long
-    if (biography.length < 100) {
+    //verify biography is at least 10 characters long
+    if (biography.length < 10) {
       throw { message: "invalid biography supplied" };
     }
     if (dateOfBirth !== null) {

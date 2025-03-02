@@ -77,9 +77,6 @@ export default function App() {
   //use the tanstack query devtool
   useReactQueryDevTools(queryClient);
 
-  //is websocket connected
-  const isConnected = useIsWebSocketConnected();
-
   //set theme
   const theme = useSetTheme();
 

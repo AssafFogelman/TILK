@@ -127,11 +127,11 @@ const PersonalDetailsScreen = () => {
             multiline={true}
             numberOfLines={5}
             style={styles.input}
-            error={biography.length < 100 && biography !== ""}
+            error={biography.length < 10 && biography !== ""}
           />
-          {biography.length < 100 && biography !== "" && (
+          {biography.length < 10 && biography !== "" && (
             <HelperText type="error" visible={true}>
-              Bio must be at least 100 characters long
+              Bio must be at least 10 characters long
             </HelperText>
           )}
         </View>
@@ -191,7 +191,7 @@ const PersonalDetailsScreen = () => {
   }
 
   function isFormValid() {
-    return nickname.length >= 3 && gender !== "" && biography.length >= 100;
+    return nickname.length >= 3 && gender !== "" && biography.length >= 10;
   }
 
   function escapeHtml(unsafeStr: string) {

@@ -1,7 +1,7 @@
 import { Context } from "hono";
-import { db } from "../drizzle/db";
+import { db } from "../drizzle/db.js";
 import { eq } from "drizzle-orm";
-import { users } from "../drizzle/schema";
+import { users } from "../drizzle/schema.js";
 import * as fs from "fs/promises";
 import path from "path";
 import sharp from "sharp";
@@ -35,14 +35,14 @@ const largeAvatarRoot = path.join(
   process.cwd(),
   "public",
   "avatars",
-  "original",
+  "original"
 );
 const smallAvatarRoot = path.join(
   process.cwd(),
   "public",
   "avatars",
   "thumbnails",
-  "small",
+  "small"
 );
 const tempDirectoryRoot = path.join(process.cwd(), "public", "temp");
 const errorTooManyFiles = {
@@ -81,9 +81,8 @@ export const postAvatars = async (c: Context) => {
     console.log(
       "Received data:",
       avatars.map(
-        (avatar: AvatarType) =>
-          JSON.stringify(avatar).substring(0, 100) + "...",
-      ),
+        (avatar: AvatarType) => JSON.stringify(avatar).substring(0, 100) + "..."
+      )
     ); // Log a preview of the received data
 
     const largeAvatarDirectory = path.join(largeAvatarRoot, userId);
@@ -144,7 +143,7 @@ export const postAvatars = async (c: Context) => {
 
           //return large file info
           return tempFilePath;
-        }),
+        })
       )
     ).filter((path): path is string => path !== null);
 
@@ -159,7 +158,7 @@ export const postAvatars = async (c: Context) => {
     const smallAvatarName = `${userId}-${new Date().getTime()}.webp`;
     const smallAvatarFullPath = path.join(
       smallAvatarDirectory,
-      smallAvatarName,
+      smallAvatarName
     );
     await fs.writeFile(smallAvatarFullPath, smallWebpBuffer);
     const smallAvatarPath = smallAvatarFullPath;
@@ -174,12 +173,12 @@ export const postAvatars = async (c: Context) => {
         const destinationPath = path.join(largeAvatarDirectory, fileName);
         await fs.rename(filePath, destinationPath);
         return destinationPath;
-      }),
+      })
     );
 
     //create paths that have no beginnings
     const dbPathsOriginal = finalAvatarPaths.map((path) =>
-      ("/public" + path.split("public")[1]).split("\\").join("/"),
+      ("/public" + path.split("public")[1]).split("\\").join("/")
     );
     const dbPathsSmall = ("/public" + smallAvatarPath.split("public")[1])
       .split("\\")
@@ -196,7 +195,7 @@ export const postAvatars = async (c: Context) => {
 
     return c.json(
       { originalSize: [...dbPathsOriginal], smallSize: dbPathsSmall },
-      200,
+      200
     );
   } catch (error) {
     console.log('error in "post-avatars" route:', error);
@@ -221,7 +220,7 @@ async function moveFile(sourcePath: string, destinationPath: string) {
     // Move the file
     await fs.rename(sourcePath, destinationPath);
     console.log(
-      `File moved successfully from ${sourcePath} to ${destinationPath}`,
+      `File moved successfully from ${sourcePath} to ${destinationPath}`
     );
   } catch (error) {
     console.error("Error moving file:", error);
