@@ -32,7 +32,7 @@ const TabsHeader: React.FC<TabsHeaderProps> = ({
       {showSearchBar ? (
         <View style={styles.searchContainer}>
           <Searchbar
-            placeholder="Search connections"
+            placeholder={`Search ${title}`}
             value={searchQuery}
             onChangeText={onSearchChange}
             style={styles.searchBar}

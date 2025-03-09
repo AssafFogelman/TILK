@@ -1,10 +1,10 @@
 import { Context } from "hono";
 import { db } from "../drizzle/db.js";
-import { blocks } from "../drizzle/schema.js";
+import { blocks, chats } from "../drizzle/schema.js";
+import { eq } from "drizzle-orm";
 
 export const blockUser = async (c: Context) => {
   try {
-    console.log("blocking user!");
     const { userId } = c.get("tokenPayload");
     const { blockedUserId } = await c.req.json();
     await db.insert(blocks).values({

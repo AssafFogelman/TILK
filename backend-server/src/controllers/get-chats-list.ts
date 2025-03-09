@@ -1,6 +1,6 @@
-import { eq, or, desc } from "drizzle-orm";
+import { eq, or, desc, and, not, exists } from "drizzle-orm";
 import { Context } from "hono";
-import { chats } from "../drizzle/schema.js";
+import { chats, blocks } from "../drizzle/schema.js";
 import { db } from "../drizzle/db.js";
 import { ChatType, UserType } from "../../../types/types.js";
 
@@ -10,7 +10,25 @@ export async function getChatsList(c: Context) {
     const { userId } = c.get("tokenPayload");
 
     const chatsList = await db.query.chats.findMany({
-      where: or(eq(chats.participant1, userId), eq(chats.participant2, userId)),
+      where: and(
+        or(eq(chats.participant1, userId), eq(chats.participant2, userId)),
+        not(
+          exists(
+            db
+              .select()
+              .from(blocks)
+              .where(
+                and(
+                  eq(blocks.blockingUserId, userId),
+                  or(
+                    eq(blocks.blockedUserId, chats.participant1),
+                    eq(blocks.blockedUserId, chats.participant2)
+                  )
+                )
+              )
+          )
+        )
+      ),
       with: {
         participant1: {
           columns: {

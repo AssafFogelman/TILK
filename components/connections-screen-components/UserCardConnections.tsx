@@ -161,6 +161,7 @@ export const UserCard = ({
       case ConnectionsCategory.CONNECTED_USER:
         return [
           <Button
+            key="disconnect"
             labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
             style={user.unread ? { borderWidth: 2 } : undefined}
             onPress={() => {
@@ -170,6 +171,7 @@ export const UserCard = ({
             disconnect from user
           </Button>,
           <Button
+            key="chat"
             labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
             style={user.unread ? { borderWidth: 2 } : undefined}
             onPress={() => {
@@ -182,6 +184,7 @@ export const UserCard = ({
       case ConnectionsCategory.CONNECTION_REQUEST:
         return [
           <Button
+            key="accept"
             labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
             style={user.unread ? { borderWidth: 2 } : undefined}
             onPress={() => {
@@ -192,6 +195,7 @@ export const UserCard = ({
           </Button>,
 
           <Button
+            key="decline"
             labelStyle={user.unread ? { fontWeight: "bold" } : undefined}
             style={user.unread ? { borderWidth: 2 } : undefined}
             onPress={() => {
